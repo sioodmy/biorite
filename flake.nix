@@ -21,6 +21,7 @@
 
         build-deps = with pkgs; [
           llvmPackages.bintools
+
           lld
           clang
           pkg-config
@@ -63,12 +64,23 @@
           };
         };
 
+        apps.voxelorite = flake-utils.lib.mkApp {drv = defaultPackage;};
+        apps.default = apps.voxelorite;
+
         # For `nix develop`:
         devShell = with pkgs;
           mkShell {
             RUST_SRC_PATH = rustPlatform.rustLibSrc;
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtime-deps;
+            RUST_BACKTRACE = 1;
             buildInputs =
-              [rustc cargo rustPackages.clippy]
+              [
+                rustc
+                cargo
+                clippy
+                rustfmt
+                rust-analyzer
+              ]
               ++ runtime-deps
               ++ build-deps;
           };
