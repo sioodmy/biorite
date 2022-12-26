@@ -198,6 +198,7 @@ version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dae99b246505811f5bc19d2de1e406ec5d2816b421d58fa223779eb576f472c9"
 dependencies = [
+ "bevy_dylib",
  "bevy_internal",
 ]
 
@@ -360,6 +361,15 @@ dependencies = [
  "bevy_log",
  "bevy_time",
  "bevy_utils",
+]
+
+[[package]]
+name = "bevy_dylib"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d193c3d56e3bdd106596327d15dd67ddfd862f8b5aa8260677efefe3ddef736"
+dependencies = [
+ "bevy_internal",
 ]
 
 [[package]]
@@ -546,7 +556,7 @@ version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d434c77ab766c806ed9062ef8a7285b3b02b47df51f188d4496199c3ac062eaf"
 dependencies = [
- "glam",
+ "glam 0.22.0",
  "serde",
 ]
 
@@ -556,7 +566,7 @@ version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbfb5908d33fd613069be516180b8f138aaaf6e41c36b1fd98c6c29c00c24a13"
 dependencies = [
- "glam",
+ "glam 0.22.0",
 ]
 
 [[package]]
@@ -599,7 +609,7 @@ dependencies = [
  "bevy_utils",
  "downcast-rs",
  "erased-serde",
- "glam",
+ "glam 0.22.0",
  "once_cell",
  "parking_lot",
  "serde",
@@ -929,6 +939,17 @@ name = "block"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
+
+[[package]]
+name = "block-mesh"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c0345520b5aa77d7d154bd578a18e7a974350931b5f41f641a7844e951b978f"
+dependencies = [
+ "ilattice",
+ "ndcopy",
+ "ndshape",
+]
 
 [[package]]
 name = "bumpalo"
@@ -1383,7 +1404,7 @@ checksum = "48ec50086547d597b5c871a78399ec04a14828a6a5c445a61ed4687c540edec6"
 dependencies = [
  "const_panic",
  "encase_derive",
- "glam",
+ "glam 0.22.0",
  "thiserror",
 ]
 
@@ -1602,6 +1623,12 @@ dependencies = [
 
 [[package]]
 name = "glam"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b8509e6791516e81c1a630d0bd7fbac36d2fa8712a9da8662e716b52d5051ca"
+
+[[package]]
+name = "glam"
 version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12f597d56c1bd55a811a1be189459e8fad2bbc272616375602443bdfb37fa774"
@@ -1765,7 +1792,7 @@ version = "8.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "619ce654558681d7d0a7809e1b20249c7032ff13ee6baa7bb7ff64f7f28a906a"
 dependencies = [
- "glam",
+ "glam 0.22.0",
  "once_cell",
 ]
 
@@ -1780,6 +1807,15 @@ name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
+
+[[package]]
+name = "ilattice"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3db9046391c0e0658a18e23877706d16e48cc8b4711702b9f703776410c2b84"
+dependencies = [
+ "glam 0.19.0",
+]
 
 [[package]]
 name = "image"
@@ -1897,6 +1933,12 @@ checksum = "068b1ee6743e4d11fb9c6a1e6064b3693a1b600e7f5f5988047d98b3dc9fb90b"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "jordan4ibanez_perlin_rust"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf56ffcb1032aa46b9bd92d3b3b756f3b08a9f6d27573004cf8675008dfde307"
 
 [[package]]
 name = "js-sys"
@@ -2133,6 +2175,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ndcopy"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24f4e41b81e3f7a4b742755be1bb368a6faafc43af555fe135c36b0efe095c59"
+dependencies = [
+ "ndshape",
+]
+
+[[package]]
 name = "ndk"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2211,6 +2262,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cf2aae958bd232cac5069850591667ad422d263686d75b52a065f9badeee5a3"
 dependencies = [
  "jni-sys",
+]
+
+[[package]]
+name = "ndshape"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "975bce586ad637e27f6dc26ee907c07050686a588695bfd64b7873a9d48a700c"
+dependencies = [
+ "static_assertions",
 ]
 
 [[package]]
@@ -3198,7 +3258,10 @@ dependencies = [
  "bevy_atmosphere",
  "bevy_renet",
  "bincode",
+ "block-mesh",
+ "jordan4ibanez_perlin_rust",
  "local-ip-address",
+ "ndshape",
  "serde",
 ]
 

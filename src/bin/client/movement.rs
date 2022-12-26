@@ -58,11 +58,7 @@ fn strafe_vector(rotation: &Quat) -> Vec3 {
         .normalize()
 }
 
-fn movement_axis(
-    input: &Res<Input<KeyCode>>,
-    plus: KeyCode,
-    minus: KeyCode,
-) -> f32 {
+fn movement_axis(input: &Res<Input<KeyCode>>, plus: KeyCode, minus: KeyCode) -> f32 {
     let mut axis = 0.0;
     if input.pressed(plus) {
         axis += 1.0;
@@ -81,11 +77,7 @@ fn camera_movement_system(
     for (mut options, mut transform) in query.iter_mut() {
         let (axis_h, axis_v, axis_float) = (
             movement_axis(&keyboard_input, options.key_right, options.key_left),
-            movement_axis(
-                &keyboard_input,
-                options.key_backward,
-                options.key_forward,
-            ),
+            movement_axis(&keyboard_input, options.key_backward, options.key_forward),
             movement_axis(&keyboard_input, options.key_up, options.key_down),
         );
 
@@ -114,13 +106,12 @@ fn camera_movement_system(
 
         let delta_friction = friction * time.delta_seconds();
 
-        options.velocity = if (options.velocity + delta_friction).signum()
-            != options.velocity.signum()
-        {
-            Vec3::ZERO
-        } else {
-            options.velocity + delta_friction
-        };
+        options.velocity =
+            if (options.velocity + delta_friction).signum() != options.velocity.signum() {
+                Vec3::ZERO
+            } else {
+                options.velocity + delta_friction
+            };
 
         transform.translation += options.velocity;
     }

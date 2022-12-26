@@ -10,6 +10,7 @@ use voxelorite::*;
 
 mod camera;
 mod movement;
+mod render;
 
 fn create_renet_client() -> RenetClient {
     let current_time = SystemTime::now()
@@ -32,8 +33,7 @@ fn create_renet_client() -> RenetClient {
         user_data: None,
     };
 
-    RenetClient::new(current_time, socket, connection_config, authentication)
-        .unwrap()
+    RenetClient::new(current_time, socket, connection_config, authentication).unwrap()
 }
 
 fn main() {
@@ -44,7 +44,7 @@ fn main() {
                     window: WindowDescriptor {
                         width: 1280.,
                         height: 720.,
-                        title: "Voxelorite proof of concept".to_string(),
+                        title: "my cheap shitass minecraft ripoff".to_string(),
                         resizable: true,
                         ..default()
                     },
@@ -52,14 +52,14 @@ fn main() {
                 })
                 .set(LogPlugin {
                     level: Level::DEBUG,
-                    filter: "wgpu=error,bevy_render=info,bevy_ecs=trace"
-                        .to_string(),
+                    filter: "wgpu=error,bevy_render=info,bevy_ecs=trace".to_string(),
                 })
                 .set(ImagePlugin::default_nearest()),
         )
         .add_plugin(RenetClientPlugin::default())
         .add_plugin(AtmospherePlugin)
         .insert_resource(create_renet_client())
+        .insert_resource(Msaa { samples: 4 })
         .add_system(client_ping)
         .add_system(receive_message_system)
         // prototype
