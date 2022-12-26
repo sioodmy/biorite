@@ -1,10 +1,15 @@
 use bevy::log::{Level, LogPlugin};
+
+use bevy_atmosphere::prelude::*;
 use local_ip_address::local_ip;
 use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
 };
 use voxelorite::*;
+
+mod camera;
+mod movement;
 
 fn create_renet_client() -> RenetClient {
     let current_time = SystemTime::now()
@@ -27,7 +32,8 @@ fn create_renet_client() -> RenetClient {
         user_data: None,
     };
 
-    RenetClient::new(current_time, socket, connection_config, authentication).unwrap()
+    RenetClient::new(current_time, socket, connection_config, authentication)
+        .unwrap()
 }
 
 fn main() {
@@ -39,21 +45,26 @@ fn main() {
                         width: 1280.,
                         height: 720.,
                         title: "Voxelorite proof of concept".to_string(),
-                        resizable: false,
+                        resizable: true,
                         ..default()
                     },
                     ..default()
                 })
                 .set(LogPlugin {
                     level: Level::DEBUG,
-                    filter: "wgpu=error,bevy_render=info,bevy_ecs=trace".to_string(),
+                    filter: "wgpu=error,bevy_render=info,bevy_ecs=trace"
+                        .to_string(),
                 })
                 .set(ImagePlugin::default_nearest()),
         )
         .add_plugin(RenetClientPlugin::default())
+        .add_plugin(AtmospherePlugin)
         .insert_resource(create_renet_client())
         .add_system(client_ping)
         .add_system(receive_message_system)
+        // prototype
+        .add_startup_system(camera::spawn_camera)
+        .add_plugin(movement::CameraPlugin)
         .run();
 }
 
