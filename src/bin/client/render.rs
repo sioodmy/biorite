@@ -37,26 +37,17 @@ impl MergeVoxel for BlockType {
     }
 }
 
-type ChunkShape = ConstShape3u32<18, 18, 18>;
+pub type ChunkShape = ConstShape3u32<18, 18, 18>;
 
 // This chunk will cover just a single octant of a sphere SDF (radius 15).
 
-const AIR: BlockType = BlockType::Air;
-const DIRT: BlockType = BlockType::Dirt;
+pub const AIR: BlockType = BlockType::Air;
+pub const DIRT: BlockType = BlockType::Dirt;
 
-pub fn greedy_mesh(meshes: &mut Assets<Mesh>) -> Handle<Mesh> {
-    let mut voxels: [BlockType; ChunkShape::SIZE as usize] = [AIR; ChunkShape::SIZE as usize];
-
-    // shitass chunk generation
-    for i in 0..ChunkShape::SIZE {
-        let [x, y, z] = ChunkShape::delinearize(i);
-        voxels[i as usize] = if ((x * x + y * y + z * z) as f32).sqrt() < 15.0 {
-            DIRT
-        } else {
-            AIR
-        };
-    }
-
+pub fn greedy_mesh(
+    meshes: &mut Assets<Mesh>,
+    mut voxels: [BlockType; ChunkShape::SIZE as usize],
+) -> Handle<Mesh> {
     let mut buffer = GreedyQuadsBuffer::new(voxels.len());
     let faces = RIGHT_HANDED_Y_UP_CONFIG.faces;
 

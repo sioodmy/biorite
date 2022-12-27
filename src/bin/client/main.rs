@@ -9,6 +9,7 @@ use std::{
 use voxelorite::*;
 
 mod camera;
+mod chunk;
 mod movement;
 mod render;
 
@@ -64,6 +65,7 @@ fn main() {
         .add_system(receive_message_system)
         // prototype
         .add_startup_system(camera::spawn_camera)
+        .add_startup_system(chunk::spawn_chunk)
         .add_plugin(movement::CameraPlugin)
         .run();
 }
