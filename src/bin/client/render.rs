@@ -1,4 +1,3 @@
-use crate::{BlockType, *};
 use bevy::render::{
     mesh::{Indices, VertexAttributeValues},
     render_resource::PrimitiveTopology,
@@ -9,6 +8,8 @@ use block_mesh::{
     GreedyQuadsBuffer, MergeVoxel, Voxel, VoxelVisibility,
     RIGHT_HANDED_Y_UP_CONFIG,
 };
+
+use crate::{BlockType, *};
 
 pub fn greedy_mesh(
     meshes: &mut Assets<Mesh>,

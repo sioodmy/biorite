@@ -1,5 +1,6 @@
-use crate::*;
 use std::f32::consts;
+
+use crate::*;
 
 pub fn spawn_camera(mut commands: Commands) {
 

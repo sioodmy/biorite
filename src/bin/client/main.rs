@@ -1,15 +1,15 @@
-use bevy::{
-    log::{Level, LogPlugin},
-    pbr::wireframe::WireframePlugin,
-};
-
-use bevy_atmosphere::prelude::*;
-use bevy_spectator::*;
-use local_ip_address::local_ip;
 use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
 };
+
+use bevy::{
+    log::{Level, LogPlugin},
+    pbr::wireframe::WireframePlugin,
+};
+use bevy_atmosphere::prelude::*;
+use bevy_spectator::*;
+use local_ip_address::local_ip;
 use voxelorite::*;
 
 mod camera;
@@ -28,7 +28,7 @@ fn create_renet_client() -> RenetClient {
 
     let connection_config = RenetConnectionConfig::default();
 
-    //TODO Prompt for server IP
+    // TODO Prompt for server IP
     let server_addr = SocketAddr::new(local_ip().unwrap(), 42069);
 
     let authentication = ClientAuthentication::Unsecure {
@@ -95,7 +95,10 @@ fn receive_message_system(mut client: ResMut<RenetClient>) {
     }
 }
 
-fn client_ping(mut client: ResMut<RenetClient>, keyboard: Res<Input<KeyCode>>) {
+fn client_ping(
+    mut client: ResMut<RenetClient>,
+    keyboard: Res<Input<KeyCode>>,
+) {
 
     let reliable_channel_id = ReliableChannelConfig::default().channel_id;
 

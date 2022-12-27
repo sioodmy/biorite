@@ -1,7 +1,8 @@
-use crate::{render::*, ChunkShape, AIR, DIRT, STONE, *};
 use bevy::pbr::wireframe::WireframeConfig;
 use block_mesh::ndshape::ConstShape;
 use rand::Rng;
+
+use crate::{render::*, ChunkShape, AIR, DIRT, STONE, *};
 
 pub fn wireframe(
     mut wireframe_config: ResMut<WireframeConfig>,
@@ -30,10 +31,8 @@ pub fn spawn_chunk(
     // for i in 0..ChunkShape::SIZE {
     //     let [x, y, z] = ChunkShape::delinearize(i);
     //     voxels[i as usize] = if ((x * x + y * y + z
-    // * z) as f32).sqrt() < 15.0 {         DIRT
-    //     } else {
-    //         AIR
-    //     };
+    // * z) as f32).sqrt() < 15.0 {         DIRT }
+    //   else { AIR };
     // }
 
     for x in 1..17 {

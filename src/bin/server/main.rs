@@ -1,9 +1,10 @@
-use bevy::log::LogPlugin;
-use local_ip_address::local_ip;
 use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
 };
+
+use bevy::log::LogPlugin;
+use local_ip_address::local_ip;
 use voxelorite::*;
 
 fn create_renet_server() -> RenetServer {
@@ -12,11 +13,12 @@ fn create_renet_server() -> RenetServer {
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap();
 
-    /* Public hosting, requires port forwarding
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    let public_ip = rt.block_on(public_ip::addr()).unwrap();
-    let server_addr = SocketAddr::new(public_ip, 42069);
-    */
+    // Public hosting, requires port forwarding
+    // let rt = tokio::runtime::Runtime::new().
+    // unwrap(); let public_ip =
+    // rt.block_on(public_ip::addr()).unwrap();
+    // let server_addr = SocketAddr::new(public_ip,
+    // 42069);
 
     let server_addr = SocketAddr::new(local_ip().unwrap(), 42069);
 
