@@ -1,6 +1,10 @@
-use bevy::log::{Level, LogPlugin};
+use bevy::{
+    log::{Level, LogPlugin},
+    pbr::wireframe::WireframePlugin,
+};
 
 use bevy_atmosphere::prelude::*;
+use bevy_spectator::*;
 use local_ip_address::local_ip;
 use std::{
     net::{SocketAddr, UdpSocket},
@@ -10,7 +14,6 @@ use voxelorite::*;
 
 mod camera;
 mod chunk;
-mod movement;
 mod render;
 
 fn create_renet_client() -> RenetClient {
@@ -53,12 +56,14 @@ fn main() {
                 })
                 .set(LogPlugin {
                     level: Level::DEBUG,
-                    filter: "wgpu=error,bevy_render=info,bevy_ecs=trace".to_string(),
+                    filter: "info,wgpu_core=warn,wgpu_hal=warn".to_string(),
                 })
                 .set(ImagePlugin::default_nearest()),
         )
+        .add_plugin(WireframePlugin)
         .add_plugin(RenetClientPlugin::default())
         .add_plugin(AtmospherePlugin)
+        .add_plugin(SpectatorPlugin)
         .insert_resource(create_renet_client())
         .insert_resource(Msaa { samples: 4 })
         .add_system(client_ping)
@@ -66,7 +71,7 @@ fn main() {
         // prototype
         .add_startup_system(camera::spawn_camera)
         .add_startup_system(chunk::spawn_chunk)
-        .add_plugin(movement::CameraPlugin)
+        .add_system(chunk::wireframe)
         .run();
 }
 

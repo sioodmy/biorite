@@ -16,8 +16,9 @@ opt-level = 3
 [dependencies]
 bevy = {version = "0.9.1", features = [ "wayland", "dynamic"]}
 serde = { version = "1.0", features = [ "derive" ] } 
-ndshape = "0.3.0"
 block-mesh = "0.2.0"
+bevy_spectator = "0.1.1"
+rand = "0.8.5"
 bevy_atmosphere = "0.5.0"
 jordan4ibanez_perlin_rust = "0.0.1"
 # simple-simplex = "1.0.3"
