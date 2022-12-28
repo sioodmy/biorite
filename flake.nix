@@ -3,10 +3,6 @@
     flake-utils.url = "github:numtide/flake-utils";
     naersk.url = "github:nix-community/naersk";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = {
@@ -14,7 +10,6 @@
     flake-utils,
     naersk,
     nixpkgs,
-    fenix,
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
@@ -22,12 +17,7 @@
           inherit system;
         };
 
-        toolchain = fenix.packages.${system}.latest.toolchain;
-
-        naersk' = naersk.lib.${system}.override {
-          cargo = toolchain;
-          rustc = toolchain;
-        };
+        naersk' = pkgs.callPackage naersk {};
 
         build-deps = with pkgs; [
           llvmPackages.bintools
@@ -84,7 +74,6 @@
             RUST_BACKTRACE = 1;
             buildInputs =
               [
-                toolchain
                 rustc
                 cargo
                 clippy

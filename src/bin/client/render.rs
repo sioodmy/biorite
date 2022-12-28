@@ -2,12 +2,7 @@ use bevy::render::{
     mesh::{Indices, VertexAttributeValues},
     render_resource::PrimitiveTopology,
 };
-use block_mesh::{
-    greedy_quads,
-    ndshape::{ConstShape, ConstShape3u32},
-    GreedyQuadsBuffer, MergeVoxel, Voxel, VoxelVisibility,
-    RIGHT_HANDED_Y_UP_CONFIG,
-};
+use block_mesh::{greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer, RIGHT_HANDED_Y_UP_CONFIG};
 
 use crate::{BlockType, *};
 
@@ -15,7 +10,6 @@ pub fn greedy_mesh(
     meshes: &mut Assets<Mesh>,
     voxels: [BlockType; ChunkShape::SIZE as usize],
 ) -> Handle<Mesh> {
-
     let mut buffer = GreedyQuadsBuffer::new(voxels.len());
 
     let faces = RIGHT_HANDED_Y_UP_CONFIG.faces;
@@ -41,14 +35,9 @@ pub fn greedy_mesh(
 
     let mut normals = Vec::with_capacity(num_vertices);
 
-    for (group, face) in buffer.quads.groups.into_iter().zip(faces.into_iter())
-    {
-
+    for (group, face) in buffer.quads.groups.into_iter().zip(faces.into_iter()) {
         for quad in group.into_iter() {
-
-            indices.extend_from_slice(
-                &face.quad_mesh_indices(positions.len() as u32),
-            );
+            indices.extend_from_slice(&face.quad_mesh_indices(positions.len() as u32));
 
             positions.extend_from_slice(&face.quad_mesh_positions(&quad, 1.0));
 

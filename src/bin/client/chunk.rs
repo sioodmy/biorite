@@ -4,13 +4,8 @@ use rand::Rng;
 
 use crate::{render::*, ChunkShape, AIR, DIRT, STONE, *};
 
-pub fn wireframe(
-    mut wireframe_config: ResMut<WireframeConfig>,
-    keyboard: Res<Input<KeyCode>>,
-) {
-
+pub fn wireframe(mut wireframe_config: ResMut<WireframeConfig>, keyboard: Res<Input<KeyCode>>) {
     if keyboard.just_pressed(KeyCode::F3) {
-
         info!("Toggle debug mode");
 
         wireframe_config.global = !wireframe_config.global;
@@ -23,10 +18,8 @@ pub fn spawn_chunk(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-
     // shitass chunk generation
-    let mut voxels: [BlockType; ChunkShape::SIZE as usize] =
-        [AIR; ChunkShape::SIZE as usize];
+    let mut voxels: [BlockType; ChunkShape::SIZE as usize] = [AIR; ChunkShape::SIZE as usize];
 
     // for i in 0..ChunkShape::SIZE {
     //     let [x, y, z] = ChunkShape::delinearize(i);
@@ -35,28 +28,16 @@ pub fn spawn_chunk(
     //   else { AIR };
     // }
 
+    // placeholder for propper chunk generation
     for x in 1..17 {
-
         for z in 1..17 {
-
-            for y in 1..17 {
-
+            for y in 1..12 {
                 let i = ChunkShape::linearize([x, y, z]);
-
-                let mut rng = rand::thread_rng();
-
-                let random = rng.gen_range(0..7);
-
-                if random == 1 {
-
-                    voxels[i as usize] = DIRT;
-                } else if random == 2 {
-
-                    voxels[i as usize] = STONE;
-                } else {
-
-                    voxels[i as usize] = AIR;
-                }
+                voxels[i as usize] = STONE;
+            }
+            for y in 12..15 {
+                let i = ChunkShape::linearize([x, y, z]);
+                voxels[i as usize] = DIRT;
             }
         }
     }

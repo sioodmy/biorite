@@ -17,7 +17,6 @@ mod chunk;
 mod render;
 
 fn create_renet_client() -> RenetClient {
-
     let current_time = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap();
@@ -38,12 +37,10 @@ fn create_renet_client() -> RenetClient {
         user_data: None,
     };
 
-    RenetClient::new(current_time, socket, connection_config, authentication)
-        .unwrap()
+    RenetClient::new(current_time, socket, connection_config, authentication).unwrap()
 }
 
 fn main() {
-
     App::new()
         .add_plugins(
             DefaultPlugins
@@ -79,31 +76,23 @@ fn main() {
 }
 
 fn receive_message_system(mut client: ResMut<RenetClient>) {
-
     let reliable_channel_id = ReliableChannelConfig::default().channel_id;
 
     while let Some(message) = client.receive_message(reliable_channel_id) {
-
         let server_message = bincode::deserialize(&message).unwrap();
 
         match server_message {
             ServerMessage::Pong(info) => {
-
                 info!("Got response from {:?} server", info);
             }
         }
     }
 }
 
-fn client_ping(
-    mut client: ResMut<RenetClient>,
-    keyboard: Res<Input<KeyCode>>,
-) {
-
+fn client_ping(mut client: ResMut<RenetClient>, keyboard: Res<Input<KeyCode>>) {
     let reliable_channel_id = ReliableChannelConfig::default().channel_id;
 
     if keyboard.just_pressed(KeyCode::Space) {
-
         let ping_message = bincode::serialize(&ClientMessage::Ping).unwrap();
 
         client.send_message(reliable_channel_id, ping_message);

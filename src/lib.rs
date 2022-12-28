@@ -1,9 +1,6 @@
 pub use bevy::prelude::*;
 pub use bevy_renet::{renet::*, *};
-use block_mesh::{
-    ndshape::{ConstShape, ConstShape3u32},
-    MergeVoxel, Voxel, VoxelVisibility, RIGHT_HANDED_Y_UP_CONFIG,
-};
+use block_mesh::{ndshape::ConstShape3u32, MergeVoxel, Voxel, VoxelVisibility};
 use serde::{Deserialize, Serialize};
 
 #[allow(dead_code)]
@@ -24,7 +21,6 @@ pub enum BlockType {
 
 impl Default for BlockType {
     fn default() -> Self {
-
         BlockType::Air
     }
 }
@@ -33,7 +29,6 @@ impl Default for BlockType {
 
 impl Voxel for BlockType {
     fn get_visibility(&self) -> VoxelVisibility {
-
         match self {
             BlockType::Air => VoxelVisibility::Empty,
             BlockType::Dirt => VoxelVisibility::Opaque,
@@ -47,7 +42,6 @@ impl MergeVoxel for BlockType {
     type MergeValue = Self;
 
     fn merge_value(&self) -> Self::MergeValue {
-
         *self
     }
 }
