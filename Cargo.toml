@@ -2,9 +2,15 @@
 name = "voxelorite"
 version = "0.1.0"
 edition = "2021"
-default-run = "client"
+default-run = "voxelorite"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "voxelorite"
+path = "src/bin/client/main.rs"
+
+[[bin]]
+name = "voxelorite-server"
+path = "src/bin/server/main.rs"
 
 [profile.dev]
 opt-level = 1
@@ -12,14 +18,17 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
-
 [dependencies]
 bevy = {version = "0.9.1", features = [ "wayland", "dynamic"]}
 serde = { version = "1.0", features = [ "derive" ] } 
 block-mesh = "0.2.0"
+
+bevy_renet = "0.0.6"
 bevy_spectator = "0.1.1"
-rand = "0.8.5"
 bevy_atmosphere = "0.5.0"
+bevy-inspector-egui = "0.15.0"
+
+rand = "0.8.5"
 jordan4ibanez_perlin_rust = "0.0.1"
 # simple-simplex = "1.0.3"
 bincode = "1.3.1"
@@ -30,4 +39,3 @@ local-ip-address = "0.4.8"
 # public-ip = "0.2.2"
 # tokio = { version = "1", features = ["full"] }
 
-bevy_renet = "0.0.6"

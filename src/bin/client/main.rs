@@ -8,6 +8,7 @@ use bevy::{
     pbr::wireframe::WireframePlugin,
 };
 use bevy_atmosphere::prelude::*;
+use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_spectator::*;
 use local_ip_address::local_ip;
 use voxelorite::*;
@@ -63,6 +64,7 @@ fn main() {
         .add_plugin(WireframePlugin)
         .add_plugin(RenetClientPlugin::default())
         .add_plugin(AtmospherePlugin)
+        .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(SpectatorPlugin)
         .insert_resource(create_renet_client())
         .insert_resource(Msaa { samples: 4 })

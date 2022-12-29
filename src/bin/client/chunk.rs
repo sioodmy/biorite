@@ -24,8 +24,7 @@ pub fn spawn_chunk(
     // for i in 0..ChunkShape::SIZE {
     //     let [x, y, z] = ChunkShape::delinearize(i);
     //     voxels[i as usize] = if ((x * x + y * y + z
-    // * z) as f32).sqrt() < 15.0 {         DIRT }
-    //   else { AIR };
+    // * z) as f32).sqrt() < 15.0 {         DIRT } else { AIR };
     // }
 
     // placeholder for propper chunk generation
