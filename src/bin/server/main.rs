@@ -4,6 +4,7 @@ use std::{
 };
 
 use bevy::log::LogPlugin;
+use block_mesh::ndshape::ConstShape;
 use local_ip_address::local_ip;
 use voxelorite::*;
 
@@ -82,6 +83,32 @@ fn receive_message_system(mut server: ResMut<RenetServer>) {
                     .unwrap();
 
                     server.send_message(client_id, reliable_channel_id, pong);
+                }
+                ClientMessage::RequestChunkData(position) => {
+                    debug!("Client {} requested chunk at {:?}", client_id, position);
+                    let mut blocks: [BlockType; ChunkShape::SIZE as usize] =
+                        [AIR; ChunkShape::SIZE as usize];
+                    for x in 1..17 {
+                        for z in 1..17 {
+                            for y in 1..12 {
+                                let i = ChunkShape::linearize([x, y, z]);
+                                blocks[i as usize] = STONE;
+                            }
+                            for y in 12..15 {
+                                let i = ChunkShape::linearize([x, y, z]);
+                                blocks[i as usize] = DIRT;
+                            }
+                        }
+                    }
+                    let chunk = Chunk {
+                        position,
+                        blocks,
+                        ..default()
+                    };
+                    let compressed_chunk = chunk.compress();
+                    let chunkdata =
+                        bincode::serialize(&ServerMessage::Chunk(compressed_chunk)).unwrap();
+                    server.send_message(client_id, reliable_channel_id, chunkdata);
                 }
             }
         }

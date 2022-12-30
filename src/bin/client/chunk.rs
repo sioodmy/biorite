@@ -12,6 +12,7 @@ pub fn wireframe(mut wireframe_config: ResMut<WireframeConfig>, keyboard: Res<In
     }
 }
 
+// TODO: Refactor code to pull chunks from render queue
 pub fn spawn_chunk(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,

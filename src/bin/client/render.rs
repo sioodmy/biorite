@@ -6,6 +6,10 @@ use block_mesh::{greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer, RIGHT_HAN
 
 use crate::{BlockType, *};
 
+pub fn renderq(mut queue: ResMut<ChunkRenderQueue>) {
+    trace!("{:?}", queue.0);
+}
+
 pub fn greedy_mesh(
     meshes: &mut Assets<Mesh>,
     voxels: [BlockType; ChunkShape::SIZE as usize],
