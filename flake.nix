@@ -80,6 +80,7 @@
         devShell = with pkgs;
           mkShell {
             RUST_SRC_PATH = rustPlatform.rustLibSrc;
+            RUST_LOG = "info,wgpu_core=warn,wgpu_hal=off,rechannel=warn,voxelorite=debug";
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtime-deps;
             RUST_BACKTRACE = 1;
             buildInputs =
