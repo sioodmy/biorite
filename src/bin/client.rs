@@ -20,5 +20,6 @@ fn main() {
         .add_plugin(RenderClientPlugin)
         .add_plugin(NetworkClientPlugin)
         .add_plugin(DebugPlugin)
+        .add_system(chunk_test)
         .run();
 }

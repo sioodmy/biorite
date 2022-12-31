@@ -38,7 +38,7 @@ impl Channel {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Resource)]
 pub enum ServerChunkMessage {
     Chunk(CompressedChunk),
 }
@@ -57,6 +57,7 @@ pub enum ServerMessage {
 impl ServerChunkMessage {
     pub fn send(&self, server: &mut RenetServer, id: u64) {
         let message = bincode::serialize(self).unwrap();
+        debug!("Sending message");
         server.send_message(id, Channel::Chunk.id(), message);
     }
 }
@@ -69,17 +70,18 @@ impl ServerMessage {
         }
     }
 }
+
 pub fn server_recieve_messages(
     mut server: ResMut<RenetServer>,
     mut messages: ResMut<CurrentServerMessages>,
 ) {
     messages.0.clear();
-    let channel_id = 0;
-    // Send a text message for all clients
-    for client_id in server.clients_id().into_iter() {
-        while let Some(message) = server.receive_message(client_id, channel_id) {
-            let client_message = bincode::deserialize(&message).unwrap();
-            messages.0.push((client_id, client_message));
+    for channel in [Channel::Reliable, Channel::Unreliable] {
+        for client_id in server.clients_id().into_iter() {
+            while let Some(message) = server.receive_message(client_id, channel.id()) {
+                let client_message = bincode::deserialize(&message).unwrap();
+                messages.0.push((client_id, client_message));
+            }
         }
     }
 }
@@ -91,10 +93,17 @@ pub fn client_recieve_messages(
 ) {
     messages.0.clear();
     chunk_messages.0.clear();
-    let channel_id = 0;
-    while let Some(message) = client.receive_message(channel_id) {
+    for channel in [Channel::Reliable, Channel::Unreliable] {
+        while let Some(message) = client.receive_message(channel.id()) {
+            let server_message = bincode::deserialize(&message).unwrap();
+            debug!("New reliable/unreliable message");
+            messages.0.push(server_message);
+        }
+    }
+    while let Some(message) = client.receive_message(Channel::Chunk.id()) {
         let server_message = bincode::deserialize(&message).unwrap();
-        messages.0.push(server_message);
+        debug!("Got new chunk message");
+        chunk_messages.push(server_message);
     }
 }
 
@@ -104,12 +113,3 @@ impl ClientMessage {
         client.send_message(Channel::Reliable.id(), message);
     }
 }
-// pub fn client_recieve_messages(mut client: ResMut<RenetClient>) {
-//     for channel in [Channel::Reliable, Channel::Unreliable] {
-//         while let Some(message) = client.receive_message(channel.id()) {}
-//     }
-//     while let Some(message) = client.receive_message(Channel::Chunk) {
-//         let server_message = bincode::deserialize(&message).unwrap();
-//         chunk_messages.push(server_message);
-//     }
-// }

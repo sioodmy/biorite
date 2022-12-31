@@ -13,8 +13,20 @@ pub fn create_renet_client() -> RenetClient {
 
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     let client_id = current_time.as_millis() as u64;
-    let connection_config = RenetConnectionConfig::default();
 
+    let connection_config = RenetConnectionConfig {
+        max_packet_size: 32 * 1024,
+        receive_channels_config: vec![
+            ChannelConfig::Chunk(ChunkChannelConfig {
+                packet_budget: 30000,
+                message_send_queue_size: 64,
+                ..Default::default()
+            }),
+            ChannelConfig::Reliable(ReliableChannelConfig::default()),
+            ChannelConfig::Unreliable(UnreliableChannelConfig::default()),
+        ],
+        ..Default::default()
+    };
     // TODO Prompt for server IP
     let server_addr = SocketAddr::new(local_ip().unwrap(), 42069);
 
@@ -53,6 +65,7 @@ impl Plugin for NetworkClientPlugin {
             .init_resource::<CurrentClientMessages>()
             .init_resource::<CurrentClientChunkMessages>()
             .add_system(client_recieve_messages)
+            .add_system(chunk_reciever)
             .add_system(client_ping_test);
     }
 }

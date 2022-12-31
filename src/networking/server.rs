@@ -4,6 +4,7 @@ use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
 };
+
 pub fn create_renet_server() -> RenetServer {
     info!("Starting Bazerite {} server", env!("CARGO_PKG_VERSION"));
     let server_addr = SocketAddr::new(local_ip().unwrap(), 42069);
@@ -11,7 +12,19 @@ pub fn create_renet_server() -> RenetServer {
 
     let socket = UdpSocket::bind(server_addr).unwrap();
     // TODO increase block package queue size from default 8
-    let connection_config = RenetConnectionConfig::default();
+    let connection_config = RenetConnectionConfig {
+        max_packet_size: 32 * 1024,
+        send_channels_config: vec![
+            ChannelConfig::Chunk(ChunkChannelConfig {
+                packet_budget: 30000,
+                message_send_queue_size: 64,
+                ..Default::default()
+            }),
+            ChannelConfig::Reliable(ReliableChannelConfig::default()),
+            ChannelConfig::Unreliable(UnreliableChannelConfig::default()),
+        ],
+        ..Default::default()
+    };
     let server_config =
         ServerConfig::new(64, PROTOCOL_ID, server_addr, ServerAuthentication::Unsecure);
     let current_time = SystemTime::now()
@@ -71,6 +84,8 @@ impl Plugin for NetworkServerPlugin {
             .init_resource::<CurrentServerMessages>()
             .add_system(crate::server_recieve_messages)
             .add_system(server_ping_test)
+            .add_system(request_handler)
+            .add_system(chunk_sender)
             .add_system(server_events);
     }
 }

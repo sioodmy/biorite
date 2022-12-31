@@ -1,5 +1,3 @@
-// use bevy::prelude::StandardMaterial;
-
 use crate::prelude::*;
 
 pub fn render_queue(
