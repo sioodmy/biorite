@@ -22,7 +22,10 @@ pub fn create_renet_client() -> RenetClient {
                 message_send_queue_size: 64,
                 ..Default::default()
             }),
-            ChannelConfig::Reliable(ReliableChannelConfig::default()),
+            ChannelConfig::Reliable(ReliableChannelConfig {
+                message_send_queue_size: 256,
+                ..Default::default()
+            }),
             ChannelConfig::Unreliable(UnreliableChannelConfig::default()),
         ],
         ..Default::default()
