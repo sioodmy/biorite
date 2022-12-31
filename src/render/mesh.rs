@@ -4,7 +4,7 @@ use bevy::render::{
 };
 use block_mesh::{greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer, RIGHT_HANDED_Y_UP_CONFIG};
 
-use crate::{BlockType, *};
+use crate::prelude::*;
 
 pub fn greedy_mesh(
     meshes: &mut Assets<Mesh>,
