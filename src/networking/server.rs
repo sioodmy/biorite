@@ -6,7 +6,7 @@ use std::{
 };
 
 pub fn create_renet_server() -> RenetServer {
-    info!("Starting Bazerite {} server", env!("CARGO_PKG_VERSION"));
+    info!("Starting Biorite {} server", env!("CARGO_PKG_VERSION"));
     let server_addr = SocketAddr::new(local_ip().unwrap(), 42069);
     info!("Creating Server! {:?}", server_addr);
 

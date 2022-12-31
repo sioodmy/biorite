@@ -1,4 +1,4 @@
-use bazerite::*;
+use biorite::*;
 
 fn main() {
     App::new()
@@ -8,7 +8,7 @@ fn main() {
                     window: WindowDescriptor {
                         width: 1280.,
                         height: 720.,
-                        title: format!("Bazerite {}", env!("CARGO_PKG_VERSION")).to_string(),
+                        title: format!("Biorite {}", env!("CARGO_PKG_VERSION")).to_string(),
                         resizable: true,
                         ..Default::default()
                     },

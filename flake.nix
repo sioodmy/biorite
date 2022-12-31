@@ -62,25 +62,25 @@
           src = ./.;
           overrideMain = attrs: {
             fixupPhase = ''
-              wrapProgram $out/bin/bazerite\
+              wrapProgram $out/bin/biorite\
                 --prefix LD_LIBRARY_PATH : ${
                 pkgs.lib.makeLibraryPath runtime-deps
               } \
-                --set CARGO_MANIFEST_DIR $out/share/bazerite
-                mkdir -p $out/share/bazerite
-                cp -a assets $out/share/bazerite
+                --set CARGO_MANIFEST_DIR $out/share/biorite
+                mkdir -p $out/share/biorite
+                cp -a assets $out/share/biorite
             '';
           };
         };
 
-        apps.bazerite = flake-utils.lib.mkApp {drv = defaultPackage;};
-        apps.default = apps.bazerite;
+        apps.biorite = flake-utils.lib.mkApp {drv = defaultPackage;};
+        apps.default = apps.biorite;
 
         # For `nix develop`:
         devShell = with pkgs;
           mkShell {
             RUST_SRC_PATH = rustPlatform.rustLibSrc;
-            RUST_LOG = "info,wgpu_core=warn,wgpu_hal=off,rechannel=warn,bazerite=debug";
+            RUST_LOG = "info,wgpu_core=warn,wgpu_hal=off,rechannel=warn,biorite=debug";
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtime-deps;
             RUST_BACKTRACE = 1;
             buildInputs =

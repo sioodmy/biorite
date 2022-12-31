@@ -1,15 +1,15 @@
 [package]
-name = "bazerite"
+name = "biorite"
 version = "0.1.0"
 edition = "2021"
-default-run = "bazerite"
+default-run = "biorite"
 
 [[bin]]
-name = "bazerite"
+name = "biorite"
 path = "src/bin/client.rs"
 
 [[bin]]
-name = "bazerite-server"
+name = "biorite-server"
 path = "src/bin/server.rs"
 
 [profile.dev]
