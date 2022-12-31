@@ -1,16 +1,16 @@
 [package]
-name = "voxelorite"
+name = "bazerite"
 version = "0.1.0"
 edition = "2021"
-default-run = "voxelorite"
+default-run = "bazerite"
 
 [[bin]]
-name = "voxelorite"
-path = "src/bin/client/main.rs"
+name = "bazerite"
+path = "src/bin/client.rs"
 
 [[bin]]
-name = "voxelorite-server"
-path = "src/bin/server/main.rs"
+name = "bazerite-server"
+path = "src/bin/server.rs"
 
 [profile.dev]
 opt-level = 1

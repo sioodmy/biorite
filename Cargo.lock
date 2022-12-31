@@ -235,6 +235,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
+name = "bazerite"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_atmosphere",
+ "bevy_renet",
+ "bevy_spectator",
+ "bincode",
+ "block-mesh",
+ "jordan4ibanez_perlin_rust",
+ "local-ip-address",
+ "rand",
+ "serde",
+ "serde-big-array",
+ "zstd_util",
+]
+
+[[package]]
 name = "bevy"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3655,25 +3674,6 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
-
-[[package]]
-name = "voxelorite"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_atmosphere",
- "bevy_renet",
- "bevy_spectator",
- "bincode",
- "block-mesh",
- "jordan4ibanez_perlin_rust",
- "local-ip-address",
- "rand",
- "serde",
- "serde-big-array",
- "zstd_util",
-]
 
 [[package]]
 name = "waker-fn"

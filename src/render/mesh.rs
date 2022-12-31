@@ -4,11 +4,7 @@ use bevy::render::{
 };
 use block_mesh::{greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer, RIGHT_HANDED_Y_UP_CONFIG};
 
-use crate::{BlockType, *};
-
-pub fn renderq(mut queue: ResMut<ChunkRenderQueue>) {
-    trace!("{:?}", queue.0);
-}
+use crate::prelude::*;
 
 pub fn greedy_mesh(
     meshes: &mut Assets<Mesh>,
