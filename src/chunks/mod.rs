@@ -3,14 +3,19 @@ pub use block_mesh::ndshape::{ConstShape, ConstShape3u32};
 pub use blocks::*;
 pub use generator::*;
 pub use request::*;
+pub use sender::*;
 pub use serde_big_array::BigArray;
+pub use server::*;
 
 pub mod blocks;
 pub mod generator;
 pub mod request;
+pub mod sender;
+pub mod server;
 
 pub type CompressedChunk = Vec<u8>;
-pub type ChunkShape = ConstShape3u32<18, 18, 18>;
+pub const CHUNK_DIM: u32 = 16;
+pub type ChunkShape = ConstShape3u32<{ CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }>;
 
 use lz4::block::decompress;
 

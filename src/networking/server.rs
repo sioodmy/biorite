@@ -16,8 +16,9 @@ pub fn create_renet_server() -> RenetServer {
         max_packet_size: 32 * 1024,
         send_channels_config: vec![
             ChannelConfig::Chunk(ChunkChannelConfig {
-                packet_budget: 30000,
-                message_send_queue_size: 256,
+                packet_budget: 4096,
+                sent_packet_buffer_size: 1400,
+                message_send_queue_size: 1400,
                 ..Default::default()
             }),
             ChannelConfig::Reliable(ReliableChannelConfig::default()),
@@ -81,10 +82,10 @@ impl Plugin for NetworkServerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(RenetServerPlugin::default())
             .insert_resource(create_renet_client())
+            .insert_resource(get_noise())
             .init_resource::<CurrentServerMessages>()
             .add_system(crate::server_recieve_messages)
             .add_system(server_ping_test)
-            .add_system(chunk_sender)
             .add_system(server_events);
     }
 }

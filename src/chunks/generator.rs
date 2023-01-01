@@ -1,68 +1,77 @@
 use crate::prelude::*;
+use bracket_noise::prelude::*;
+use std::{fs, path::Path};
 
-pub fn chunk_sender(
-    messages: Res<CurrentServerMessages>,
-    mut server: ResMut<RenetServer>,
-    mut queued_requests: Local<Vec<(u64, IVec3)>>,
-) {
-    queued_requests.retain(|(id, position)| {
-        if server.can_send_message(*id, Channel::Chunk.id()) {
-            for (client_id, message) in messages.iter() {
-                debug!("Client {} requested chunk at {:?}", client_id, position);
-                let chunk = chunk_generator(*position).compress();
-                debug!("Packet size {}", chunk.len() * 8);
-                ServerChunkMessage::Chunk(chunk).send(&mut server, *client_id);
-                return false;
-            }
-        }
-        true
-    });
+#[derive(Resource)]
+pub struct NoiseResource(pub FastNoise);
+pub fn get_noise() -> NoiseResource {
+    let mut noise = FastNoise::seeded(2137);
+    noise.set_noise_type(NoiseType::Perlin);
+    noise.set_fractal_octaves(3);
+    noise.set_fractal_gain(0.06);
+    noise.set_fractal_lacunarity(0.25);
+    noise.set_frequency(0.07);
 
-    for message in messages.iter() {
-        if let (id, ClientMessage::RequestChunk(position)) = message {
-            if server.can_send_message(*id, Channel::Chunk.id()) {
-                debug!("Sending Chunk! {}", position);
-                let chunk = chunk_generator(*position).compress();
-                ServerChunkMessage::Chunk(chunk).send(&mut server, *id);
-            } else {
-                queued_requests.push((*id, *position));
-            }
-        }
-    }
+    NoiseResource(noise)
 }
 
-pub fn chunk_generator(position: IVec3) -> Chunk {
-    // placeholder for propper chunk generation
-    let mut blocks: [BlockType; ChunkShape::SIZE as usize] = [AIR; ChunkShape::SIZE as usize];
+pub fn chunk_generator(position: IVec3, noise: &FastNoise) -> Chunk {
+    // TODO: world regions
+    // TODO: async
 
-    // TODO: propper seed handling
+    // Chunk Unit Mechanism format (cum)
 
-    for x in 1..17 {
-        for z in 1..17 {
-            for y in 1..17 {
-                // Global cords
-                let gx = position.x as f32 * 16.0 + x as f32;
-                let gy = position.y as f32 * 16.0 + y as f32;
-                let gz = position.z as f32 * 16.0 + z as f32;
+    let filename = format!("world/{}_{}_{}.cum", position.x, position.y, position.z);
+    let filename = Path::new(&filename);
 
-                let xoffset = ((gx as f64 * 0.2).sin() * 10.0);
-                let zoffset = ((gz as f64 * 0.2).sin() * 10.0);
-                let surface = 5 as f64 + xoffset + zoffset;
-                let i = ChunkShape::linearize([x, y, z]);
-                if gy as f64 > surface {
-                    blocks[i as usize] = AIR;
-                    debug!("air");
-                } else {
-                    debug!("dirt");
-                    blocks[i as usize] = DIRT;
+    if filename.exists() {
+        debug!("Chunk exists, passing from save file");
+        let chunk_bytes = fs::read(filename).expect("Couldnt read chunk data");
+        return Chunk::from_compressed(&chunk_bytes);
+    } else {
+        debug!("Generating new chunk");
+        // placeholder for propper chunk generation
+        let mut blocks: [BlockType; ChunkShape::SIZE as usize] = [AIR; ChunkShape::SIZE as usize];
+
+        // TODO: propper seed handling
+        // TODO: async chunk generation
+
+        let offset = 8.0;
+        let factor = 7.37;
+        let flat: f64 = 5.0;
+
+        /// 16^3 chunk with one block boundary
+        for x in 1..CHUNK_DIM + 1 {
+            for z in 1..CHUNK_DIM + 1 {
+                for y in 1..CHUNK_DIM + 1 {
+                    // Global cords
+                    let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
+                    let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
+                    let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
+
+                    let noise = noise.get_noise(gx as f32, gz as f32) * factor + offset;
+
+                    let surface = flat as f64 + noise as f64;
+                    let i = ChunkShape::linearize([x, y, z]);
+                    if gy as f64 > surface {
+                        blocks[i as usize] = AIR;
+                    } else {
+                        if gy > -10.0 {
+                            blocks[i as usize] = DIRT;
+                        } else {
+                            blocks[i as usize] = STONE;
+                        }
+                    }
                 }
             }
         }
-    }
-
-    Chunk {
-        position,
-        blocks,
-        ..Default::default()
+        let new_chunk = Chunk {
+            position,
+            blocks,
+            ..Default::default()
+        };
+        debug!("Saving chunk");
+        fs::write(filename, new_chunk.compress()).expect("Couldnt write chunk save");
+        new_chunk
     }
 }

@@ -19,7 +19,7 @@ pub fn create_renet_client() -> RenetClient {
         receive_channels_config: vec![
             ChannelConfig::Chunk(ChunkChannelConfig {
                 packet_budget: 30000,
-                message_send_queue_size: 64,
+                message_send_queue_size: 1400,
                 ..Default::default()
             }),
             ChannelConfig::Reliable(ReliableChannelConfig {
