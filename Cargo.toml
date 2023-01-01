@@ -29,6 +29,7 @@ block-mesh = "0.2.0"
 bevy_spectator = "0.1.1"
 bevy_atmosphere = "0.5.0"
 bevy-inspector-egui = "0.15.0"
+bevy_egui = "0.18.0"
 
 # Network stuff
 serde = { version = "1.0", features = [ "derive" ] } 

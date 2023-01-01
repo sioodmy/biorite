@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use bevy::tasks::AsyncComputeTaskPool;
 
 pub fn render_queue(
     mut queue: ResMut<ChunkRenderQueue>,
@@ -16,6 +17,7 @@ pub fn render_queue(
         ..default()
     });
 
+    let mut chunk_meshes = Vec::new();
     for chunk in queue.0.iter_mut() {
         if chunk.loaded {
             trace!("chunk {:?} loaded, skipping", chunk.position);
@@ -25,8 +27,7 @@ pub fn render_queue(
 
         let greedy_mesh = greedy_mesh(&mut meshes, chunk.blocks);
 
-        // spawning chunk
-        commands.spawn(PbrBundle {
+        chunk_meshes.push(PbrBundle {
             mesh: greedy_mesh,
             material: material.clone(),
             transform: Transform::from_xyz(
@@ -38,6 +39,7 @@ pub fn render_queue(
         });
         chunk.loaded = true;
     }
+    commands.spawn_batch(chunk_meshes);
 }
 
 #[derive(Debug, Resource)]

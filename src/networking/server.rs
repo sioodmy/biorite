@@ -16,8 +16,9 @@ pub fn create_renet_server() -> RenetServer {
         max_packet_size: 32 * 1024,
         send_channels_config: vec![
             ChannelConfig::Chunk(ChunkChannelConfig {
-                packet_budget: 30000,
-                message_send_queue_size: 256,
+                packet_budget: 4096,
+                sent_packet_buffer_size: 1400,
+                message_send_queue_size: 1400,
                 ..Default::default()
             }),
             ChannelConfig::Reliable(ReliableChannelConfig::default()),
