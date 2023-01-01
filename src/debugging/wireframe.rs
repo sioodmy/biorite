@@ -1,5 +1,4 @@
 use crate::*;
-use bevy::diagnostic::{Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 use bevy::pbr::wireframe::WireframeConfig;
 use bevy_egui::{
     egui::{self, Rgba, Slider},
