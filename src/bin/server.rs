@@ -10,6 +10,7 @@ fn main() {
         })
         .insert_resource(create_renet_server())
         .add_plugin(NetworkServerPlugin)
+        .add_plugin(ChunkServerPlugin)
         // .insert_resource(create_renet_server())
         .run();
 }

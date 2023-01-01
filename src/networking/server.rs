@@ -81,10 +81,10 @@ impl Plugin for NetworkServerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(RenetServerPlugin::default())
             .insert_resource(create_renet_client())
+            .insert_resource(get_noise())
             .init_resource::<CurrentServerMessages>()
             .add_system(crate::server_recieve_messages)
             .add_system(server_ping_test)
-            .add_system(chunk_sender)
             .add_system(server_events);
     }
 }

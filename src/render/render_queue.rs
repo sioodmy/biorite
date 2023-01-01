@@ -30,9 +30,9 @@ pub fn render_queue(
             mesh: greedy_mesh,
             material: material.clone(),
             transform: Transform::from_xyz(
-                chunk.position.x as f32 * 16.0,
-                chunk.position.y as f32 * 16.0,
-                chunk.position.z as f32 * 16.0,
+                chunk.position.x as f32 * CHUNK_DIM as f32,
+                chunk.position.y as f32 * CHUNK_DIM as f32,
+                chunk.position.z as f32 * CHUNK_DIM as f32,
             ),
             ..Default::default()
         });

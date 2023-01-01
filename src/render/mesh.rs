@@ -18,7 +18,7 @@ pub fn greedy_mesh(
         &voxels,
         &ChunkShape {},
         [0; 3],
-        [17; 3],
+        [CHUNK_DIM + 1; 3],
         &RIGHT_HANDED_Y_UP_CONFIG.faces,
         &mut buffer,
     );
