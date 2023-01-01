@@ -41,7 +41,11 @@ pub fn chunk_generator(position: IVec3, noise: &FastNoise) -> Chunk {
                 if gy as f64 > surface {
                     blocks[i as usize] = AIR;
                 } else {
-                    blocks[i as usize] = DIRT;
+                    if gy > -10.0 {
+                        blocks[i as usize] = DIRT;
+                    } else {
+                        blocks[i as usize] = STONE;
+                    }
                 }
             }
         }
