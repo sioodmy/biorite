@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use bracket_noise::prelude::*;
 
 pub fn chunk_sender(
     messages: Res<CurrentServerMessages>,
@@ -36,6 +37,19 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
     let mut blocks: [BlockType; ChunkShape::SIZE as usize] = [AIR; ChunkShape::SIZE as usize];
 
     // TODO: propper seed handling
+    // TODO: async chunk generation
+
+    info!("Generating chunk {:?}", &position);
+    let mut noise = FastNoise::seeded(2137);
+    noise.set_noise_type(NoiseType::Perlin);
+    noise.set_fractal_octaves(3);
+    noise.set_fractal_gain(0.06);
+    noise.set_fractal_lacunarity(0.25);
+    noise.set_frequency(0.07);
+
+    let offset = 8.0;
+    let factor = 7.37;
+    let flat: f64 = 5.0;
 
     for x in 1..17 {
         for z in 1..17 {
@@ -45,15 +59,13 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
                 let gy = position.y as f32 * 16.0 + y as f32;
                 let gz = position.z as f32 * 16.0 + z as f32;
 
-                let xoffset = ((gx as f64 * 0.2).sin() * 10.0);
-                let zoffset = ((gz as f64 * 0.2).sin() * 10.0);
-                let surface = 5 as f64 + xoffset + zoffset;
+                let noise = noise.get_noise(gx as f32, gz as f32) * factor + offset;
+
+                let surface = flat as f64 + noise as f64;
                 let i = ChunkShape::linearize([x, y, z]);
                 if gy as f64 > surface {
                     blocks[i as usize] = AIR;
-                    debug!("air");
                 } else {
-                    debug!("dirt");
                     blocks[i as usize] = DIRT;
                 }
             }
