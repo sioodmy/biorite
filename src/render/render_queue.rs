@@ -6,6 +6,7 @@ pub fn render_queue(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut renderd: ResMut<RenderDistance>,
     asset_server: Res<AssetServer>,
 ) {
     let texture_handle = asset_server.load("textures/stone.png");
@@ -17,17 +18,15 @@ pub fn render_queue(
         ..default()
     });
 
-    let mut chunk_meshes = Vec::new();
     for chunk in queue.0.iter_mut() {
         if chunk.loaded {
-            trace!("chunk {:?} loaded, skipping", chunk.position);
             continue;
         }
         debug!("loading chunk {:?}", chunk.position);
 
         let greedy_mesh = greedy_mesh(&mut meshes, chunk.blocks);
 
-        chunk_meshes.push(PbrBundle {
+        commands.spawn(PbrBundle {
             mesh: greedy_mesh,
             material: material.clone(),
             transform: Transform::from_xyz(
@@ -37,9 +36,10 @@ pub fn render_queue(
             ),
             ..Default::default()
         });
+
         chunk.loaded = true;
+        renderd.0.insert(chunk.position, true);
     }
-    commands.spawn_batch(chunk_meshes);
 }
 
 #[derive(Debug, Resource)]

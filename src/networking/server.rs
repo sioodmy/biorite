@@ -14,15 +14,13 @@ pub fn create_renet_server() -> RenetServer {
     // TODO increase block package queue size from default 8
     let connection_config = RenetConnectionConfig {
         max_packet_size: 32 * 1024,
-        send_channels_config: vec![
-            ChannelConfig::Chunk(ChunkChannelConfig {
-                packet_budget: 4096,
-                sent_packet_buffer_size: 1400,
-                message_send_queue_size: 1400,
+        receive_channels_config: vec![
+            ChannelConfig::Unreliable(UnreliableChannelConfig::default()),
+            ChannelConfig::Reliable(ReliableChannelConfig {
+                packet_budget: 30000,
+                max_message_size: 7000,
                 ..Default::default()
             }),
-            ChannelConfig::Reliable(ReliableChannelConfig::default()),
-            ChannelConfig::Unreliable(UnreliableChannelConfig::default()),
         ],
         ..Default::default()
     };

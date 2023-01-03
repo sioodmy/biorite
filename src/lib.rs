@@ -9,4 +9,7 @@ mod networking;
 pub mod prelude;
 mod render;
 
+/// For now its hardcoded, might change in future
+pub const RENDER_DISTANCE: i16 = 5;
+
 pub const PROTOCOL_ID: u64 = 1000;

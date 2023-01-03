@@ -3,6 +3,9 @@ use std::f32::consts;
 
 use crate::*;
 
+#[derive(Component)]
+pub struct Player;
+
 pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera3dBundle {
@@ -15,6 +18,7 @@ pub fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         AtmosphereCamera::default(),
+        Player,
         Spectator,
     ));
 }

@@ -40,13 +40,17 @@ impl Channel {
 
 #[derive(Debug, Serialize, Deserialize, Resource)]
 pub enum ServerChunkMessage {
+    /// Single chunk
     Chunk(CompressedChunk),
+    /// Multiple chunks when, for example spawn chunks
+    ChunkBatch(Vec<CompressedChunk>),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ClientMessage {
     Ping,
     RequestChunk(IVec3),
+    RequestChunkBatch(Vec<IVec3>),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -102,7 +106,6 @@ pub fn client_recieve_messages(
     }
     while let Some(message) = client.receive_message(Channel::Chunk.id()) {
         let server_message = bincode::deserialize(&message).unwrap();
-        debug!("Got new chunk message");
         chunk_messages.push(server_message);
     }
 }

@@ -16,14 +16,10 @@ pub fn create_renet_client() -> RenetClient {
 
     let connection_config = RenetConnectionConfig {
         max_packet_size: 32 * 1024,
-        receive_channels_config: vec![
-            ChannelConfig::Chunk(ChunkChannelConfig {
-                packet_budget: 30000,
-                message_send_queue_size: 1400,
-                ..Default::default()
-            }),
+        send_channels_config: vec![
             ChannelConfig::Reliable(ReliableChannelConfig {
-                message_send_queue_size: 256,
+                packet_budget: 30000,
+                max_message_size: 8 * 1024,
                 ..Default::default()
             }),
             ChannelConfig::Unreliable(UnreliableChannelConfig::default()),
@@ -69,6 +65,7 @@ impl Plugin for NetworkClientPlugin {
             .init_resource::<CurrentClientChunkMessages>()
             .add_system(client_recieve_messages)
             .add_system(chunk_reciever)
+            .add_system(new_chunks)
             .add_system(client_ping_test);
     }
 }

@@ -1,4 +1,5 @@
 pub use crate::prelude::*;
+use bevy::utils::HashMap;
 pub use bevy_atmosphere::prelude::*;
 pub use bevy_spectator::SpectatorPlugin;
 
@@ -21,6 +22,7 @@ impl Plugin for RenderClientPlugin {
             .add_plugin(RenderQueuePlugin)
             .add_plugin(SpectatorPlugin)
             .insert_resource(Msaa { samples: 4 })
+            .insert_resource(RenderDistance(HashMap::new()))
             .insert_resource(ChunkRenderQueue(vec![Chunk::default()]));
     }
 }
