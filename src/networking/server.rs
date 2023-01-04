@@ -1,9 +1,16 @@
 use crate::prelude::*;
+use bevy::utils::HashMap;
 use local_ip_address::local_ip;
 use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
 };
+
+/// Resource that tracks each player's position
+#[derive(Debug, Default, Resource)]
+pub struct ServerLobby {
+    pub players: HashMap<u64, Entity>,
+}
 
 pub fn create_renet_server() -> RenetServer {
     info!("Starting Biorite {} server", env!("CARGO_PKG_VERSION"));
@@ -30,20 +37,6 @@ pub fn create_renet_server() -> RenetServer {
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap();
     RenetServer::new(current_time, server_config, connection_config, socket).unwrap()
-}
-
-pub fn server_connection(mut server_events: EventReader<ServerEvent>) {
-    for event in server_events.iter() {
-        match event {
-            ServerEvent::ClientConnected(id, _) => {
-                // visualizer.add_client(*id);
-                info!("Connected {}!", id)
-            }
-            ServerEvent::ClientDisconnected(id) => {
-                info!("Disconnected {}!", id)
-            }
-        }
-    }
 }
 
 fn server_events(mut events: EventReader<ServerEvent>) {
