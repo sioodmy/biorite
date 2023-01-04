@@ -69,9 +69,15 @@ impl ServerChunkMessage {
 impl ServerMessage {
     pub fn send(&self, server: &mut RenetServer, id: u64) {
         let message = bincode::serialize(self).unwrap();
-        match self {
-            ServerMessage::Pong(_) => server.send_message(id, Channel::Reliable.id(), message),
-        }
+        server.send_message(id, Channel::Reliable.id(), message);
+    }
+    pub fn broadcast(&self, server: &mut RenetServer) {
+        let message = bincode::serialize(self).unwrap();
+        server.broadcast_message(Channel::Reliable.id(), message);
+    }
+    pub fn broadcast_except(&self, server: &mut RenetServer, id: u64) {
+        let message = bincode::serialize(self).unwrap();
+        server.broadcast_message_except(id, Channel::Reliable.id(), message);
     }
 }
 
