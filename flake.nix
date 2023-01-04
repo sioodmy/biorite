@@ -88,7 +88,6 @@
                 toolchain
                 rustc
                 cargo
-                clippy
                 rustfmt
                 rust-analyzer
               ]
