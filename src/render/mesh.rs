@@ -52,7 +52,7 @@ pub fn greedy_mesh(
                     let voxel = voxels[i as usize];
                     match voxel.0 {
                         0 => unreachable!(),
-                        1 => [0.2, 0.8, 0.2, 1.0],
+                        2 => [0.2, 0.8, 0.2, 1.0],
                         _ => [0.5, 0.5, 0.5, 1.0],
                     }
                 })

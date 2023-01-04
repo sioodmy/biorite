@@ -10,7 +10,7 @@ pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera3dBundle {
             projection: bevy::render::camera::Projection::Perspective(PerspectiveProjection {
-                fov: consts::PI / 2.,
+                fov: consts::PI / 2.3,
                 far: 2048.0,
                 ..Default::default()
             }),

@@ -8,7 +8,10 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
 
     // Chunk Unit Mechanism format (cum)
 
-    let filename = format!("world/{}_{}_{}.cum", position.x, position.y, position.z);
+    let filename = format!(
+        "world/chunks/{}_{}_{}.cum",
+        position.x, position.y, position.z
+    );
     let filename = Path::new(&filename);
 
     if filename.exists() {
