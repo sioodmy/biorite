@@ -11,7 +11,8 @@ pub fn spawn_camera(mut commands: Commands) {
         Camera3dBundle {
             projection: bevy::render::camera::Projection::Perspective(PerspectiveProjection {
                 fov: consts::PI / 2.3,
-                far: RENDER_DISTANCE * 2,
+                // Render distance - 1
+                far: RENDER_DISTANCE as f32 * 2.0 * 16.0 - RENDER_DISTANCE as f32 / 2.0,
                 ..Default::default()
             }),
             transform: Transform::from_xyz(1.0, 0.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
