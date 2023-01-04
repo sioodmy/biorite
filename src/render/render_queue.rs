@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use bevy::tasks::AsyncComputeTaskPool;
 
 pub fn render_queue(
     mut queue: ResMut<ChunkRenderQueue>,

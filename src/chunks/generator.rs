@@ -2,20 +2,7 @@ use crate::prelude::*;
 use bracket_noise::prelude::*;
 use std::{fs, path::Path};
 
-#[derive(Resource)]
-pub struct NoiseResource(pub FastNoise);
-pub fn get_noise() -> NoiseResource {
-    let mut noise = FastNoise::seeded(2137);
-    noise.set_noise_type(NoiseType::Perlin);
-    noise.set_fractal_octaves(3);
-    noise.set_fractal_gain(0.06);
-    noise.set_fractal_lacunarity(0.25);
-    noise.set_frequency(0.07);
-
-    NoiseResource(noise)
-}
-
-pub fn chunk_generator(position: IVec3, noise: &FastNoise) -> Chunk {
+pub fn chunk_generator(position: IVec3) -> Chunk {
     // TODO: world regions
     // TODO: async
 
@@ -30,6 +17,12 @@ pub fn chunk_generator(position: IVec3, noise: &FastNoise) -> Chunk {
         return Chunk::from_compressed(&chunk_bytes);
     } else {
         debug!("Generating new chunk");
+        let mut noise = FastNoise::seeded(2137);
+        noise.set_noise_type(NoiseType::Perlin);
+        noise.set_fractal_octaves(3);
+        noise.set_fractal_gain(0.06);
+        noise.set_fractal_lacunarity(0.25);
+        noise.set_frequency(0.07);
         // placeholder for propper chunk generation
         let mut blocks: [BlockType; ChunkShape::SIZE as usize] = [AIR; ChunkShape::SIZE as usize];
 
@@ -40,7 +33,7 @@ pub fn chunk_generator(position: IVec3, noise: &FastNoise) -> Chunk {
         let factor = 7.37;
         let flat: f64 = 5.0;
 
-        /// 16^3 chunk with one block boundary
+        // 16^3 chunk with one block boundary
         for x in 1..CHUNK_DIM + 1 {
             for z in 1..CHUNK_DIM + 1 {
                 for y in 1..CHUNK_DIM + 1 {

@@ -1,6 +1,5 @@
 use bevy::utils::FloatOrd;
 use bevy::utils::HashMap;
-use rayon::prelude::*;
 
 use crate::prelude::*;
 
@@ -9,11 +8,11 @@ use crate::prelude::*;
 pub struct RenderDistance(pub HashMap<IVec3, bool>);
 
 pub fn new_chunks(
-    mut q: Query<(&Player, &mut Transform)>,
     mut client: ResMut<RenetClient>,
-    mut renderd: ResMut<RenderDistance>,
+    renderd: ResMut<RenderDistance>,
+    q: Query<(&Player, &mut Transform)>,
 ) {
-    for (player, t) in q.iter() {
+    for (_player, t) in q.iter() {
         debug!("{:?}", (t.translation.x / 16.0).round());
         let x = (t.translation.x / 16.0).round() as i32;
         let y = (t.translation.y / 16.0).round() as i32;
@@ -35,7 +34,7 @@ pub fn new_chunks(
         }
     }
 }
-pub fn request_spawn_chunks(mut client: ResMut<RenetClient>, mut renderd: ResMut<RenderDistance>) {
+pub fn request_spawn_chunks(mut client: ResMut<RenetClient>, renderd: ResMut<RenderDistance>) {
     let mut request = Vec::default();
     for x in -RENDER_DISTANCE..=RENDER_DISTANCE {
         for y in -RENDER_DISTANCE..=RENDER_DISTANCE {
@@ -87,10 +86,9 @@ pub fn chunk_reciever(
 }
 
 pub fn chunk_test(
-    mut client: ResMut<RenetClient>,
-    mut renderd: ResMut<RenderDistance>,
+    client: ResMut<RenetClient>,
+    renderd: ResMut<RenderDistance>,
     keyboard: Res<Input<KeyCode>>,
-    messages: Res<CurrentClientMessages>,
 ) {
     if keyboard.just_pressed(KeyCode::Z) {
         info!("Requesting chunks");

@@ -1,9 +1,6 @@
 use crate::*;
 use bevy::pbr::wireframe::WireframeConfig;
-use bevy_egui::{
-    egui::{self, Rgba, Slider},
-    EguiContext,
-};
+use bevy_egui::{egui, EguiContext};
 
 pub fn wireframe(mut wireframe_config: ResMut<WireframeConfig>, keyboard: Res<Input<KeyCode>>) {
     if keyboard.just_pressed(KeyCode::F3) {

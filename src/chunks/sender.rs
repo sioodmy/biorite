@@ -1,18 +1,15 @@
 use crate::prelude::*;
-use bevy::tasks::{AsyncComputeTaskPool, Task};
 
 pub fn chunk_sender(
     messages: Res<CurrentServerMessages>,
     mut server: ResMut<RenetServer>,
     mut queued_requests: Local<Vec<(u64, IVec3)>>,
-    mut queued_batch_requests: Local<Vec<(u64, IVec3)>>,
-    mut noise: ResMut<NoiseResource>,
 ) {
     queued_requests.retain(|(id, position)| {
         if server.can_send_message(*id, Channel::Chunk.id()) {
-            for (client_id, message) in messages.iter() {
+            for (client_id, _message) in messages.iter() {
                 debug!("Sending from queue");
-                let chunk = chunk_generator(*position, &noise.0).compress();
+                let chunk = chunk_generator(*position).compress();
                 debug!("Packet size {}", chunk.len() * 8);
                 ServerChunkMessage::Chunk(chunk).send(&mut server, *client_id);
                 return false;
@@ -25,7 +22,7 @@ pub fn chunk_sender(
         if let (id, ClientMessage::RequestChunk(position)) = message {
             if server.can_send_message(*id, Channel::Chunk.id()) {
                 debug!("Sending Chunk! {}", position);
-                let chunk = chunk_generator(*position, &noise.0).compress();
+                let chunk = chunk_generator(*position).compress();
                 ServerChunkMessage::Chunk(chunk).send(&mut server, *id);
             } else {
                 queued_requests.push((*id, *position));
@@ -36,7 +33,7 @@ pub fn chunk_sender(
                 debug!("Sending Chunk Batch! {:?}", positions);
                 let mut chunks = Vec::new();
                 positions.iter().for_each(|pos| {
-                    chunks.push(chunk_generator(*pos, &noise.0).compress());
+                    chunks.push(chunk_generator(*pos).compress());
                 });
                 ServerChunkMessage::ChunkBatch(chunks).send(&mut server, *id);
             } else {
