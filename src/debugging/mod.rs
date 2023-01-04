@@ -1,5 +1,8 @@
-pub use bevy::diagnostic::{Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
-pub use bevy::{pbr::wireframe::WireframePlugin, prelude::*};
+pub use bevy::{
+    diagnostic::{Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin},
+    pbr::wireframe::WireframePlugin,
+    prelude::*,
+};
 pub use bevy_egui::EguiPlugin;
 pub use bevy_inspector_egui::WorldInspectorPlugin;
 pub use wireframe::*;

@@ -1,5 +1,4 @@
-use bevy::utils::FloatOrd;
-use bevy::utils::HashMap;
+use bevy::utils::{FloatOrd, HashMap};
 
 use crate::prelude::*;
 
