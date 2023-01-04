@@ -63,6 +63,11 @@ impl Plugin for NetworkClientPlugin {
         app.insert_resource(create_renet_client())
             .init_resource::<CurrentClientMessages>()
             .init_resource::<CurrentClientChunkMessages>()
+            .insert_resource(CurrentLocalPlayerChunk {
+                chunk_min: IVec3::ZERO.into(),
+                world_pos: IVec3::ZERO,
+            })
+            .add_system(update_player_pos)
             .add_system(client_recieve_messages)
             .add_system(chunk_reciever)
             .add_system(new_chunks)

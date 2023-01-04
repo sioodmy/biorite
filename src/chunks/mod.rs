@@ -2,6 +2,7 @@ use crate::prelude::*;
 pub use block_mesh::ndshape::{ConstShape, ConstShape3u32};
 pub use blocks::*;
 pub use generator::*;
+pub use pos::*;
 pub use request::*;
 pub use sender::*;
 pub use serde_big_array::BigArray;
@@ -9,6 +10,7 @@ pub use server::*;
 
 pub mod blocks;
 pub mod generator;
+pub mod pos;
 pub mod request;
 pub mod sender;
 pub mod server;

@@ -12,7 +12,6 @@ pub fn new_chunks(
     q: Query<(&Player, &mut Transform)>,
 ) {
     for (_player, t) in q.iter() {
-        debug!("{:?}", (t.translation.x / 16.0).round());
         let x = (t.translation.x / 16.0).round() as i32;
         let y = (t.translation.y / 16.0).round() as i32;
         let z = (t.translation.z / 16.0).round() as i32;

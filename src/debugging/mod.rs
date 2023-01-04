@@ -5,8 +5,10 @@ pub use bevy::{
 };
 pub use bevy_egui::EguiPlugin;
 pub use bevy_inspector_egui::WorldInspectorPlugin;
+pub use ui::*;
 pub use wireframe::*;
 
+pub mod ui;
 pub mod wireframe;
 
 pub struct DebugPlugin;

@@ -1029,6 +1029,7 @@ dependencies = [
  "futures-lite",
  "interpolation",
  "jordan4ibanez_perlin_rust",
+ "lazy_static",
  "local-ip-address",
  "lz4",
  "public-ip",

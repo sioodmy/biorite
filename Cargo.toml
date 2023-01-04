@@ -50,3 +50,5 @@ bracket-noise = "0.8.7"
 jordan4ibanez_perlin_rust = "0.0.1"
 simple-simplex = "1.0.3"
 interpolation = "0.2.0"
+
+lazy_static = "1.4.0"
