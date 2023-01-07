@@ -214,7 +214,7 @@ impl Plugin for NetworkClientPlugin {
             .init_resource::<CurrentClientMessages>()
             .init_resource::<CurrentClientChunkMessages>()
             .insert_resource(CurrentLocalPlayerChunk {
-                chunk_min: IVec3::ZERO.into(),
+                chunk_min: IVec3::ZERO,
                 world_pos: IVec3::ZERO,
             })
             .insert_resource(PlayerInput::default())

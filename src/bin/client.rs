@@ -8,8 +8,7 @@ fn main() {
                     window: WindowDescriptor {
                         width: 1280.,
                         height: 720.,
-                        title: format!("Biorite {}", env!("CARGO_PKG_VERSION"))
-                            .to_string(),
+                        title: format!("Biorite {}", env!("CARGO_PKG_VERSION")),
                         resizable: true,
                         ..Default::default()
                     },

@@ -19,8 +19,8 @@ pub fn update_player_pos(
 
         chunk_pos.world_pos = player_coords;
 
-        if chunk_pos.chunk_min != nearest_chunk_origin.into() {
-            chunk_pos.chunk_min = nearest_chunk_origin.into();
+        if chunk_pos.chunk_min != nearest_chunk_origin {
+            chunk_pos.chunk_min = nearest_chunk_origin;
         }
     }
 }

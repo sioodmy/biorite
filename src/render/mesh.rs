@@ -52,8 +52,7 @@ pub fn greedy_mesh(
             let face_colors: Vec<_> = face_positions
                 .iter()
                 .map(|_| {
-                    let i =
-                        ChunkShape::linearize(quad.minimum.map(|v| v).into());
+                    let i = ChunkShape::linearize(quad.minimum.map(|v| v));
                     let voxel = voxels[i as usize];
                     match voxel.0 {
                         0 => unreachable!(),
