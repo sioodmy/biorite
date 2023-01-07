@@ -61,10 +61,10 @@ fn server_events(
                 info!("Connected {}!", id);
                 let player_entity = commands
                     .spawn(PbrBundle {
-                        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                        mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                         material: materials
-                            .add(Color::rgb(0.8, 0.7, 0.6).into()),
-                        transform: Transform::from_xyz(0.0, 5.0, 0.0),
+                            .add(Color::rgb(0.8, 0.20, 0.6).into()),
+                        transform: Transform::from_xyz(0.0, 29.0, 0.0),
                         ..Default::default()
                     })
                     .insert(PlayerInput::default())
@@ -136,7 +136,8 @@ fn move_players_system(
         transform.translation.z +=
             input.sideways * PLAYER_SPEED * time.delta().as_secs_f32();
         if input.jumping {
-            transform.translation.y += 1.0 * time.delta().as_secs_f32();
+            debug!("{:?} {:?}", transform.translation, input.jumping);
+            transform.translation.y += 1.0;
         }
     }
 }

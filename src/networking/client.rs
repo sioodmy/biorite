@@ -74,9 +74,9 @@ pub fn entity_spawn(
             info!("Player {} joined the game", id);
             let player_entity = commands
                 .spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                    material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                    transform: Transform::from_xyz(3.0, 5.0, 3.0),
+                    mesh: meshes.add(Mesh::from(shape::Capsule::default())),
+                    material: materials.add(Color::rgb(0.8, 0.20, 0.6).into()),
+                    transform: Transform::from_xyz(0.0, 29.0, 0.0),
                     ..Default::default()
                 })
                 .id();
@@ -94,10 +94,10 @@ pub fn entity_spawn(
             for id in player_ids.iter() {
                 let player_entity = commands
                     .spawn(PbrBundle {
-                        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                        mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                         material: materials
-                            .add(Color::rgb(0.8, 0.7, 0.6).into()),
-                        transform: Transform::from_xyz(3.0, 0.5, 3.0),
+                            .add(Color::rgb(0.8, 0.20, 0.6).into()),
+                        transform: Transform::from_xyz(3.0, 29.0, 3.0),
                         ..Default::default()
                     })
                     .id();
@@ -139,7 +139,7 @@ pub fn update_camera_system(
     for (_, player_pos) in &players {
         for (_, mut camera_pos) in &mut cameras {
             *camera_pos = Transform::from_translation(
-                player_pos.translation + Vec3::new(10.0, 30.0, 20.0),
+                player_pos.translation + Vec3::new(10.0, 10.0, 10.0),
             )
             .looking_at(player_pos.translation, Vec3::Y);
         }
@@ -221,13 +221,15 @@ impl Plugin for NetworkClientPlugin {
             .insert_resource(Lobby::default())
             .add_system(update_player_pos)
             .add_plugin(LookTransformPlugin)
-            .add_system(client_send_input)
+            .add_system(
+                client_send_input.with_run_criteria(run_if_client_connected),
+            )
             .add_system(update_camera_system)
             .add_system(client_recieve_messages)
             .add_system(entity_spawn)
             // .add_system(chunk_reciever)
-            .add_system(player_input)
-            .add_system(entity_sync)
+            .add_system(player_input.with_run_criteria(run_if_client_connected))
+            .add_system(entity_sync.with_run_criteria(run_if_client_connected))
             // .add_system(new_chunks)
             .add_system(client_ping_test);
     }
