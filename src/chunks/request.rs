@@ -9,7 +9,7 @@ pub struct RenderDistance(pub HashMap<IVec3, bool>);
 pub fn new_chunks(
     mut client: ResMut<RenetClient>,
     renderd: ResMut<RenderDistance>,
-    q: Query<(&Player, &mut Transform)>,
+    q: Query<(&Camera, &mut Transform)>,
 ) {
     for (_player, t) in q.iter() {
         let x = (t.translation.x / 16.0).round() as i32;
@@ -32,13 +32,19 @@ pub fn new_chunks(
         }
     }
 }
-pub fn request_spawn_chunks(mut client: ResMut<RenetClient>, renderd: ResMut<RenderDistance>) {
+pub fn request_spawn_chunks(
+    mut client: ResMut<RenetClient>,
+    renderd: ResMut<RenderDistance>,
+) {
     let mut request = Vec::default();
     for x in -RENDER_DISTANCE..=RENDER_DISTANCE {
         for y in -RENDER_DISTANCE..=RENDER_DISTANCE {
             for z in -RENDER_DISTANCE..=RENDER_DISTANCE {
                 if x * x + y * y + z * z <= RENDER_DISTANCE * RENDER_DISTANCE {
-                    match renderd.0.get(&IVec3::new(x as i32, y as i32, z as i32)) {
+                    match renderd
+                        .0
+                        .get(&IVec3::new(x as i32, y as i32, z as i32))
+                    {
                         Some(is_loaded) => {
                             if *is_loaded {
                                 debug!("Chunk loaded, skipping");
@@ -55,7 +61,8 @@ pub fn request_spawn_chunks(mut client: ResMut<RenetClient>, renderd: ResMut<Ren
         }
     }
 
-    request.sort_by_key(|pos| FloatOrd(Vec3::distance(Vec3::ZERO, pos.as_vec3())));
+    request
+        .sort_by_key(|pos| FloatOrd(Vec3::distance(Vec3::ZERO, pos.as_vec3())));
 
     if client.can_send_message(Channel::Reliable.id()) {
         info!("Requesting Chunk Batch {:?}", request);

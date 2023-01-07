@@ -22,7 +22,7 @@
           inherit system;
         };
 
-        toolchain = fenix.packages.${system}.latest.toolchain;
+        toolchain = fenix.packages.${system}.complete.toolchain;
 
         naersk' = naersk.lib.${system}.override {
           cargo = toolchain;
