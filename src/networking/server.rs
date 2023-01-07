@@ -64,7 +64,7 @@ fn server_events(
                         mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                         material: materials
                             .add(Color::rgb(0.8, 0.7, 0.6).into()),
-                        transform: Transform::from_xyz(0.0, 0.5, 0.0),
+                        transform: Transform::from_xyz(0.0, 5.0, 0.0),
                         ..Default::default()
                     })
                     .insert(PlayerInput::default())
@@ -81,6 +81,7 @@ fn server_events(
                 }
                 ServerChunkMessage::Init { player_ids }.send(&mut server, *id);
                 lobby.players.insert(*id, player_entity);
+                lobby.sent_chunks.insert(*id, Vec::new());
                 ServerMessage::PlayerSpawn(*id).broadcast(&mut server);
             }
             ServerEvent::ClientDisconnected(id) => {
@@ -134,6 +135,9 @@ fn move_players_system(
             input.forward * PLAYER_SPEED * time.delta().as_secs_f32();
         transform.translation.z +=
             input.sideways * PLAYER_SPEED * time.delta().as_secs_f32();
+        if input.jumping {
+            transform.translation.y += 1.0 * time.delta().as_secs_f32();
+        }
     }
 }
 

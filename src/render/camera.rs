@@ -13,7 +13,7 @@ pub fn spawn_camera(mut commands: Commands) {
                 PerspectiveProjection {
                     fov: consts::PI / 2.3,
                     // Render distance - 1
-                    far: RENDER_DISTANCE as f32 * 2.0 * 16.0
+                    far: RENDER_DISTANCE as f32 * 2.0 * 64.0
                         - RENDER_DISTANCE as f32 / 2.0,
                     ..Default::default()
                 },

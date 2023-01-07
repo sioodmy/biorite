@@ -4,6 +4,8 @@ pub use bevy_renet::{renet::*, *};
 pub use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Component)]
+pub struct ControlledPlayer;
+#[derive(Debug, Component)]
 pub struct Player {
     pub id: u64,
 }
@@ -11,6 +13,7 @@ pub struct Player {
 #[derive(Debug, Default, Resource)]
 pub struct Lobby {
     pub players: HashMap<u64, Entity>,
+    pub sent_chunks: HashMap<u64, Vec<IVec3>>,
 }
 
 // https://wiki.vg/Protocol#Player_Input
@@ -20,6 +23,8 @@ pub struct Lobby {
 pub struct PlayerInput {
     pub forward: f32,
     pub sideways: f32,
+    pub jumping: bool,
+    pub sneaking: bool,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ServerInfo {
@@ -72,8 +77,6 @@ pub enum ServerChunkMessage {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ClientMessage {
     Ping,
-    RequestChunk(IVec3),
-    RequestChunkBatch(Vec<IVec3>),
     PlayerInput(PlayerInput),
 }
 

@@ -76,10 +76,14 @@ pub fn entity_spawn(
                 .spawn(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                     material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                    transform: Transform::from_xyz(3.0, 0.5, 3.0),
+                    transform: Transform::from_xyz(3.0, 5.0, 3.0),
                     ..Default::default()
                 })
                 .id();
+
+            if *id == client.client_id() {
+                commands.entity(player_entity).insert(ControlledPlayer);
+            }
 
             lobby.players.insert(*id, player_entity);
         }
@@ -109,6 +113,7 @@ pub fn entity_sync(
     mut lobby: ResMut<Lobby>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
+    mut query: Query<(&Camera, &Transform)>,
     messages: Res<CurrentClientMessages>,
 ) {
     for message in messages.iter() {
@@ -123,6 +128,20 @@ pub fn entity_sync(
                     commands.entity(*player_entity).insert(transform);
                 }
             }
+        }
+    }
+}
+
+pub fn update_camera_system(
+    players: Query<(&ControlledPlayer, &Transform)>,
+    mut cameras: Query<(&Camera, &mut Transform), Without<ControlledPlayer>>,
+) {
+    for (_, player_pos) in &players {
+        for (_, mut camera_pos) in &mut cameras {
+            *camera_pos = Transform::from_translation(
+                player_pos.translation + Vec3::new(10.0, 30.0, 20.0),
+            )
+            .looking_at(player_pos.translation, Vec3::Y);
         }
     }
 }
@@ -162,6 +181,8 @@ fn player_input(
         let vec = ((f * axis_h) + (l * axis_v)).normalize_or_zero();
         player_input.forward = vec.x;
         player_input.sideways = vec.z;
+        player_input.jumping = input.just_pressed(KeyCode::Space);
+        player_input.sneaking = input.pressed(KeyCode::LShift);
     }
 }
 
@@ -170,13 +191,15 @@ fn client_send_input(
     mut is_moving: Local<bool>,
     mut client: ResMut<RenetClient>,
 ) {
-    if player_input.forward != 0.0 && player_input.sideways != 0.0 {
+    if player_input.forward != 0.0 && player_input.sideways != 0.0
+        || player_input.jumping
+    {
         ClientMessage::PlayerInput(*player_input).send(&mut client);
         *is_moving = true;
         debug!("sending movement moving: {:?}", is_moving);
     } else {
         // no need to send empty inputs multiple times
-        if *is_moving == true {
+        if *is_moving {
             ClientMessage::PlayerInput(*player_input).send(&mut client);
             *is_moving = false;
             debug!("sending stop signal");
@@ -199,6 +222,7 @@ impl Plugin for NetworkClientPlugin {
             .add_system(update_player_pos)
             .add_plugin(LookTransformPlugin)
             .add_system(client_send_input)
+            .add_system(update_camera_system)
             .add_system(client_recieve_messages)
             .add_system(entity_spawn)
             // .add_system(chunk_reciever)
