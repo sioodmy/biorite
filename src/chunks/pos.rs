@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
-/// Resource storing the current chunk the player is in as well as its current coords.
+/// Resource storing the current chunk the player is in as well as its current
+/// coords.
 #[derive(Resource)]
 pub struct CurrentLocalPlayerChunk {
     pub chunk_min: IVec3,

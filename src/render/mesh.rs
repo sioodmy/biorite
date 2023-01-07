@@ -2,7 +2,10 @@ use bevy::render::{
     mesh::{Indices, VertexAttributeValues},
     render_resource::PrimitiveTopology,
 };
-use block_mesh::{greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer, RIGHT_HANDED_Y_UP_CONFIG};
+use block_mesh::{
+    greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer,
+    RIGHT_HANDED_Y_UP_CONFIG,
+};
 
 use crate::prelude::*;
 
@@ -41,14 +44,16 @@ pub fn greedy_mesh(
 
     let mut colors = Vec::with_capacity(num_vertices);
 
-    for (group, face) in buffer.quads.groups.into_iter().zip(faces.into_iter()) {
+    for (group, face) in buffer.quads.groups.into_iter().zip(faces.into_iter())
+    {
         for quad in group.into_iter() {
             let _face_indices = face.quad_mesh_indices(positions.len() as u32);
             let face_positions = face.quad_mesh_positions(&quad, 1.0);
             let face_colors: Vec<_> = face_positions
                 .iter()
                 .map(|_| {
-                    let i = ChunkShape::linearize(quad.minimum.map(|v| v).into());
+                    let i =
+                        ChunkShape::linearize(quad.minimum.map(|v| v).into());
                     let voxel = voxels[i as usize];
                     match voxel.0 {
                         0 => unreachable!(),
@@ -58,7 +63,9 @@ pub fn greedy_mesh(
                 })
                 .collect();
 
-            indices.extend_from_slice(&face.quad_mesh_indices(positions.len() as u32));
+            indices.extend_from_slice(
+                &face.quad_mesh_indices(positions.len() as u32),
+            );
 
             positions.extend_from_slice(&face.quad_mesh_positions(&quad, 1.0));
             colors.extend_from_slice(&face_colors);

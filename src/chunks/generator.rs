@@ -27,7 +27,8 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
         noise.set_fractal_lacunarity(0.25);
         noise.set_frequency(0.07);
         // placeholder for propper chunk generation
-        let mut blocks: [BlockType; ChunkShape::SIZE as usize] = [AIR; ChunkShape::SIZE as usize];
+        let mut blocks: [BlockType; ChunkShape::SIZE as usize] =
+            [AIR; ChunkShape::SIZE as usize];
 
         // TODO: propper seed handling
         // TODO: async chunk generation
@@ -45,7 +46,8 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
                     let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
                     let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
 
-                    let noise = noise.get_noise(gx as f32, gz as f32) * factor + offset;
+                    let noise =
+                        noise.get_noise(gx as f32, gz as f32) * factor + offset;
 
                     let surface = flat as f64 + noise as f64;
                     let i = ChunkShape::linearize([x, y, z]);
@@ -67,7 +69,8 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
             ..Default::default()
         };
         debug!("Saving chunk");
-        fs::write(filename, new_chunk.compress()).expect("Couldnt write chunk save");
+        fs::write(filename, new_chunk.compress())
+            .expect("Couldnt write chunk save");
         new_chunk
     }
 }

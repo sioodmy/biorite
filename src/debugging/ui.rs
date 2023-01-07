@@ -25,7 +25,9 @@ pub fn display_debug_stats(
         ));
         ui.label(format!(
             "Coords: {}/{}/{}",
-            player_pos.world_pos.x, player_pos.world_pos.y, player_pos.world_pos.y
+            player_pos.world_pos.x,
+            player_pos.world_pos.y,
+            player_pos.world_pos.y
         ));
         ui.label(format!(
             "Chunk: {}/{}/{}",

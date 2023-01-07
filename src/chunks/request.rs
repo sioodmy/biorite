@@ -3,7 +3,8 @@ use bevy::utils::{FloatOrd, HashMap};
 use crate::prelude::*;
 
 #[derive(Resource)]
-// pub struct RenderDistance(pub [Chunk; RENDER_DISTANCE as usize * RENDER_DISTANCE as usize]);
+// pub struct RenderDistance(pub [Chunk; RENDER_DISTANCE as usize *
+// RENDER_DISTANCE as usize]);
 pub struct RenderDistance(pub HashMap<IVec3, bool>);
 
 pub fn new_chunks(

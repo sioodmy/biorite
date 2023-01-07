@@ -71,8 +71,9 @@ fn server_events(
                     .insert(Player { id: *id })
                     .id();
 
-                // We could send an InitState with all the players id and positions for the client
-                // but this is easier to do.
+                // We could send an InitState with all the players id and
+                // positions for the client but this is easier
+                // to do.
                 debug!("sending players {:?}", lobby);
                 let mut player_ids = Vec::new();
                 for &player_id in lobby.players.keys() {

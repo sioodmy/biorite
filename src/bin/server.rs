@@ -1,5 +1,4 @@
-use bevy::log::LogPlugin;
-use bevy::render::settings::WgpuSettings;
+use bevy::{log::LogPlugin, render::settings::WgpuSettings};
 use biorite::*;
 
 fn main() {

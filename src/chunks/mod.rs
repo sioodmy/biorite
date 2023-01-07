@@ -17,7 +17,8 @@ pub mod server;
 
 pub type CompressedChunk = Vec<u8>;
 pub const CHUNK_DIM: u32 = 16;
-pub type ChunkShape = ConstShape3u32<{ CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }>;
+pub type ChunkShape =
+    ConstShape3u32<{ CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }>;
 
 use lz4::block::decompress;
 
@@ -45,7 +46,8 @@ impl Default for Chunk {
 impl Chunk {
     pub fn compress(&self) -> CompressedChunk {
         let message = bincode::serialize(self).unwrap();
-        compress(&message, Some(CompressionMode::HIGHCOMPRESSION(12)), true).unwrap()
+        compress(&message, Some(CompressionMode::HIGHCOMPRESSION(12)), true)
+            .unwrap()
     }
     pub fn from_compressed(bytes: &CompressedChunk) -> Self {
         let message = decompress(bytes, None).unwrap();

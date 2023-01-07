@@ -1,5 +1,7 @@
 pub use bevy::{
-    diagnostic::{Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin},
+    diagnostic::{
+        Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
+    },
     pbr::wireframe::WireframePlugin,
     prelude::*,
 };

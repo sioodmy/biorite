@@ -1,6 +1,5 @@
 use crate::prelude::*;
-use bevy::ecs::prelude::*;
-use bevy::utils::HashMap;
+use bevy::{ecs::prelude::*, utils::HashMap};
 pub use bevy_renet::{renet::*, *};
 pub use serde::{Deserialize, Serialize};
 
