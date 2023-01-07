@@ -1,9 +1,7 @@
 use super::messages::*;
 use crate::*;
 use local_ip_address::local_ip;
-use smooth_bevy_cameras::{
-    LookTransform, LookTransformBundle, LookTransformPlugin, Smoother,
-};
+use smooth_bevy_cameras::LookTransformPlugin;
 use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
@@ -59,14 +57,16 @@ pub fn client_ping_test(
         }
     }
 }
+
+#[allow(clippy::too_many_arguments)]
 pub fn entity_spawn(
-    mut client: ResMut<RenetClient>,
+    client: ResMut<RenetClient>,
     mut lobby: ResMut<Lobby>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     chunk_messages: ResMut<CurrentClientChunkMessages>,
-    keyboard: Res<Input<KeyCode>>,
+    _keyboard: Res<Input<KeyCode>>,
     messages: Res<CurrentClientMessages>,
 ) {
     for message in messages.iter() {
@@ -109,11 +109,11 @@ pub fn entity_spawn(
 }
 
 pub fn entity_sync(
-    mut client: ResMut<RenetClient>,
-    mut lobby: ResMut<Lobby>,
+    _client: ResMut<RenetClient>,
+    lobby: ResMut<Lobby>,
     mut commands: Commands,
-    keyboard: Res<Input<KeyCode>>,
-    mut query: Query<(&Camera, &Transform)>,
+    _keyboard: Res<Input<KeyCode>>,
+    _query: Query<(&Camera, &Transform)>,
     messages: Res<CurrentClientMessages>,
 ) {
     for message in messages.iter() {
@@ -163,16 +163,16 @@ fn movement_axis(
 
 fn player_input(
     input: Res<Input<KeyCode>>,
-    mut query: Query<(&Camera, &Transform)>,
+    query: Query<(&Camera, &Transform)>,
     mut player_input: ResMut<PlayerInput>,
 ) {
-    for (mut options, mut transform) in query.iter() {
+    for (_options, transform) in query.iter() {
         let (axis_h, axis_v) = (
             movement_axis(&input, KeyCode::W, KeyCode::S),
             movement_axis(&input, KeyCode::A, KeyCode::D),
         );
 
-        let rotation = transform.rotation;
+        let _rotation = transform.rotation;
 
         let mut f = transform.forward();
         f.y = 0.0;

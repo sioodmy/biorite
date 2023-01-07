@@ -3,7 +3,7 @@ use bevy::utils::HashMap;
 use local_ip_address::local_ip;
 use std::{
     net::{SocketAddr, UdpSocket},
-    time::{Duration, SystemTime},
+    time::SystemTime,
 };
 
 /// Resource that tracks each player's position
@@ -144,13 +144,13 @@ fn move_players_system(
 
 pub fn server_receive_input(
     messages: Res<CurrentServerMessages>,
-    mut server: ResMut<RenetServer>,
+    _server: ResMut<RenetServer>,
     mut commands: Commands,
-    mut lobby: ResMut<Lobby>,
+    lobby: ResMut<Lobby>,
 ) {
     for (id, message) in messages.iter() {
         if let ClientMessage::PlayerInput(input) = message {
-            if let Some(player_entity) = lobby.players.get(&id) {
+            if let Some(player_entity) = lobby.players.get(id) {
                 commands.entity(*player_entity).insert(*input);
             }
         }

@@ -17,7 +17,7 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
     if filename.exists() {
         debug!("Chunk exists, passing from save file");
         let chunk_bytes = fs::read(filename).expect("Couldnt read chunk data");
-        return Chunk::from_compressed(&chunk_bytes);
+        Chunk::from_compressed(&chunk_bytes)
     } else {
         debug!("Generating new chunk");
         let mut noise = FastNoise::seeded(2137);
@@ -53,12 +53,10 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
                     let i = ChunkShape::linearize([x, y, z]);
                     if gy as f64 > surface {
                         blocks[i as usize] = AIR;
+                    } else if gy > -10.0 {
+                        blocks[i as usize] = DIRT;
                     } else {
-                        if gy > -10.0 {
-                            blocks[i as usize] = DIRT;
-                        } else {
-                            blocks[i as usize] = STONE;
-                        }
+                        blocks[i as usize] = STONE;
                     }
                 }
             }

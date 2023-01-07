@@ -1,4 +1,3 @@
-use bevy_spectator::Spectator;
 use std::f32::consts;
 
 use crate::*;

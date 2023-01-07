@@ -11,7 +11,7 @@ pub fn render_queue(
     let texture_handle = asset_server.load("textures/stone.png");
 
     let material = materials.add(StandardMaterial {
-        base_color_texture: Some(texture_handle.clone()),
+        base_color_texture: Some(texture_handle),
         alpha_mode: AlphaMode::Blend,
         unlit: true,
         ..default()

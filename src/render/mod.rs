@@ -3,7 +3,7 @@ pub use crate::prelude::*;
 use bevy::utils::HashMap;
 pub use bevy_atmosphere::prelude::*;
 pub use bevy_spectator::SpectatorPlugin;
-use smooth_bevy_cameras::controllers::fps::{FpsCameraBundle, FpsCameraPlugin};
+use smooth_bevy_cameras::controllers::fps::FpsCameraPlugin;
 
 pub mod camera;
 pub mod mesh;

@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use rayon::prelude::*;
 
 pub fn chunk_send(
     mut server: ResMut<RenetServer>,
@@ -50,7 +49,7 @@ pub fn chunk_send(
                     .push(*chunk);
                 chunks.push(chunk_generator(*chunk).compress());
             }
-            if chunks.len() != 0 {
+            if !chunks.is_empty() {
                 ServerChunkMessage::ChunkBatch(chunks)
                     .send(&mut server, *player_id);
             }
