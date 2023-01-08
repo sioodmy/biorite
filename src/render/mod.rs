@@ -18,6 +18,8 @@ impl Plugin for RenderClientPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(render_queue::render_queue)
             .add_startup_system(spawn_camera)
+            .add_startup_system(spawn_light)
+            .add_system(mouse_movement)
             .add_plugin(AtmospherePlugin)
             .add_plugin(RenderQueuePlugin)
             .add_plugin(SpectatorPlugin)

@@ -8,14 +8,11 @@ pub fn render_queue(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut renderd: ResMut<RenderDistance>,
-    asset_server: Res<AssetServer>,
 ) {
-    let texture_handle = asset_server.load("textures/stone.png");
-
     let material = materials.add(StandardMaterial {
-        base_color_texture: Some(texture_handle),
+        base_color: Color::WHITE,
         alpha_mode: AlphaMode::Blend,
-        unlit: true,
+        unlit: false,
         ..default()
     });
 

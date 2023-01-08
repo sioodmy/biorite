@@ -76,7 +76,7 @@ pub fn entity_spawn(
                 .spawn(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                     material: materials.add(Color::rgb(0.8, 0.20, 0.6).into()),
-                    transform: Transform::from_xyz(0.0, 29.0, 0.0),
+                    transform: Transform::from_xyz(0.0, 25.0, 0.0),
                     ..Default::default()
                 })
                 .id();
@@ -97,7 +97,7 @@ pub fn entity_spawn(
                         mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                         material: materials
                             .add(Color::rgb(0.8, 0.20, 0.6).into()),
-                        transform: Transform::from_xyz(3.0, 29.0, 3.0),
+                        transform: Transform::from_xyz(0.0, 25.0, 0.0),
                         ..Default::default()
                     })
                     .id();
@@ -109,11 +109,8 @@ pub fn entity_spawn(
 }
 
 pub fn entity_sync(
-    _client: ResMut<RenetClient>,
     lobby: ResMut<Lobby>,
     mut commands: Commands,
-    _keyboard: Res<Input<KeyCode>>,
-    _query: Query<(&Camera, &Transform)>,
     messages: Res<CurrentClientMessages>,
 ) {
     for message in messages.iter() {
@@ -138,10 +135,12 @@ pub fn update_camera_system(
 ) {
     for (_, player_pos) in &players {
         for (_, mut camera_pos) in &mut cameras {
-            *camera_pos = Transform::from_translation(
-                player_pos.translation + Vec3::new(10.0, 10.0, 10.0),
-            )
-            .looking_at(player_pos.translation, Vec3::Y);
+            debug!("{:?}", player_pos);
+            camera_pos.translation =
+                player_pos.translation + Vec3::new(5.0, 5.0, 5.0);
+            // *camera_pos = Transform::from_translation(
+            //     player_pos.translation + Vec3::new(10.0, 10.0, 10.0),
+            // );
         }
     }
 }

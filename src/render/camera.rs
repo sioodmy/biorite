@@ -1,10 +1,38 @@
+use bevy::input::mouse::MouseMotion;
 use std::f32::consts;
 
 use crate::*;
 
 #[derive(Component)]
-pub struct Camera;
+pub struct Camera {
+    yaw: f32,
+    pitch: f32,
+    fov: f32,
+    sensitivity: f32,
+}
+impl Default for Camera {
+    fn default() -> Self {
+        Camera {
+            yaw: 0.3,
+            pitch: 0.0,
+            fov: 60.0,
+            sensitivity: 8.0,
+        }
+    }
+}
 
+pub fn spawn_light(mut commands: Commands) {
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            intensity: 50000.0,
+            range: 500.,
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::from_xyz(0.0, 80.0, 0.0),
+        ..default()
+    });
+}
 pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera3dBundle {
@@ -22,6 +50,34 @@ pub fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         AtmosphereCamera::default(),
-        Camera,
+        Camera::default(),
     ));
+}
+
+pub fn mouse_movement(
+    time: Res<Time>,
+    mut mouse_motion_event: EventReader<MouseMotion>,
+    mut query: Query<(&mut Camera, &mut Transform)>,
+) {
+    let mut delta: Vec2 = Vec2::ZERO;
+    for event in mouse_motion_event.iter() {
+        delta += event.delta;
+    }
+    if delta.is_nan() {
+        return;
+    }
+
+    for (mut cam, mut transform) in query.iter_mut() {
+        cam.yaw -= delta.x * cam.sensitivity * time.delta_seconds();
+        cam.pitch += delta.y * cam.sensitivity * time.delta_seconds();
+
+        cam.pitch = cam.pitch.clamp(-cam.fov, cam.fov);
+        // println!("pitch: {}, yaw: {}", pitch, yaw);
+
+        let yaw_radians = cam.yaw.to_radians();
+        let pitch_radians = cam.pitch.to_radians();
+
+        transform.rotation = Quat::from_axis_angle(Vec3::Y, yaw_radians)
+            * Quat::from_axis_angle(-Vec3::X, pitch_radians);
+    }
 }

@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use bevy::utils::HashMap;
 use local_ip_address::local_ip;
+use std::time::Duration;
 use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
@@ -23,6 +24,10 @@ pub fn create_renet_server() -> RenetServer {
             ChannelConfig::Reliable(ReliableChannelConfig {
                 packet_budget: 30000,
                 max_message_size: 7000,
+                ..Default::default()
+            }),
+            ChannelConfig::Chunk(ChunkChannelConfig {
+                resend_time: Duration::from_millis(200),
                 ..Default::default()
             }),
         ],
@@ -58,7 +63,7 @@ fn server_events(
                         mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                         material: materials
                             .add(Color::rgb(0.8, 0.20, 0.6).into()),
-                        transform: Transform::from_xyz(0.0, 29.0, 0.0),
+                        transform: Transform::from_xyz(0.0, 25.0, 0.0),
                         ..Default::default()
                     })
                     .insert(PlayerInput::default())
