@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::sync::mpsc::channel;
 
 pub fn chunk_send(
     mut server: ResMut<RenetServer>,
@@ -39,18 +40,19 @@ pub fn chunk_send(
                     }
                 }
             }
-            debug!("chunks to send {:?}", chunks_to_send.len());
-            let mut chunks = Vec::new();
-            for chunk in chunks_to_send.iter() {
-                lobby
-                    .sent_chunks
-                    .entry(*player_id)
-                    .or_default()
-                    .push(*chunk);
-                chunks.push(chunk_generator(*chunk).compress());
-            }
-            if !chunks.is_empty() {
-                ServerChunkMessage::ChunkBatch(chunks)
+            if !chunks_to_send.is_empty() {
+                debug!("cum");
+                let (tx, rx) = channel();
+                for chunk in chunks_to_send.iter() {
+                    lobby
+                        .sent_chunks
+                        .entry(*player_id)
+                        .or_default()
+                        .push(*chunk);
+                    tx.send(chunk_generator(chunk).compress()).unwrap();
+                }
+                let vector: Vec<CompressedChunk> = rx.try_iter().collect();
+                ServerChunkMessage::ChunkBatch(vector)
                     .send(&mut server, *player_id);
             }
         }

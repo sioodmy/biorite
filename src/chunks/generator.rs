@@ -2,7 +2,7 @@ use crate::prelude::*;
 use bracket_noise::prelude::*;
 use std::{fs, path::Path};
 
-pub fn chunk_generator(position: IVec3) -> Chunk {
+pub fn chunk_generator(position: &IVec3) -> Chunk {
     // TODO: world regions
     // TODO: async
 
@@ -62,7 +62,7 @@ pub fn chunk_generator(position: IVec3) -> Chunk {
             }
         }
         let new_chunk = Chunk {
-            position,
+            position: *position,
             blocks,
             ..Default::default()
         };

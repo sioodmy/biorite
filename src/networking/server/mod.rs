@@ -6,12 +6,6 @@ use std::{
     time::SystemTime,
 };
 
-/// Resource that tracks each player's position
-#[derive(Debug, Default, Resource)]
-pub struct ServerLobby {
-    pub players: HashMap<u64, Entity>,
-}
-
 pub fn create_renet_server() -> RenetServer {
     info!("Starting Biorite {} server", env!("CARGO_PKG_VERSION"));
     let server_addr = SocketAddr::new(local_ip().unwrap(), 42069);
@@ -142,6 +136,13 @@ fn move_players_system(
     }
 }
 
+pub fn chunk_unloader(query: Query<(&GlobalTransform, &Player)>) {
+    for (transform, player) in query.iter() {
+        let player_coords = transform.translation().as_ivec3();
+        let nearest_chunk_origin =
+            !IVec3::splat((CHUNK_DIM - 1) as i32) & player_coords;
+    }
+}
 pub fn server_receive_input(
     messages: Res<CurrentServerMessages>,
     _server: ResMut<RenetServer>,
@@ -167,6 +168,7 @@ impl Plugin for NetworkServerPlugin {
             .init_resource::<CurrentServerMessages>()
             .add_system(crate::server_recieve_messages)
             .add_system(server_ping_test)
+            .add_system(chunk_unloader)
             .add_system(server_receive_input)
             .add_system(move_players_system)
             .add_system(server_sync_players)

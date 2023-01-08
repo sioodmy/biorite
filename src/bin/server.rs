@@ -1,4 +1,5 @@
 use bevy::{log::LogPlugin, render::settings::WgpuSettings};
+use bevy_rapier3d::prelude::*;
 use biorite::*;
 
 fn main() {
@@ -12,8 +13,8 @@ fn main() {
             filter: "error,wgpu_core=warn,wgpu_hal=warn,biorite=info".into(),
         }))
         .insert_resource(create_renet_server())
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(NetworkServerPlugin)
         .add_plugin(ChunkServerPlugin)
-        // .insert_resource(create_renet_server())
         .run();
 }

@@ -1,4 +1,6 @@
 use crate::prelude::*;
+use bevy::{prelude::*, tasks::AsyncComputeTaskPool};
+use crossbeam_channel::{bounded, Sender};
 
 pub fn render_queue(
     mut queue: ResMut<ChunkRenderQueue>,
@@ -25,19 +27,21 @@ pub fn render_queue(
 
         let greedy_mesh = greedy_mesh(&mut meshes, chunk.blocks);
 
-        commands.spawn(PbrBundle {
-            mesh: greedy_mesh,
-            material: material.clone(),
-            transform: Transform::from_xyz(
-                chunk.position.x as f32 * CHUNK_DIM as f32,
-                chunk.position.y as f32 * CHUNK_DIM as f32,
-                chunk.position.z as f32 * CHUNK_DIM as f32,
-            ),
-            ..Default::default()
-        });
+        let chunk_entity = commands
+            .spawn(PbrBundle {
+                mesh: greedy_mesh,
+                material: material.clone(),
+                transform: Transform::from_xyz(
+                    chunk.position.x as f32 * CHUNK_DIM as f32,
+                    chunk.position.y as f32 * CHUNK_DIM as f32,
+                    chunk.position.z as f32 * CHUNK_DIM as f32,
+                ),
+                ..Default::default()
+            })
+            .id();
 
         chunk.loaded = true;
-        renderd.0.insert(chunk.position, true);
+        renderd.0.insert(chunk.position, (true, chunk_entity));
     }
 }
 
