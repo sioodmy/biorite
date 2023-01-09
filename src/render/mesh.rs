@@ -9,7 +9,7 @@ use block_mesh::{
 
 use crate::prelude::*;
 
-const UV_SCALE: f32 = 1.0 / CHUNK_DIM as f32;
+const UV_SCALE: f32 = 1.0;
 
 pub fn greedy_mesh(
     meshes: &mut Assets<Mesh>,

@@ -1,3 +1,4 @@
+use bevy::render::render_resource::*;
 use biorite::*;
 
 fn main() {
@@ -14,7 +15,16 @@ fn main() {
                     },
                     ..Default::default()
                 })
-                .set(ImagePlugin::default_nearest()),
+                .set(ImagePlugin {
+                    default_sampler: SamplerDescriptor {
+                        address_mode_u: AddressMode::Repeat,
+                        address_mode_v: AddressMode::Repeat,
+                        address_mode_w: AddressMode::Repeat,
+                        mag_filter: FilterMode::Nearest,
+                        min_filter: FilterMode::Nearest,
+                        ..Default::default()
+                    },
+                }),
         )
         .add_plugin(RenetClientPlugin::default())
         .add_plugin(RenderClientPlugin)

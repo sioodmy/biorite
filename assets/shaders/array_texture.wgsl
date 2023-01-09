@@ -29,7 +29,7 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
 
     pbr_input.material.base_color = textureSample(my_array_texture, my_array_texture_sampler, in.uv, layer);
 #ifdef VERTEX_COLORS
-    pbr_input.material.base_color = pbr_input.material.base_color * in.color;
+    pbr_input.material.base_color = pbr_input.material.base_color;
 #endif
 
     pbr_input.frag_coord = in.frag_coord;
@@ -40,7 +40,7 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
         in.is_front,
     );
 
-    pbr_input.is_orthographic = view.projection[3].w == 1.0;
+    pbr_input.is_orthographic = view.projection[3].w == 0.5;
 
     pbr_input.N = apply_normal_mapping(
         pbr_input.material.flags,
@@ -54,5 +54,5 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     );
     pbr_input.V = calculate_view(in.world_position, pbr_input.is_orthographic);
 
-    return tone_mapping(pbr(pbr_input));
+    return pbr(pbr_input);
 }

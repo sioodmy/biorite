@@ -21,17 +21,12 @@ impl Default for Camera {
     }
 }
 
-pub fn spawn_light(mut commands: Commands) {
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            intensity: 50000.0,
-            range: 500.,
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(0.0, 80.0, 0.0),
-        ..default()
-    });
+pub fn spawn_light(
+    mut commands: Commands,
+    mut ambient_light: ResMut<AmbientLight>,
+) {
+    ambient_light.color = Color::WHITE;
+    ambient_light.brightness = 1.0;
 }
 pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((
