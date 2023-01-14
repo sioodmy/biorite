@@ -6,17 +6,61 @@ use block_mesh::{
     greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer,
     RIGHT_HANDED_Y_UP_CONFIG,
 };
+use crossbeam_channel::{Receiver, Sender};
+use rayon::iter::*;
 
 use crate::prelude::*;
 
-const UV_SCALE: f32 = 1.0;
+pub struct MeshedChunk {
+    mesh: Mesh,
+    pos: IVec3,
+}
 
+#[derive(Resource, Deref)]
+pub struct MeshChunkReceiver(pub Receiver<MeshedChunk>);
+
+#[derive(Resource, Deref)]
+pub struct MeshChunkSender(pub Sender<MeshedChunk>);
+
+pub fn chunk_spawner(
+    rx: Res<MeshChunkReceiver>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    loading_texture: Res<LoadingTexture>,
+) {
+    for m_chunk in rx.0.try_iter() {
+        debug!("got chunk");
+        commands.spawn(MaterialMeshBundle {
+            mesh: meshes.add(m_chunk.mesh),
+            material: loading_texture.material.clone(),
+            transform: Transform::from_xyz(
+                m_chunk.pos.x as f32 * CHUNK_DIM as f32,
+                m_chunk.pos.y as f32 * CHUNK_DIM as f32,
+                m_chunk.pos.z as f32 * CHUNK_DIM as f32,
+            ),
+            ..Default::default()
+        });
+    }
+}
+pub fn mesher(compressed_batch: Vec<CompressedChunk>, tx: Sender<MeshedChunk>) {
+    compressed_batch.par_iter().for_each(|c_chunk| {
+        debug!("decompressing chunk");
+        let chunk = Chunk::from_compressed(c_chunk);
+        if let Some(mesh) = greedy_mesh(chunk.blocks) {
+            tx.send(MeshedChunk {
+                mesh,
+                pos: chunk.position,
+            })
+            .expect("Couldn't send mesh to crossbeam channel");
+        };
+    });
+}
 pub fn greedy_mesh(
-    meshes: &mut Assets<Mesh>,
     voxels: [BlockType; ChunkShape::SIZE as usize],
-) -> Handle<Mesh> {
-    let mut buffer = GreedyQuadsBuffer::new(voxels.len());
+) -> Option<Mesh> {
+    let _span = info_span!("greedy_mesh", name = "greedy_mesh").entered();
 
+    let mut buffer = GreedyQuadsBuffer::new(voxels.len());
     let faces = RIGHT_HANDED_Y_UP_CONFIG.faces;
 
     greedy_quads(
@@ -28,7 +72,10 @@ pub fn greedy_mesh(
         &mut buffer,
     );
 
-    info!("Generated {} quads", &buffer.quads.num_quads());
+    // This means that chunk is 100% air
+    if buffer.quads.num_quads() == 0 {
+        return None;
+    }
 
     let num_indices = buffer.quads.num_quads() * 6;
 
@@ -42,32 +89,26 @@ pub fn greedy_mesh(
 
     let mut tex_coords = Vec::with_capacity(num_vertices);
 
-    let mut colors = Vec::with_capacity(num_vertices);
+    let mut indexes = Vec::with_capacity(num_vertices);
 
     for (group, face) in buffer.quads.groups.into_iter().zip(faces.into_iter())
     {
         for quad in group.into_iter() {
-            let _face_indices = face.quad_mesh_indices(positions.len() as u32);
+            let face_indices = face.quad_mesh_indices(positions.len() as u32);
             let face_positions = face.quad_mesh_positions(&quad, 1.0);
-            let face_colors: Vec<_> = face_positions
+            let face_index: Vec<_> = face_positions
                 .iter()
                 .map(|_| {
                     let i = ChunkShape::linearize(quad.minimum.map(|v| v));
-                    let voxel = voxels[i as usize];
-                    match voxel.0 {
-                        0 => unreachable!(),
-                        2 => [0.2, 0.8, 0.2, 1.0],
-                        _ => [0.5, 0.5, 0.5, 1.0],
-                    }
+                    let voxel = voxels[i as usize].0;
+                    voxel as i32 - 1
                 })
                 .collect();
 
-            indices.extend_from_slice(
-                &face.quad_mesh_indices(positions.len() as u32),
-            );
+            indices.extend_from_slice(&face_indices);
 
             positions.extend_from_slice(&face.quad_mesh_positions(&quad, 1.0));
-            colors.extend_from_slice(&face_colors);
+            indexes.extend_from_slice(&face_index);
 
             normals.extend_from_slice(&face.quad_mesh_normals());
             tex_coords.extend_from_slice(&face.tex_coords(
@@ -75,12 +116,6 @@ pub fn greedy_mesh(
                 true,
                 &quad,
             ));
-        }
-    }
-
-    for uv in tex_coords.iter_mut() {
-        for c in uv.iter_mut() {
-            *c *= UV_SCALE;
         }
     }
 
@@ -99,14 +134,15 @@ pub fn greedy_mesh(
     render_mesh.insert_attribute(
         Mesh::ATTRIBUTE_UV_0,
         VertexAttributeValues::Float32x2(tex_coords),
+        // VertexAttributeValues::Float32x2(vec![[0.0; 2]; num_vertices]),
     );
 
     render_mesh.insert_attribute(
-        Mesh::ATTRIBUTE_COLOR,
-        VertexAttributeValues::Float32x4(colors),
+        ArrayTextureMaterial::ATTRIBUTE_TEXTURE_INDEX,
+        VertexAttributeValues::Sint32(indexes),
     );
 
     render_mesh.set_indices(Some(Indices::U32(indices.clone())));
 
-    meshes.add(render_mesh)
+    Some(render_mesh)
 }

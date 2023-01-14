@@ -1,8 +1,7 @@
 use crate::prelude::*;
 
 use bevy::render::{
-    mesh::{Indices, VertexAttributeValues},
-    render_resource::PrimitiveTopology,
+    mesh::VertexAttributeValues, render_resource::PrimitiveTopology,
 };
 use block_mesh::{
     ndshape::ConstShape, visible_block_faces, UnitQuadBuffer,
@@ -10,7 +9,7 @@ use block_mesh::{
 };
 
 pub fn collider_mesh(
-    meshes: &mut Assets<Mesh>,
+    _meshes: &mut Assets<Mesh>,
     voxels: [BlockType; ChunkShape::SIZE as usize],
 ) -> bevy::prelude::Mesh {
     let mut buffer = UnitQuadBuffer::new();

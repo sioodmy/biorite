@@ -22,7 +22,7 @@ impl Plugin for DebugPlugin {
             .add_plugin(FrameTimeDiagnosticsPlugin)
             .add_plugin(EntityCountDiagnosticsPlugin)
             .add_plugin(EguiPlugin)
-            .add_plugin(WorldInspectorPlugin::new())
+            // .add_plugin(WorldInspectorPlugin::new())
             .add_system(display_debug_stats);
     }
 }

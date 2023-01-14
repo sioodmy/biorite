@@ -1,4 +1,5 @@
 use bevy::render::render_resource::*;
+use bevy::window::PresentMode;
 use biorite::*;
 
 fn main() {
@@ -11,6 +12,7 @@ fn main() {
                         height: 720.,
                         title: format!("Biorite {}", env!("CARGO_PKG_VERSION")),
                         resizable: true,
+                        present_mode: PresentMode::AutoNoVsync,
                         ..Default::default()
                     },
                     ..Default::default()
