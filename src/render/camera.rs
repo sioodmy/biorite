@@ -1,4 +1,5 @@
 use bevy::input::mouse::MouseMotion;
+use bevy::window::CursorGrabMode;
 use std::f32::consts;
 
 use crate::*;
@@ -21,8 +22,26 @@ impl Default for Camera {
     }
 }
 
+pub fn cursor_grab_system(
+    mut windows: ResMut<Windows>,
+    btn: Res<Input<MouseButton>>,
+    key: Res<Input<KeyCode>>,
+) {
+    let window = windows.get_primary_mut().unwrap();
+
+    if btn.just_pressed(MouseButton::Left) {
+        window.set_cursor_grab_mode(CursorGrabMode::Locked);
+        window.set_cursor_visibility(false);
+    }
+
+    if key.just_pressed(KeyCode::Escape) {
+        window.set_cursor_grab_mode(CursorGrabMode::None);
+        window.set_cursor_visibility(true);
+    }
+}
+
 pub fn spawn_light(
-    mut commands: Commands,
+    _commands: Commands,
     mut ambient_light: ResMut<AmbientLight>,
 ) {
     ambient_light.color = Color::WHITE;

@@ -1,58 +1,48 @@
 #import bevy_pbr::mesh_view_bindings
 #import bevy_pbr::mesh_bindings
 
-#import bevy_pbr::pbr_types
-#import bevy_pbr::utils
-#import bevy_pbr::clustered_forward
-#import bevy_pbr::lighting
-#import bevy_pbr::shadows
-#import bevy_pbr::pbr_functions
-
 @group(1) @binding(0)
 var my_array_texture: texture_2d_array<f32>;
 @group(1) @binding(1)
 var my_array_texture_sampler: sampler;
 
+#import bevy_pbr::mesh_functions
 struct FragmentInput {
-    @builtin(front_facing) is_front: bool,
-    @builtin(position) frag_coord: vec4<f32>,
-    #import bevy_pbr::mesh_vertex_output
+    @location(0) world_position: vec4<f32>,
+    @location(1) world_normal: vec3<f32>,
+    @location(2) uv: vec2<f32>,
+    @location(3) index: i32,
 };
+
+struct Vertex {
+    @location(0) position: vec3<f32>,
+    @location(1) normal: vec3<f32>,
+#ifdef VERTEX_UVS
+    @location(2) uv: vec2<f32>,
+#endif
+    @location(3) index: i32,
+};
+
+struct VertexOutput {
+    @builtin(position) clip_position: vec4<f32>,
+    #import bevy_pbr::mesh_vertex_output
+    
+    @location(3) index: i32,
+};
+
+@vertex
+fn vertex(vertex: Vertex) -> VertexOutput {
+    var out: VertexOutput;
+    out.uv = vertex.uv;
+    var model = mesh.model;
+    out.world_position = mesh_position_local_to_world(model, vec4<f32>(vertex.position, 1.0));
+    out.world_normal = mesh_normal_local_to_world(vertex.normal);
+    out.clip_position = mesh_position_world_to_clip(out.world_position);
+    out.index = vertex.index;
+    return out;
+}
 
 @fragment
 fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
-    let layer = i32(in.world_position.x) & 0x3;
-
-    // Prepare a 'processed' StandardMaterial by sampling all textures to resolve
-    // the material members
-    var pbr_input: PbrInput = pbr_input_new();
-
-    pbr_input.material.base_color = textureSample(my_array_texture, my_array_texture_sampler, in.uv, layer);
-#ifdef VERTEX_COLORS
-    pbr_input.material.base_color = pbr_input.material.base_color;
-#endif
-
-    pbr_input.frag_coord = in.frag_coord;
-    pbr_input.world_position = in.world_position;
-    pbr_input.world_normal = prepare_world_normal(
-        in.world_normal,
-        (pbr_input.material.flags & STANDARD_MATERIAL_FLAGS_DOUBLE_SIDED_BIT) != 0u,
-        in.is_front,
-    );
-
-    pbr_input.is_orthographic = view.projection[3].w == 0.5;
-
-    pbr_input.N = apply_normal_mapping(
-        pbr_input.material.flags,
-        pbr_input.world_normal,
-#ifdef VERTEX_TANGENTS
-#ifdef STANDARDMATERIAL_NORMAL_MAP
-        in.world_tangent,
-#endif
-#endif
-        in.uv,
-    );
-    pbr_input.V = calculate_view(in.world_position, pbr_input.is_orthographic);
-
-    return pbr(pbr_input);
+    return textureSample(my_array_texture, my_array_texture_sampler, in.uv, in.index);
 }

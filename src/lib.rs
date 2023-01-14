@@ -11,8 +11,8 @@ pub mod prelude;
 mod render;
 
 /// For now its hardcoded, might change in future
-pub const RENDER_DISTANCE: i16 = 5;
+pub const RENDER_DISTANCE: i16 = 3;
 
-pub const PLAYER_SPEED: f32 = 4.3;
+pub const PLAYER_SPEED: f32 = 24.3;
 
 pub const PROTOCOL_ID: u64 = 1000;

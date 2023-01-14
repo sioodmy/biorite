@@ -1,4 +1,5 @@
 use crate::prelude::*;
+
 pub use block_mesh::ndshape::{ConstShape, ConstShape3u32};
 pub use blocks::*;
 pub use collider::*;
@@ -24,12 +25,21 @@ pub type ChunkShape =
 
 use lz4::block::decompress;
 
-#[derive(Serialize, Deserialize, Debug, Resource)]
+#[derive(Component)]
+pub struct ChunkID(IVec3);
+
+#[derive(Serialize, Deserialize, Component, Debug, Resource, Copy, Clone)]
 pub struct Chunk {
     pub position: IVec3,
     #[serde(with = "BigArray")]
     pub blocks: [BlockType; ChunkShape::SIZE as usize],
     pub modified: bool,
+    pub loaded: bool,
+}
+
+#[derive(Component)]
+pub struct ChunkComponent {
+    pub position: IVec3,
     pub loaded: bool,
 }
 

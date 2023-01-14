@@ -142,9 +142,9 @@ fn move_players_system(
 }
 
 pub fn chunk_unloader(query: Query<(&GlobalTransform, &Player)>) {
-    for (transform, player) in query.iter() {
+    for (transform, _player) in query.iter() {
         let player_coords = transform.translation().as_ivec3();
-        let nearest_chunk_origin =
+        let _nearest_chunk_origin =
             !IVec3::splat((CHUNK_DIM - 1) as i32) & player_coords;
     }
 }

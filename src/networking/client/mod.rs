@@ -135,7 +135,6 @@ pub fn update_camera_system(
 ) {
     for (_, player_pos) in &players {
         for (_, mut camera_pos) in &mut cameras {
-            debug!("{:?}", player_pos);
             camera_pos.translation =
                 player_pos.translation + Vec3::new(5.0, 5.0, 5.0);
             // *camera_pos = Transform::from_translation(
@@ -192,16 +191,15 @@ fn client_send_input(
 ) {
     if player_input.forward != 0.0 && player_input.sideways != 0.0
         || player_input.jumping
+        || player_input.sneaking
     {
         ClientMessage::PlayerInput(*player_input).send(&mut client);
         *is_moving = true;
-        debug!("sending movement moving: {:?}", is_moving);
     } else {
         // no need to send empty inputs multiple times
         if *is_moving {
             ClientMessage::PlayerInput(*player_input).send(&mut client);
             *is_moving = false;
-            debug!("sending stop signal");
         }
     }
 }

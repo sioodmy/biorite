@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use bracket_noise::prelude::*;
+
 use std::{fs, path::Path};
 
 pub fn chunk_generator(position: &IVec3) -> Chunk {
@@ -34,8 +35,10 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
         // TODO: async chunk generation
 
         let offset = 8.0;
-        let factor = 7.37;
+        // let factor = 7.37;
+        let factor = 13.0;
         let flat: f64 = 5.0;
+        let _rng = rand::thread_rng();
 
         // 16^3 chunk with one block boundary
         for x in 1..CHUNK_DIM + 1 {
@@ -51,12 +54,22 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
 
                     let surface = flat as f64 + noise as f64;
                     let i = ChunkShape::linearize([x, y, z]);
+                    // let rng = rng.gen_range(0..10);
+                    // if rng == 1 {
+                    //     blocks[i as usize] = STONE;
+                    // } else if rng == 2 {
+                    //     blocks[i as usize] = DIRT;
+                    // }
                     if gy as f64 > surface {
                         blocks[i as usize] = AIR;
-                    } else if gy > -10.0 {
-                        blocks[i as usize] = DIRT;
-                    } else {
+                    } else if gy > surface as f32 {
                         blocks[i as usize] = STONE;
+                    } else {
+                        blocks[i as usize] = GRASS;
+                    }
+
+                    if gy < 8.0 {
+                        blocks[i as usize] = DIRT;
                     }
                 }
             }
