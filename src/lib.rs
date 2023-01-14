@@ -9,6 +9,14 @@ mod debugging;
 mod networking;
 pub mod prelude;
 mod render;
+mod ui;
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum AppState {
+    MainMenu,
+    InGame,
+    Paused,
+}
 
 /// For now its hardcoded, might change in future
 pub const RENDER_DISTANCE: i16 = 3;

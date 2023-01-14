@@ -29,7 +29,6 @@ pub fn chunk_spawner(
     loading_texture: Res<LoadingTexture>,
 ) {
     for m_chunk in rx.0.try_iter() {
-        debug!("got chunk");
         commands.spawn(MaterialMeshBundle {
             mesh: meshes.add(m_chunk.mesh),
             material: loading_texture.material.clone(),
@@ -90,10 +89,12 @@ pub fn greedy_mesh(
     let mut tex_coords = Vec::with_capacity(num_vertices);
 
     let mut indexes = Vec::with_capacity(num_vertices);
+    let mut lights = Vec::with_capacity(num_vertices);
 
     for (group, face) in buffer.quads.groups.into_iter().zip(faces.into_iter())
     {
         for quad in group.into_iter() {
+            let normal = face.quad_mesh_normals();
             let face_indices = face.quad_mesh_indices(positions.len() as u32);
             let face_positions = face.quad_mesh_positions(&quad, 1.0);
             let face_index: Vec<_> = face_positions
@@ -110,7 +111,25 @@ pub fn greedy_mesh(
             positions.extend_from_slice(&face.quad_mesh_positions(&quad, 1.0));
             indexes.extend_from_slice(&face_index);
 
-            normals.extend_from_slice(&face.quad_mesh_normals());
+            let light: Vec<_> = face_positions
+                .iter()
+                .map(|_| {
+                    if normal
+                        == [
+                            [0.0, 1.0, 0.0],
+                            [0.0, 1.0, 0.0],
+                            [0.0, 1.0, 0.0],
+                            [0.0, 1.0, 0.0],
+                        ]
+                    {
+                        1.0
+                    } else {
+                        0.6
+                    }
+                })
+                .collect();
+            normals.extend_from_slice(&normal);
+            lights.extend_from_slice(&light);
             tex_coords.extend_from_slice(&face.tex_coords(
                 RIGHT_HANDED_Y_UP_CONFIG.u_flip_face,
                 true,
@@ -140,6 +159,10 @@ pub fn greedy_mesh(
     render_mesh.insert_attribute(
         ArrayTextureMaterial::ATTRIBUTE_TEXTURE_INDEX,
         VertexAttributeValues::Sint32(indexes),
+    );
+    render_mesh.insert_attribute(
+        ArrayTextureMaterial::ATTRIBUTE_LIGHT,
+        VertexAttributeValues::Float32(lights),
     );
 
     render_mesh.set_indices(Some(Indices::U32(indices.clone())));

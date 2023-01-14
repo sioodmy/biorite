@@ -216,18 +216,19 @@ impl Plugin for NetworkClientPlugin {
             })
             .insert_resource(PlayerInput::default())
             .insert_resource(Lobby::default())
-            .add_system(update_player_pos)
-            .add_plugin(LookTransformPlugin)
-            .add_system(
-                client_send_input.with_run_criteria(run_if_client_connected),
+            .add_system_set(
+                SystemSet::on_update(AppState::InGame)
+                    .with_system(update_camera_system)
+                    .with_system(client_recieve_messages)
+                    .with_system(entity_spawn)
+                    .with_system(player_input)
+                    .with_system(chunk_receiver)
+                    .with_system(entity_sync)
+                    .with_system(client_ping_test)
+                    .with_system(client_send_input)
+                    .with_system(update_player_pos)
+                    .with_run_criteria(run_if_client_connected),
             )
-            .add_system(update_camera_system)
-            .add_system(client_recieve_messages)
-            .add_system(entity_spawn)
-            // .add_system(chunk_reciever)
-            .add_system(player_input.with_run_criteria(run_if_client_connected))
-            .add_system(entity_sync.with_run_criteria(run_if_client_connected))
-            // .add_system(new_chunks)
-            .add_system(client_ping_test);
+            .add_plugin(LookTransformPlugin);
     }
 }

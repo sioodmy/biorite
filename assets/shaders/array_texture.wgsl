@@ -12,6 +12,7 @@ struct FragmentInput {
     @location(1) world_normal: vec3<f32>,
     @location(2) uv: vec2<f32>,
     @location(3) index: i32,
+    @location(4) light: f32,
 };
 
 struct Vertex {
@@ -21,6 +22,7 @@ struct Vertex {
     @location(2) uv: vec2<f32>,
 #endif
     @location(3) index: i32,
+    @location(4) light: f32,
 };
 
 struct VertexOutput {
@@ -28,6 +30,7 @@ struct VertexOutput {
     #import bevy_pbr::mesh_vertex_output
     
     @location(3) index: i32,
+    @location(4) light: f32,
 };
 
 @vertex
@@ -39,10 +42,12 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     out.world_normal = mesh_normal_local_to_world(vertex.normal);
     out.clip_position = mesh_position_world_to_clip(out.world_position);
     out.index = vertex.index;
+    out.light = vertex.light;
     return out;
 }
 
 @fragment
 fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
-    return textureSample(my_array_texture, my_array_texture_sampler, in.uv, in.index);
+    var color = textureSample(my_array_texture, my_array_texture_sampler, in.uv, in.index);
+    return color * in.light;
 }

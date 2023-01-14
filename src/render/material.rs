@@ -65,6 +65,8 @@ pub struct ArrayTextureMaterial {
 impl ArrayTextureMaterial {
     pub const ATTRIBUTE_TEXTURE_INDEX: MeshVertexAttribute =
         MeshVertexAttribute::new("index", 2137, VertexFormat::Sint32);
+    pub const ATTRIBUTE_LIGHT: MeshVertexAttribute =
+        MeshVertexAttribute::new("light", 2138, VertexFormat::Float32);
 }
 impl Material for ArrayTextureMaterial {
     fn vertex_shader() -> ShaderRef {
@@ -87,6 +89,7 @@ impl Material for ArrayTextureMaterial {
             Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
             Mesh::ATTRIBUTE_UV_0.at_shader_location(2),
             ArrayTextureMaterial::ATTRIBUTE_TEXTURE_INDEX.at_shader_location(3),
+            ArrayTextureMaterial::ATTRIBUTE_LIGHT.at_shader_location(4),
         ])?;
         descriptor.vertex.buffers = vec![vertex_layout];
         debug!("{:?}", descriptor.vertex.buffers);
