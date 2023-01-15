@@ -79,6 +79,7 @@ pub fn entity_spawn(
                     transform: Transform::from_xyz(0.0, 25.0, 0.0),
                     ..Default::default()
                 })
+                .insert(Player { id: *id })
                 .id();
 
             if *id == client.client_id() {

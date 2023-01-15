@@ -29,16 +29,55 @@ pub fn chunk_spawner(
     loading_texture: Res<LoadingTexture>,
 ) {
     for m_chunk in rx.0.try_iter() {
-        commands.spawn(MaterialMeshBundle {
-            mesh: meshes.add(m_chunk.mesh),
-            material: loading_texture.material.clone(),
-            transform: Transform::from_xyz(
-                m_chunk.pos.x as f32 * CHUNK_DIM as f32,
-                m_chunk.pos.y as f32 * CHUNK_DIM as f32,
-                m_chunk.pos.z as f32 * CHUNK_DIM as f32,
-            ),
-            ..Default::default()
-        });
+        commands
+            .spawn(MaterialMeshBundle {
+                mesh: meshes.add(m_chunk.mesh),
+                material: loading_texture.material.clone(),
+                transform: Transform::from_xyz(
+                    m_chunk.pos.x as f32 * CHUNK_DIM as f32,
+                    m_chunk.pos.y as f32 * CHUNK_DIM as f32,
+                    m_chunk.pos.z as f32 * CHUNK_DIM as f32,
+                ),
+                ..Default::default()
+            })
+            .insert(ChunkID(m_chunk.pos));
+    }
+}
+
+pub fn chunk_despawner(
+    mut commands: Commands,
+    chunk_query: Query<(Entity, &ChunkID), With<ChunkID>>,
+    player_query: Query<&GlobalTransform, With<Player>>,
+) {
+    // List of chunks that we actually need
+    let mut relevant = Vec::new();
+    for player in player_query.iter() {
+        let player_coords = player.translation().as_ivec3();
+        // Nearest chunk origin
+        let no = !IVec3::splat((CHUNK_DIM - 1) as i32) & player_coords;
+        let chunk_x = no.x / CHUNK_DIM as i32;
+        let chunk_y = no.y / CHUNK_DIM as i32;
+        let chunk_z = no.z / CHUNK_DIM as i32;
+        for x in (chunk_x - RENDER_DISTANCE as i32)
+            ..=(chunk_x + RENDER_DISTANCE as i32)
+        {
+            for y in (chunk_y - RENDER_DISTANCE as i32)
+                ..=(chunk_y + RENDER_DISTANCE as i32)
+            {
+                for z in (chunk_z - RENDER_DISTANCE as i32)
+                    ..=(chunk_z + RENDER_DISTANCE as i32)
+                {
+                    let chunk = IVec3::new(x as i32, y as i32, z as i32);
+                    relevant.push(chunk);
+                }
+            }
+        }
+    }
+    debug!("a {}", relevant.len());
+    for (q, p) in chunk_query.iter() {
+        if !relevant.contains(&p.0) {
+            commands.entity(q).despawn();
+        }
     }
 }
 pub fn mesher(compressed_batch: Vec<CompressedChunk>, tx: Sender<MeshedChunk>) {

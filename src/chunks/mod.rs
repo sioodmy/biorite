@@ -25,8 +25,8 @@ pub type ChunkShape =
 
 use lz4::block::decompress;
 
-#[derive(Component)]
-pub struct ChunkID(IVec3);
+#[derive(Component, Debug)]
+pub struct ChunkID(pub IVec3);
 
 #[derive(Serialize, Deserialize, Component, Debug, Resource, Copy, Clone)]
 pub struct Chunk {

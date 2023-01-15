@@ -16,7 +16,7 @@ pub use mesh::*;
 pub struct RenderClientPlugin;
 impl Plugin for RenderClientPlugin {
     fn build(&self, app: &mut App) {
-        let (tx, rx) = bounded::<MeshedChunk>(200);
+        let (tx, rx) = bounded::<MeshedChunk>(500);
         app.add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
             .add_startup_system(load_chunk_texture)
             .add_system(create_array_texture)
@@ -29,7 +29,8 @@ impl Plugin for RenderClientPlugin {
                 SystemSet::on_update(AppState::InGame)
                     .with_system(mouse_movement)
                     .with_system(cursor_grab_system)
-                    .with_system(chunk_spawner),
+                    .with_system(chunk_spawner)
+                    .with_system(chunk_despawner),
             )
             .add_plugin(AtmospherePlugin)
             .insert_resource(MeshChunkReceiver(rx))
