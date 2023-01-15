@@ -43,7 +43,6 @@ pub fn chunk_spawner(
 }
 pub fn mesher(compressed_batch: Vec<CompressedChunk>, tx: Sender<MeshedChunk>) {
     compressed_batch.par_iter().for_each(|c_chunk| {
-        debug!("decompressing chunk");
         let chunk = Chunk::from_compressed(c_chunk);
         if let Some(mesh) = greedy_mesh(chunk.blocks) {
             tx.send(MeshedChunk {

@@ -31,7 +31,8 @@ fn main() {
         .add_plugin(RenetClientPlugin::default())
         .add_plugin(RenderClientPlugin)
         .add_plugin(NetworkClientPlugin)
+        .add_plugin(UiPlugin)
         .add_plugin(DebugPlugin)
-        .add_state(AppState::InGame)
+        .add_state(AppState::MainMenu)
         .run();
 }

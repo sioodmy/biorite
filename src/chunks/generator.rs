@@ -23,8 +23,8 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
         debug!("Generating new chunk");
         let mut noise = FastNoise::seeded(2137);
         noise.set_noise_type(NoiseType::Perlin);
-        noise.set_fractal_octaves(3);
-        noise.set_fractal_gain(0.06);
+        noise.set_fractal_octaves(4);
+        noise.set_fractal_gain(0.39);
         noise.set_fractal_lacunarity(0.25);
         noise.set_frequency(0.07);
         // placeholder for propper chunk generation
@@ -34,9 +34,9 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
         // TODO: propper seed handling
         // TODO: async chunk generation
 
-        let offset = 8.0;
+        let offset = 10.0;
         // let factor = 7.37;
-        let factor = 13.0;
+        let factor = 19.0;
         let flat: f64 = 5.0;
         let _rng = rand::thread_rng();
 
@@ -54,22 +54,14 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
 
                     let surface = flat as f64 + noise as f64;
                     let i = ChunkShape::linearize([x, y, z]);
-                    // let rng = rng.gen_range(0..10);
-                    // if rng == 1 {
-                    //     blocks[i as usize] = STONE;
-                    // } else if rng == 2 {
-                    //     blocks[i as usize] = DIRT;
-                    // }
                     if gy as f64 > surface {
                         blocks[i as usize] = AIR;
-                    } else if gy > surface as f32 {
+                    } else if gy < surface as f32 {
                         blocks[i as usize] = STONE;
-                    } else {
-                        blocks[i as usize] = GRASS;
                     }
 
-                    if gy < 8.0 {
-                        blocks[i as usize] = DIRT;
+                    if gy == surface.floor() as f32 {
+                        blocks[i as usize] = GRASS;
                     }
                 }
             }

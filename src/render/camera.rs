@@ -40,6 +40,9 @@ pub fn cursor_grab_system(
     }
 }
 
+#[derive(Component)]
+pub struct MainCamera;
+
 pub fn spawn_light(
     _commands: Commands,
     mut ambient_light: ResMut<AmbientLight>,
@@ -64,6 +67,7 @@ pub fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         AtmosphereCamera::default(),
+        MainCamera,
         Camera::default(),
     ));
 }

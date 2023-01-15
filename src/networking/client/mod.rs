@@ -131,7 +131,10 @@ pub fn entity_sync(
 
 pub fn update_camera_system(
     players: Query<(&ControlledPlayer, &Transform)>,
-    mut cameras: Query<(&Camera, &mut Transform), Without<ControlledPlayer>>,
+    mut cameras: Query<
+        (&MainCamera, &mut Transform),
+        Without<ControlledPlayer>,
+    >,
 ) {
     for (_, player_pos) in &players {
         for (_, mut camera_pos) in &mut cameras {
@@ -161,7 +164,7 @@ fn movement_axis(
 
 fn player_input(
     input: Res<Input<KeyCode>>,
-    query: Query<(&Camera, &Transform)>,
+    query: Query<(&MainCamera, &Transform)>,
     mut player_input: ResMut<PlayerInput>,
 ) {
     for (_options, transform) in query.iter() {
