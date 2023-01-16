@@ -67,6 +67,7 @@ pub enum BlockType {
     Dirt,
     Stone,
     Sand,
+    Wood,
 }
 
 impl Default for BlockType {
@@ -84,6 +85,7 @@ impl BlockType {
             Dirt => BlockTexture::full(2),
             Stone => BlockTexture::full(3),
             Sand => BlockTexture::full(4),
+            Wood => BlockTexture::new(5, 6, 5),
         }
     }
 }

@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use bracket_noise::prelude::*;
+use rand::Rng;
 
 use std::{fs, path::Path};
 
@@ -44,6 +45,13 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
         moisture_noise.set_fractal_gain(5.5);
         moisture_noise.set_fractal_lacunarity(0.75);
         moisture_noise.set_frequency(0.03);
+
+        let mut forest_noise = FastNoise::seeded(seed);
+        forest_noise.set_noise_type(NoiseType::WhiteNoise);
+        forest_noise.set_fractal_octaves(8);
+        forest_noise.set_fractal_gain(5.5);
+        forest_noise.set_fractal_lacunarity(4.75);
+        forest_noise.set_frequency(0.1);
 
         // placeholder for propper chunk generation
         let mut blocks: [BlockType; ChunkShape::SIZE as usize] =
@@ -92,13 +100,26 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
                             + 1.0)
                             * 2.5;
 
-                        debug!("moisture {:?}, temp: {:?}", moisture, temp);
+                        let forest = (forest_noise
+                            .get_noise(gx as f32, gz as f32)
+                            + 1.0)
+                            / 2.0;
+
+                        debug!(
+                            "moisture {:?}, temp: {:?}, forest: {:?}",
+                            moisture, temp, forest
+                        );
 
                         if temp > 2.0 && moisture < 2.0 {
                             // desert
                             blocks[i as usize] = BlockType::Sand;
                         } else if temp > 1.0 {
                             blocks[i as usize] = BlockType::Grass;
+                        } else {
+                            blocks[i as usize] = BlockType::Grass;
+                        }
+                        if forest > 0.1 && forest < 0.16 {
+                            blocks[i as usize] = BlockType::Wood;
                         }
                     }
                 }

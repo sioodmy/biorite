@@ -50,7 +50,7 @@ pub fn create_array_texture(
     let image = images.get_mut(&loading_texture.handle).unwrap();
 
     // Create a new array texture asset from the loaded texture.
-    let array_layers = 5;
+    let array_layers = 8;
     image.reinterpret_stacked_2d_as_array(array_layers);
 }
 
