@@ -73,7 +73,6 @@ pub fn chunk_despawner(
             }
         }
     }
-    debug!("a {}", relevant.len());
     for (q, p) in chunk_query.iter() {
         if !relevant.contains(&p.0) {
             commands.entity(q).despawn();
