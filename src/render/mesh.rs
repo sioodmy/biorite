@@ -138,8 +138,9 @@ pub fn greedy_mesh(
                 .iter()
                 .map(|_| {
                     let i = ChunkShape::linearize(quad.minimum.map(|v| v));
-                    let voxel = voxels[i as usize].0;
-                    voxel as i32 - 1
+                    let voxel = voxels[i as usize];
+                    let dir = BlockFace::from_normal(normal);
+                    voxel.get_texture().from_direction(dir)
                 })
                 .collect();
 

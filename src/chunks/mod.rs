@@ -48,7 +48,7 @@ impl Default for Chunk {
         Chunk {
             position: IVec3::ZERO,
             // Empty chunk filled with air
-            blocks: [BlockType(0); ChunkShape::SIZE as usize],
+            blocks: [BlockType::Air; ChunkShape::SIZE as usize],
             modified: false,
             loaded: false,
         }

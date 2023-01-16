@@ -47,7 +47,7 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
 
         // placeholder for propper chunk generation
         let mut blocks: [BlockType; ChunkShape::SIZE as usize] =
-            [AIR; ChunkShape::SIZE as usize];
+            [BlockType::Air; ChunkShape::SIZE as usize];
 
         // TODO: propper seed handling
         // TODO: async chunk generation
@@ -74,9 +74,9 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
                     let surface = flat as f64 + n as f64;
                     let i = ChunkShape::linearize([x, y, z]);
                     if gy as f64 > surface {
-                        blocks[i as usize] = AIR;
+                        blocks[i as usize] = BlockType::Air;
                     } else if gy < surface as f32 {
-                        blocks[i as usize] = STONE;
+                        blocks[i as usize] = BlockType::Stone;
                     }
 
                     if gy == surface.floor() as f32 {
@@ -96,9 +96,9 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
 
                         if temp > 2.0 && moisture < 2.0 {
                             // desert
-                            blocks[i as usize] = SAND;
+                            blocks[i as usize] = BlockType::Sand;
                         } else if temp > 1.0 {
-                            blocks[i as usize] = GRASS;
+                            blocks[i as usize] = BlockType::Grass;
                         }
                     }
                 }
