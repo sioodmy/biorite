@@ -1,9 +1,14 @@
 use bevy::render::render_resource::*;
+use bevy::render::settings::{Backends, WgpuSettings};
 use bevy::window::PresentMode;
 use biorite::*;
 
 fn main() {
     App::new()
+        .insert_resource(WgpuSettings {
+            backends: Some(Backends::VULKAN),
+            ..Default::default()
+        })
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
