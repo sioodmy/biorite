@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 pub use block_mesh::ndshape::{ConstShape, ConstShape3u32};
+pub use block_update::*;
 pub use blocks::*;
 pub use collider::*;
 pub use generator::*;
@@ -10,6 +11,7 @@ pub use sender::*;
 pub use serde_big_array::BigArray;
 pub use server::*;
 
+pub mod block_update;
 pub mod blocks;
 pub mod collider;
 pub mod generator;

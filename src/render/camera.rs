@@ -67,6 +67,7 @@ pub fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         AtmosphereCamera::default(),
+        RaycastSource::<MyRaycastSet>::new_transform_empty(),
         MainCamera,
         Camera::default(),
     ));

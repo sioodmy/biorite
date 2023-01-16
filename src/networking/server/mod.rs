@@ -174,6 +174,7 @@ impl Plugin for NetworkServerPlugin {
             .add_system(crate::server_recieve_messages)
             .add_system(server_ping_test)
             .add_system(chunk_unloader)
+            .add_system(handle_block_updates)
             .add_system(server_receive_input)
             .add_system(move_players_system)
             .add_system(server_sync_players)

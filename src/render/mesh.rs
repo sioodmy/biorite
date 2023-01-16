@@ -40,6 +40,7 @@ pub fn chunk_spawner(
                 ),
                 ..Default::default()
             })
+            .insert(RaycastMesh::<MyRaycastSet>::default())
             .insert(ChunkID(m_chunk.pos));
     }
 }

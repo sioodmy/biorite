@@ -7,6 +7,8 @@ pub struct CurrentServerMessages(pub Vec<(u64, ClientMessage)>);
 pub enum ClientMessage {
     Ping,
     PlayerInput(PlayerInput),
+    // TODO: Implement blockabort packet
+    BreakBlock(IVec3),
 }
 
 pub fn client_recieve_messages(

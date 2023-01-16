@@ -672,6 +672,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_mod_raycast"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a5813c0224e31350919e5fbf5a2099c3be4c7b8c04e8584ee4dba4e87795a19"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_pbr"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1046,6 +1055,7 @@ dependencies = [
  "bevy_asset_loader",
  "bevy_atmosphere",
  "bevy_egui",
+ "bevy_mod_raycast",
  "bevy_rapier3d",
  "bevy_renet",
  "bevy_spectator",
