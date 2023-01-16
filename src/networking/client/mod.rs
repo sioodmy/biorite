@@ -17,6 +17,7 @@ pub fn create_renet_client() -> RenetClient {
 
     let connection_config = RenetConnectionConfig {
         max_packet_size: 32 * 1024,
+        received_packets_buffer_size: 1000,
         send_channels_config: vec![
             ChannelConfig::Reliable(ReliableChannelConfig {
                 packet_budget: 30000,

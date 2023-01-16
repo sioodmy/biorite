@@ -10,6 +10,7 @@ pub const AIR: BlockType = BlockType(0);
 pub const GRASS: BlockType = BlockType(1);
 pub const DIRT: BlockType = BlockType(2);
 pub const STONE: BlockType = BlockType(3);
+pub const SAND: BlockType = BlockType(4);
 
 impl Voxel for BlockType {
     fn get_visibility(&self) -> VoxelVisibility {

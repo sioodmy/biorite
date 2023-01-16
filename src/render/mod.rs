@@ -16,7 +16,7 @@ pub use mesh::*;
 pub struct RenderClientPlugin;
 impl Plugin for RenderClientPlugin {
     fn build(&self, app: &mut App) {
-        let (tx, rx) = bounded::<MeshedChunk>(500);
+        let (tx, rx) = bounded::<MeshedChunk>(1000);
         app.add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
             .add_startup_system(load_chunk_texture)
             .add_system(create_array_texture)
