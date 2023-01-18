@@ -17,7 +17,7 @@ fn main() {
                         height: 720.,
                         title: format!("Biorite {}", env!("CARGO_PKG_VERSION")),
                         resizable: true,
-                        present_mode: PresentMode::AutoNoVsync,
+                        present_mode: PresentMode::AutoVsync,
                         ..Default::default()
                     },
                     ..Default::default()

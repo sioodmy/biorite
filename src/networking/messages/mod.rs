@@ -1,4 +1,6 @@
 use crate::prelude::*;
+pub use std::collections::HashSet;
+
 pub use bevy::{ecs::prelude::*, utils::HashMap};
 pub use bevy_renet::{renet::*, *};
 pub use client::*;
@@ -37,7 +39,7 @@ pub struct Player {
 #[derive(Debug, Default, Resource)]
 pub struct Lobby {
     pub players: HashMap<u64, Entity>,
-    pub sent_chunks: HashMap<u64, Vec<IVec3>>,
+    pub sent_chunks: HashMap<u64, HashSet<IVec3>>,
 }
 
 #[derive(

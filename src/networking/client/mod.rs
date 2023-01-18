@@ -21,7 +21,7 @@ pub fn create_renet_client() -> RenetClient {
         send_channels_config: vec![
             ChannelConfig::Reliable(ReliableChannelConfig {
                 packet_budget: 30000,
-                max_message_size: 8 * 1024,
+                max_message_size: 9 * 1024,
                 ..Default::default()
             }),
             ChannelConfig::Unreliable(UnreliableChannelConfig::default()),
@@ -132,19 +132,16 @@ pub fn entity_sync(
 }
 
 pub fn update_camera_system(
-    players: Query<(&ControlledPlayer, &Transform)>,
+    players: Query<&Transform, With<ControlledPlayer>>,
     mut cameras: Query<
         (&MainCamera, &mut Transform),
         Without<ControlledPlayer>,
     >,
 ) {
-    for (_, player_pos) in &players {
+    if let Ok(player_pos) = &players.get_single() {
         for (_, mut camera_pos) in &mut cameras {
             camera_pos.translation =
                 player_pos.translation + Vec3::new(5.0, 5.0, 5.0);
-            // *camera_pos = Transform::from_translation(
-            //     player_pos.translation + Vec3::new(10.0, 10.0, 10.0),
-            // );
         }
     }
 }
@@ -220,6 +217,7 @@ impl Plugin for NetworkClientPlugin {
                 world_pos: IVec3::ZERO,
             })
             .insert_resource(PlayerInput::default())
+            .insert_resource(AlreadyRequested::default())
             .insert_resource(Lobby::default())
             .add_system_set(
                 SystemSet::on_update(AppState::InGame)
@@ -227,8 +225,9 @@ impl Plugin for NetworkClientPlugin {
                     .with_system(client_recieve_messages)
                     .with_system(entity_spawn)
                     .with_system(player_input)
-                    .with_system(chunk_receiver)
+                    .with_system(request_chunk)
                     .with_system(entity_sync)
+                    .with_system(mesher)
                     .with_system(client_ping_test)
                     .with_system(client_send_input)
                     .with_system(update_player_pos)

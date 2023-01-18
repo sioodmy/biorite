@@ -1,8 +1,10 @@
 use crate::prelude::*;
 
+use bevy::utils::hashbrown::HashMap;
 pub use block_mesh::ndshape::{ConstShape, ConstShape3u32};
 pub use block_update::*;
 pub use blocks::*;
+pub use chunk_updater::*;
 pub use collider::*;
 pub use generator::*;
 pub use pos::*;
@@ -13,6 +15,7 @@ pub use server::*;
 
 pub mod block_update;
 pub mod blocks;
+pub mod chunk_updater;
 pub mod collider;
 pub mod generator;
 pub mod pos;
@@ -27,10 +30,14 @@ pub type ChunkShape =
 
 use lz4::block::decompress;
 
-#[derive(Component, Debug)]
-pub struct ChunkID(pub IVec3);
+pub struct ChunkEntry {
+    pub chunk: Chunk,
+    pub entity: Entity,
+}
+#[derive(Resource)]
+pub struct LoadedChunks(pub HashMap<IVec3, ChunkEntry>);
 
-#[derive(Serialize, Deserialize, Component, Debug, Resource, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, Resource, Copy, Clone)]
 pub struct Chunk {
     pub position: IVec3,
     #[serde(with = "BigArray")]

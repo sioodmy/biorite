@@ -3,10 +3,10 @@ use crate::prelude::*;
 #[derive(Debug, Default, Deref, DerefMut, Resource)]
 pub struct CurrentClientMessages(pub Vec<ServerMessage>);
 
-#[derive(Default, Deref, DerefMut, Resource)]
+#[derive(Default, Deref, DerefMut, Resource, Clone)]
 pub struct CurrentClientChunkMessages(pub Vec<ServerChunkMessage>);
 
-#[derive(Debug, Serialize, Deserialize, Resource)]
+#[derive(Debug, Serialize, Deserialize, Resource, Clone)]
 pub enum ServerChunkMessage {
     /// Multiple chunks when, for example spawn chunks
     ChunkBatch(Vec<CompressedChunk>),

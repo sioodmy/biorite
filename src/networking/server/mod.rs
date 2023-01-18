@@ -23,7 +23,7 @@ pub fn create_renet_server() -> RenetServer {
             }),
             ChannelConfig::Reliable(ReliableChannelConfig {
                 packet_budget: 30000,
-                max_message_size: 7000,
+                max_message_size: 9000,
                 ..Default::default()
             }),
             ChannelConfig::Chunk(ChunkChannelConfig {
@@ -80,7 +80,6 @@ fn server_events(
                 }
                 ServerChunkMessage::Init { player_ids }.send(&mut server, *id);
                 lobby.players.insert(*id, player_entity);
-                lobby.sent_chunks.insert(*id, Vec::new());
                 ServerMessage::PlayerSpawn(*id).broadcast(&mut server);
             }
             ServerEvent::ClientDisconnected(id) => {

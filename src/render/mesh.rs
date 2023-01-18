@@ -1,18 +1,22 @@
-use bevy::render::{
-    mesh::{Indices, VertexAttributeValues},
-    render_resource::PrimitiveTopology,
+use bevy::{
+    render::{
+        mesh::{Indices, VertexAttributeValues},
+        render_resource::PrimitiveTopology,
+    },
+    tasks::{AsyncComputeTaskPool, Task},
 };
 use block_mesh::{
     greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer,
     RIGHT_HANDED_Y_UP_CONFIG,
 };
 use crossbeam_channel::{Receiver, Sender};
-use rayon::iter::*;
+use futures_lite::future;
 
 use crate::prelude::*;
 
 pub struct MeshedChunk {
     mesh: Mesh,
+    chunk: Chunk,
     pos: IVec3,
 }
 
@@ -22,32 +26,51 @@ pub struct MeshChunkReceiver(pub Receiver<MeshedChunk>);
 #[derive(Resource, Deref)]
 pub struct MeshChunkSender(pub Sender<MeshedChunk>);
 
-pub fn chunk_spawner(
-    rx: Res<MeshChunkReceiver>,
+pub fn task_spawner(
     mut commands: Commands,
+    mut transform_tasks: Query<(Entity, &mut MeshTask)>,
     mut meshes: ResMut<Assets<Mesh>>,
     loading_texture: Res<LoadingTexture>,
+    mut loaded_chunks: ResMut<LoadedChunks>,
 ) {
-    for m_chunk in rx.0.try_iter() {
-        commands
-            .spawn(MaterialMeshBundle {
-                mesh: meshes.add(m_chunk.mesh),
-                material: loading_texture.material.clone(),
-                transform: Transform::from_xyz(
-                    m_chunk.pos.x as f32 * CHUNK_DIM as f32,
-                    m_chunk.pos.y as f32 * CHUNK_DIM as f32,
-                    m_chunk.pos.z as f32 * CHUNK_DIM as f32,
-                ),
-                ..Default::default()
-            })
-            .insert(RaycastMesh::<MyRaycastSet>::default())
-            .insert(ChunkID(m_chunk.pos));
+    for (entity, mut task) in &mut transform_tasks {
+        if let Some(mesh) = future::block_on(future::poll_once(&mut task.0)) {
+            // Add our new PbrBundle of components to our tagged entity
+            if let Some(meshed_chunk) = mesh {
+                let chunk_entity = commands
+                    .entity(entity)
+                    .insert(MaterialMeshBundle {
+                        mesh: meshes.add(meshed_chunk.1),
+                        material: loading_texture.material.clone(),
+                        transform: Transform::from_xyz(
+                            meshed_chunk.0.x as f32 * CHUNK_DIM as f32,
+                            meshed_chunk.0.y as f32 * CHUNK_DIM as f32,
+                            meshed_chunk.0.z as f32 * CHUNK_DIM as f32,
+                        ),
+                        ..Default::default()
+                    })
+                    .insert(RaycastMesh::<MyRaycastSet>::default())
+                    .id();
+                loaded_chunks.0.insert(
+                    meshed_chunk.0,
+                    ChunkEntry {
+                        chunk: meshed_chunk.2,
+                        entity: chunk_entity,
+                    },
+                );
+            } else {
+                commands.entity(entity).despawn();
+            };
+
+            // Task is complete, so remove task component from entity
+            commands.entity(entity).remove::<MeshTask>();
+        }
     }
 }
 
 pub fn chunk_despawner(
     mut commands: Commands,
-    chunk_query: Query<(Entity, &ChunkID), With<ChunkID>>,
+    mut loaded_chunks: ResMut<LoadedChunks>,
     player_query: Query<&GlobalTransform, With<Player>>,
 ) {
     // List of chunks that we actually need
@@ -74,23 +97,39 @@ pub fn chunk_despawner(
             }
         }
     }
-    for (q, p) in chunk_query.iter() {
-        if !relevant.contains(&p.0) {
-            commands.entity(q).despawn();
+
+    loaded_chunks
+        .0
+        .drain_filter(|pos, _| !relevant.contains(&pos))
+        .for_each(|(_, entry)| commands.entity(entry.entity).despawn());
+    loaded_chunks.0.shrink_to_fit();
+}
+
+#[derive(Component)]
+pub struct MeshTask(Task<Option<(IVec3, Mesh, Chunk)>>);
+
+pub fn mesher(
+    tx: Res<MeshChunkSender>,
+    mut chunk_messages: ResMut<CurrentClientChunkMessages>,
+    mut loaded_chunks: ResMut<LoadedChunks>,
+    mut commands: Commands,
+) {
+    let thread_pool = AsyncComputeTaskPool::get();
+    for message in chunk_messages.drain(..) {
+        if let ServerChunkMessage::ChunkBatch(compressed_batch) = message {
+            for c_chunk in compressed_batch.iter() {
+                let chunk = Chunk::from_compressed(c_chunk);
+                let task = thread_pool.spawn(async move {
+                    if let Some(mesh) = greedy_mesh(chunk.blocks) {
+                        Some((chunk.position, mesh, chunk))
+                    } else {
+                        None
+                    }
+                });
+                commands.spawn(MeshTask(task));
+            }
         }
     }
-}
-pub fn mesher(compressed_batch: Vec<CompressedChunk>, tx: Sender<MeshedChunk>) {
-    compressed_batch.par_iter().for_each(|c_chunk| {
-        let chunk = Chunk::from_compressed(c_chunk);
-        if let Some(mesh) = greedy_mesh(chunk.blocks) {
-            tx.send(MeshedChunk {
-                mesh,
-                pos: chunk.position,
-            })
-            .expect("Couldn't send mesh to crossbeam channel");
-        };
-    });
 }
 pub fn greedy_mesh(
     voxels: [BlockType; ChunkShape::SIZE as usize],

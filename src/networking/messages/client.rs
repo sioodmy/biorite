@@ -9,6 +9,9 @@ pub enum ClientMessage {
     PlayerInput(PlayerInput),
     // TODO: Implement blockabort packet
     BreakBlock(IVec3),
+
+    // RequestChunkBox([IVec3; 4]),
+    RequestChunk(Vec<IVec3>),
 }
 
 pub fn client_recieve_messages(

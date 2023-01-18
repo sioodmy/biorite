@@ -27,6 +27,7 @@ impl Plugin for RenderClientPlugin {
             .add_startup_system(load_chunk_texture)
             .add_plugin(DefaultRaycastingPlugin::<MyRaycastSet>::default())
             .add_system(create_array_texture)
+            .insert_resource(LoadedChunks(HashMap::new()))
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame)
                     .with_system(spawn_camera)
@@ -36,9 +37,10 @@ impl Plugin for RenderClientPlugin {
                 SystemSet::on_update(AppState::InGame)
                     .with_system(mouse_movement)
                     .with_system(cursor_grab_system)
-                    .with_system(chunk_spawner)
+                    // .with_system(chunk_spawner)
+                    .with_system(task_spawner)
                     .with_system(intersection)
-                    .with_system(chunk_despawner),
+                    .with_system(client_chunk_despawner),
             )
             .add_plugin(AtmospherePlugin)
             .insert_resource(MeshChunkReceiver(rx))
