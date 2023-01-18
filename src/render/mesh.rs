@@ -5,6 +5,7 @@ use bevy::{
     },
     tasks::{AsyncComputeTaskPool, Task},
 };
+use bevy_easings::*;
 use block_mesh::{
     greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer,
     RIGHT_HANDED_Y_UP_CONFIG,
@@ -42,13 +43,26 @@ pub fn chunk_renderer(
                     .insert(MaterialMeshBundle {
                         mesh: meshes.add(meshed_chunk.mesh),
                         material: loading_texture.material.clone(),
-                        transform: Transform::from_xyz(
-                            meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
-                            meshed_chunk.pos.y as f32 * CHUNK_DIM as f32,
-                            meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
-                        ),
                         ..Default::default()
                     })
+                    .insert(
+                        Transform::from_xyz(
+                            meshed_chunk.pos.x as f32 * CHUNK_DIM as f32 ,
+                            meshed_chunk.pos.y as f32 * CHUNK_DIM as f32 - 15.0,
+                            meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
+                        )
+                        .ease_to(
+                            Transform::from_xyz(
+                                meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
+                                meshed_chunk.pos.y as f32 * CHUNK_DIM as f32,
+                                meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
+                            ),
+                            EaseFunction::QuadraticIn,
+                            EasingType::Once {
+                                duration: std::time::Duration::from_millis(350),
+                            },
+                        ),
+                    )
                     .insert(RaycastMesh::<MyRaycastSet>::default())
                     .id();
                 loaded_chunks.0.insert(

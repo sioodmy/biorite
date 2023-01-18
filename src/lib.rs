@@ -23,6 +23,6 @@ pub const RENDER_DISTANCE: i16 = 4;
 
 pub const REACH: f32 = 40.0;
 
-pub const PLAYER_SPEED: f32 = 8.3;
+pub const PLAYER_SPEED: f32 = 18.3;
 
 pub const PROTOCOL_ID: u64 = 1000;
