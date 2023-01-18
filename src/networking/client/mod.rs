@@ -1,4 +1,6 @@
 use super::messages::*;
+use bevy_easings::*;
+
 use crate::*;
 use local_ip_address::local_ip;
 use smooth_bevy_cameras::LookTransformPlugin;
@@ -113,6 +115,7 @@ pub fn entity_spawn(
 pub fn entity_sync(
     lobby: ResMut<Lobby>,
     mut commands: Commands,
+    old_pos: Query<&Transform, With<Player>>,
     messages: Res<CurrentClientMessages>,
 ) {
     for message in messages.iter() {
@@ -120,11 +123,21 @@ pub fn entity_sync(
         if let ServerMessage::EntitySync(sync) = message {
             for (player_id, translation) in sync.iter() {
                 if let Some(player_entity) = lobby.players.get(player_id) {
-                    let transform = Transform {
-                        translation: (*translation).into(),
-                        ..Default::default()
-                    };
-                    commands.entity(*player_entity).insert(transform);
+                    let old = old_pos.get(*player_entity);
+
+                    if let Ok(old_transform) = old {
+                        let transform = old_transform.ease_to(
+                            Transform {
+                                translation: (*translation).into(),
+                                ..Default::default()
+                            },
+                            EaseFunction::SineIn,
+                            EasingType::Once {
+                                duration: std::time::Duration::from_millis(50),
+                            },
+                        );
+                        commands.entity(*player_entity).insert(transform);
+                    }
                 }
             }
         }
@@ -210,6 +223,7 @@ pub struct NetworkClientPlugin;
 impl Plugin for NetworkClientPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(create_renet_client())
+            .add_plugin(EasingsPlugin)
             .init_resource::<CurrentClientMessages>()
             .init_resource::<CurrentClientChunkMessages>()
             .insert_resource(CurrentLocalPlayerChunk {
