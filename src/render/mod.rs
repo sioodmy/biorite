@@ -7,7 +7,6 @@ pub use bevy_mod_raycast::{
     RaycastSource,
 };
 pub use bevy_spectator::SpectatorPlugin;
-use crossbeam_channel::bounded;
 
 pub mod camera;
 pub mod material;
@@ -22,11 +21,11 @@ pub use raycast::*;
 pub struct RenderClientPlugin;
 impl Plugin for RenderClientPlugin {
     fn build(&self, app: &mut App) {
-        let (tx, rx) = bounded::<MeshedChunk>(1000);
         app.add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
             .add_startup_system(load_chunk_texture)
             .add_plugin(DefaultRaycastingPlugin::<MyRaycastSet>::default())
             .add_system(create_array_texture)
+            .insert_resource(MeshQueue(Vec::new()))
             .insert_resource(LoadedChunks(HashMap::new()))
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame)
@@ -37,14 +36,11 @@ impl Plugin for RenderClientPlugin {
                 SystemSet::on_update(AppState::InGame)
                     .with_system(mouse_movement)
                     .with_system(cursor_grab_system)
-                    // .with_system(chunk_spawner)
-                    .with_system(task_spawner)
+                    .with_system(chunk_renderer)
                     .with_system(intersection)
                     .with_system(client_chunk_despawner),
             )
             .add_plugin(AtmospherePlugin)
-            .insert_resource(MeshChunkReceiver(rx))
-            .insert_resource(MeshChunkSender(tx))
             .insert_resource(Msaa { samples: 4 });
     }
 }

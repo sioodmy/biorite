@@ -4,6 +4,21 @@ use crate::prelude::*;
 #[derive(Resource, Default)]
 pub struct AlreadyRequested(pub Vec<IVec3>);
 
+/// Push received chunks from the server into mesher
+pub fn receive_chunk(
+    mut chunk_messages: ResMut<CurrentClientChunkMessages>,
+    mut mesh_queue: ResMut<MeshQueue>,
+) {
+    for message in chunk_messages.drain(..) {
+        if let ServerChunkMessage::ChunkBatch(compressed_batch) = message {
+            for compressed_chunk in compressed_batch.iter() {
+                let chunk = Chunk::from_compressed(compressed_chunk);
+                mesh_queue.0.push(chunk)
+            }
+        }
+    }
+}
+
 /// Request chunks around the player
 /// To save bandwidth we only send cube boundaries
 /// as `[IVec3; 4]`
@@ -78,7 +93,7 @@ pub fn client_chunk_despawner(
 
     loaded_chunks
         .0
-        .drain_filter(|pos, _| !relevant.contains(&pos))
+        .drain_filter(|pos, _| !relevant.contains(pos))
         .for_each(|(_, entry)| commands.entity(entry.entity).despawn());
     loaded_chunks.0.shrink_to_fit();
     sent.0.retain(|chunk| relevant.contains(chunk));

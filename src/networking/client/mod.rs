@@ -225,6 +225,7 @@ impl Plugin for NetworkClientPlugin {
                     .with_system(client_recieve_messages)
                     .with_system(entity_spawn)
                     .with_system(player_input)
+                    .with_system(receive_chunk)
                     .with_system(request_chunk)
                     .with_system(entity_sync)
                     .with_system(mesher)

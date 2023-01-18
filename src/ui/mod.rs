@@ -1,6 +1,5 @@
 use crate::prelude::*;
-use bevy::asset::LoadState;
-use bevy::{prelude::*, winit::WinitSettings};
+
 use lazy_static::lazy_static;
 
 #[derive(Component)]
@@ -25,6 +24,7 @@ pub fn test_menu(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn button_hover(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor),

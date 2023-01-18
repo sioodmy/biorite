@@ -1,6 +1,5 @@
 use crate::prelude::*;
 use bracket_noise::prelude::*;
-use rand::Rng;
 
 use std::{fs, path::Path};
 
@@ -113,8 +112,6 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
                         if temp > 2.0 && moisture < 2.0 {
                             // desert
                             blocks[i as usize] = BlockType::Sand;
-                        } else if temp > 1.0 {
-                            blocks[i as usize] = BlockType::Grass;
                         } else {
                             blocks[i as usize] = BlockType::Grass;
                         }

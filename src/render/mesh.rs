@@ -9,24 +9,25 @@ use block_mesh::{
     greedy_quads, ndshape::ConstShape, GreedyQuadsBuffer,
     RIGHT_HANDED_Y_UP_CONFIG,
 };
-use crossbeam_channel::{Receiver, Sender};
 use futures_lite::future;
 
 use crate::prelude::*;
 
+#[derive(Resource, Deref, DerefMut)]
+pub struct MeshQueue(pub Vec<Chunk>);
+
+#[derive(Component)]
+pub struct MeshTask(Task<Option<MeshedChunk>>);
+
+/// Stores data required for spawning chunk entity
 pub struct MeshedChunk {
     mesh: Mesh,
     chunk: Chunk,
     pos: IVec3,
 }
 
-#[derive(Resource, Deref)]
-pub struct MeshChunkReceiver(pub Receiver<MeshedChunk>);
-
-#[derive(Resource, Deref)]
-pub struct MeshChunkSender(pub Sender<MeshedChunk>);
-
-pub fn task_spawner(
+/// Once mesh is generated, apply it to the chunk entity
+pub fn chunk_renderer(
     mut commands: Commands,
     mut transform_tasks: Query<(Entity, &mut MeshTask)>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -35,26 +36,25 @@ pub fn task_spawner(
 ) {
     for (entity, mut task) in &mut transform_tasks {
         if let Some(mesh) = future::block_on(future::poll_once(&mut task.0)) {
-            // Add our new PbrBundle of components to our tagged entity
             if let Some(meshed_chunk) = mesh {
                 let chunk_entity = commands
                     .entity(entity)
                     .insert(MaterialMeshBundle {
-                        mesh: meshes.add(meshed_chunk.1),
+                        mesh: meshes.add(meshed_chunk.mesh),
                         material: loading_texture.material.clone(),
                         transform: Transform::from_xyz(
-                            meshed_chunk.0.x as f32 * CHUNK_DIM as f32,
-                            meshed_chunk.0.y as f32 * CHUNK_DIM as f32,
-                            meshed_chunk.0.z as f32 * CHUNK_DIM as f32,
+                            meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
+                            meshed_chunk.pos.y as f32 * CHUNK_DIM as f32,
+                            meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
                         ),
                         ..Default::default()
                     })
                     .insert(RaycastMesh::<MyRaycastSet>::default())
                     .id();
                 loaded_chunks.0.insert(
-                    meshed_chunk.0,
+                    meshed_chunk.pos,
                     ChunkEntry {
-                        chunk: meshed_chunk.2,
+                        chunk: meshed_chunk.chunk,
                         entity: chunk_entity,
                     },
                 );
@@ -100,37 +100,30 @@ pub fn chunk_despawner(
 
     loaded_chunks
         .0
-        .drain_filter(|pos, _| !relevant.contains(&pos))
+        .drain_filter(|pos, _| !relevant.contains(pos))
         .for_each(|(_, entry)| commands.entity(entry.entity).despawn());
     loaded_chunks.0.shrink_to_fit();
 }
 
-#[derive(Component)]
-pub struct MeshTask(Task<Option<(IVec3, Mesh, Chunk)>>);
-
-pub fn mesher(
-    tx: Res<MeshChunkSender>,
-    mut chunk_messages: ResMut<CurrentClientChunkMessages>,
-    mut loaded_chunks: ResMut<LoadedChunks>,
-    mut commands: Commands,
-) {
+/// Spawns `MeshTask` task to parallelize greedy meshing, because it's quite
+/// expensive operation
+pub fn mesher(mut mesh_queue: ResMut<MeshQueue>, mut commands: Commands) {
     let thread_pool = AsyncComputeTaskPool::get();
-    for message in chunk_messages.drain(..) {
-        if let ServerChunkMessage::ChunkBatch(compressed_batch) = message {
-            for c_chunk in compressed_batch.iter() {
-                let chunk = Chunk::from_compressed(c_chunk);
-                let task = thread_pool.spawn(async move {
-                    if let Some(mesh) = greedy_mesh(chunk.blocks) {
-                        Some((chunk.position, mesh, chunk))
-                    } else {
-                        None
-                    }
-                });
-                commands.spawn(MeshTask(task));
-            }
-        }
+    for chunk in mesh_queue.0.drain(..) {
+        let task = thread_pool.spawn(async move {
+            debug!("meshing, {:?}", chunk.position);
+            greedy_mesh(chunk.blocks).map(|mesh| MeshedChunk {
+                pos: chunk.position,
+                mesh,
+                chunk,
+            })
+        });
+        commands.spawn(MeshTask(task));
     }
 }
+
+/// Optimizes chunk mesh, by reducing number of vertices gpu has to render
+/// See https://0fps.net/2012/06/30/meshing-in-a-minecraft-game/
 pub fn greedy_mesh(
     voxels: [BlockType; ChunkShape::SIZE as usize],
 ) -> Option<Mesh> {
