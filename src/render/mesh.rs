@@ -88,6 +88,7 @@ pub fn chunk_despawner(
     player_query: Query<&GlobalTransform, With<Player>>,
 ) {
     // List of chunks that we actually need
+    let _span = info_span!("unloading_chunks", name = "unloading_chunks").entered();
     let mut relevant = Vec::new();
     for player in player_query.iter() {
         let player_coords = player.translation().as_ivec3();
@@ -124,7 +125,7 @@ pub fn chunk_despawner(
 pub fn mesher(mut mesh_queue: ResMut<MeshQueue>, mut commands: Commands) {
     let thread_pool = AsyncComputeTaskPool::get();
     // Limit how many chunks can be meshed per frame to avoid lag spikes
-    let limit = usize::min(mesh_queue.0.len(), 5);
+    let limit = usize::min(mesh_queue.0.len(), 3);
     for chunk in mesh_queue.0.drain(..limit) {
         let task = thread_pool.spawn(async move {
             debug!("meshing, {:?}", chunk.position);

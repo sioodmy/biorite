@@ -75,18 +75,20 @@ pub fn entity_spawn(
     for message in messages.iter() {
         if let ServerMessage::PlayerSpawn(id) = message {
             info!("Player {} joined the game", id);
-            let player_entity = commands
-                .spawn(PbrBundle {
+            let player_entity = commands.spawn(Player { id: *id }).id();
+
+            if *id == client.client_id() {
+                commands
+                    .entity(player_entity)
+                    .insert(ControlledPlayer)
+                    .insert(PbrBundle::default());
+            } else {
+                commands.entity(player_entity).insert(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                     material: materials.add(Color::rgb(0.8, 0.20, 0.6).into()),
                     transform: Transform::from_xyz(0.0, 25.0, 0.0),
                     ..Default::default()
-                })
-                .insert(Player { id: *id })
-                .id();
-
-            if *id == client.client_id() {
-                commands.entity(player_entity).insert(ControlledPlayer);
+                });
             }
 
             lobby.players.insert(*id, player_entity);
@@ -115,7 +117,6 @@ pub fn entity_spawn(
 pub fn entity_sync(
     lobby: ResMut<Lobby>,
     mut commands: Commands,
-    old_pos: Query<&Transform, With<Player>>,
     messages: Res<CurrentClientMessages>,
 ) {
     for message in messages.iter() {
@@ -123,21 +124,11 @@ pub fn entity_sync(
         if let ServerMessage::EntitySync(sync) = message {
             for (player_id, translation) in sync.iter() {
                 if let Some(player_entity) = lobby.players.get(player_id) {
-                    let old = old_pos.get(*player_entity);
-
-                    if let Ok(old_transform) = old {
-                        let transform = old_transform.ease_to(
-                            Transform {
-                                translation: (*translation).into(),
-                                ..Default::default()
-                            },
-                            EaseFunction::SineIn,
-                            EasingType::Once {
-                                duration: std::time::Duration::from_millis(50),
-                            },
-                        );
-                        commands.entity(*player_entity).insert(transform);
-                    }
+                    let transform = Transform {
+                        translation: (*translation).into(),
+                        ..Default::default()
+                    };
+                    commands.entity(*player_entity).insert(transform);
                 }
             }
         }
@@ -153,8 +144,7 @@ pub fn update_camera_system(
 ) {
     if let Ok(player_pos) = &players.get_single() {
         for (_, mut camera_pos) in &mut cameras {
-            camera_pos.translation =
-                player_pos.translation + Vec3::new(5.0, 5.0, 5.0);
+            camera_pos.translation = player_pos.translation;
         }
     }
 }

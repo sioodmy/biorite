@@ -73,6 +73,25 @@ pub fn spawn_camera(mut commands: Commands) {
     ));
 }
 
+pub fn crosshair(mut commands: Commands, assets: Res<AssetServer>) {
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                size: Size::new(Val::Percent(100.), Val::Auto),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(ImageBundle {
+                image: assets.load("textures/crosshair.png").into(),
+                ..default()
+            });
+        });
+}
+
 pub fn mouse_movement(
     time: Res<Time>,
     mut mouse_motion_event: EventReader<MouseMotion>,
