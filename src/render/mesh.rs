@@ -109,7 +109,9 @@ pub fn chunk_despawner(
 /// expensive operation
 pub fn mesher(mut mesh_queue: ResMut<MeshQueue>, mut commands: Commands) {
     let thread_pool = AsyncComputeTaskPool::get();
-    for chunk in mesh_queue.0.drain(..) {
+    // Limit how many chunks can be meshed per frame to avoid lag spikes
+    let limit = usize::min(mesh_queue.0.len(), 5);
+    for chunk in mesh_queue.0.drain(..limit) {
         let task = thread_pool.spawn(async move {
             debug!("meshing, {:?}", chunk.position);
             greedy_mesh(chunk.blocks).map(|mesh| MeshedChunk {
