@@ -36,6 +36,7 @@ impl Plugin for RenderClientPlugin {
             .add_system_set(
                 SystemSet::on_update(AppState::InGame)
                     .with_system(mouse_movement)
+                    .with_system(client_block_updates)
                     .with_system(cursor_grab_system)
                     .with_system(chunk_renderer)
                     .with_system(intersection)

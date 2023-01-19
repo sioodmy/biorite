@@ -36,6 +36,7 @@ colorgrad = "0.6.2"
 smooth-bevy-cameras = "0.6.0"
 futures-lite = "1.12.0"
 bevy_mod_raycast = "0.7.0"
+belly = { git ="https://github.com/jkb0o/belly", rev="61b9aaed9a83cdcf99ccac2c79bb680a97cfd653"}
 kayak_ui = { git = "https://github.com/StarArawn/kayak_ui", rev="910a00cdd3857cc7515f153580afd057de0abaf0"}
 bevy_rapier3d = "0.19.0"
 rayon = "1.6.1"

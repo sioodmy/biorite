@@ -22,6 +22,7 @@ pub enum ServerMessage {
     PlayerSpawn(u64),
     PlayerDespawn(u64),
     EntitySync(HashMap<u64, [f32; 3]>),
+    BlockDelta { pos: IVec3, block: BlockType },
 }
 
 impl ServerChunkMessage {
