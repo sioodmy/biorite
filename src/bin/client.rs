@@ -38,6 +38,8 @@ fn main() {
         .add_plugin(NetworkClientPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(DebugPlugin)
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        // .add_plugin(RapierDebugRenderPlugin::default())
         .add_state(AppState::MainMenu)
         .run();
 }

@@ -40,6 +40,8 @@ pub fn chunk_renderer(
             if let Some(meshed_chunk) = mesh {
                 let chunk_entity = commands
                     .entity(entity)
+                    .insert(ColliderMassProperties::Density(100000.0))
+                    .insert(Collider::from_bevy_mesh(&meshed_chunk.mesh, &ComputedColliderShape::TriMesh).unwrap())
                     .insert(MaterialMeshBundle {
                         mesh: meshes.add(meshed_chunk.mesh),
                         material: loading_texture.material.clone(),
@@ -125,7 +127,7 @@ pub fn chunk_despawner(
 pub fn mesher(mut mesh_queue: ResMut<MeshQueue>, mut commands: Commands) {
     let thread_pool = AsyncComputeTaskPool::get();
     // Limit how many chunks can be meshed per frame to avoid lag spikes
-    let limit = usize::min(mesh_queue.0.len(), 1);
+    let limit = usize::min(mesh_queue.0.len(), 5);
     for chunk in mesh_queue.0.drain(..limit) {
         let task = thread_pool.spawn(async move {
             greedy_mesh(chunk.blocks).map(|mesh| MeshedChunk {
@@ -209,7 +211,7 @@ pub fn greedy_mesh(
                             [0.0, 1.0, 0.0],
                         ]
                     {
-                        1.0
+                        0.9
                     } else {
                         0.6
                     }

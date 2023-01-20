@@ -81,16 +81,55 @@ pub fn entity_spawn(
                 commands
                     .entity(player_entity)
                     .insert(ControlledPlayer)
-                    .insert(PbrBundle::default());
+                    .insert(RigidBody::Dynamic)
+                    .insert(ExternalImpulse::default())
+                    .insert(ExternalForce::default())
+                    .insert(LockedAxes::ROTATION_LOCKED)
+                    .insert(Friction {
+                        coefficient: 1.0,
+                        combine_rule: CoefficientCombineRule::Min,
+                    })
+                    .insert(Restitution {
+                        coefficient: 0.0,
+                        combine_rule: CoefficientCombineRule::Max,
+                    })
+                    .insert(AdditionalMassProperties::Mass(50.0))
+                    .insert(Collider::cuboid(0.5, 1.9, 0.5))
+                    .insert(GravityScale(3.0))
+                    .insert(Ccd::enabled())
+                    .insert(Velocity::zero())
+                    .insert(PbrBundle {
+                        transform: Transform::from_xyz(0.0, 50.0, 0.0),
+                        ..Default::default()
+                    });
             } else {
-                commands.entity(player_entity).insert(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Capsule::default())),
-                    material: materials.add(Color::rgb(0.8, 0.20, 0.6).into()),
-                    transform: Transform::from_xyz(0.0, 25.0, 0.0),
-                    ..Default::default()
-                });
+                commands
+                    .entity(player_entity)
+                    .insert(PbrBundle {
+                        mesh: meshes.add(Mesh::from(shape::Capsule::default())),
+                        material: materials
+                            .add(Color::rgb(0.8, 0.20, 0.6).into()),
+                        transform: Transform::from_xyz(0.0, 50.0, 0.0),
+                        ..Default::default()
+                    })
+                    .insert(RigidBody::Dynamic)
+                    .insert(ExternalImpulse::default())
+                    .insert(ExternalForce::default())
+                    .insert(LockedAxes::ROTATION_LOCKED)
+                    .insert(Friction {
+                        coefficient: 1.0,
+                        combine_rule: CoefficientCombineRule::Min,
+                    })
+                    .insert(Restitution {
+                        coefficient: 0.0,
+                        combine_rule: CoefficientCombineRule::Max,
+                    })
+                    .insert(AdditionalMassProperties::Mass(50.0))
+                    .insert(Collider::ball(0.5))
+                    .insert(GravityScale(3.0))
+                    .insert(Ccd::enabled())
+                    .insert(Velocity::zero());
             }
-
             lobby.players.insert(*id, player_entity);
         }
     }
@@ -166,8 +205,10 @@ fn movement_axis(
 
 fn player_input(
     input: Res<Input<KeyCode>>,
-    query: Query<(&MainCamera, &Transform)>,
+    query: Query<(&MainCamera, &Transform), Without<ControlledPlayer>>,
+    mut players: Query<&mut Transform, With<ControlledPlayer>>,
     mut player_input: ResMut<PlayerInput>,
+    time: Res<Time>,
 ) {
     for (_options, transform) in query.iter() {
         let (axis_h, axis_v) = (
@@ -181,7 +222,15 @@ fn player_input(
         f.y = 0.0;
         let mut l = transform.left();
         l.y = 0.0;
-        let vec = ((f * axis_h) + (l * axis_v)).normalize_or_zero();
+        let mut vec = ((f * axis_h) + (l * axis_v)).normalize_or_zero();
+
+        if input.just_pressed(KeyCode::Space) {
+            vec.y = 10.0;
+        }
+        for mut player in players.iter_mut() {
+            player.translation +=
+                vec * PLAYER_SPEED * time.delta().as_secs_f32();
+        }
         player_input.forward = vec.x;
         player_input.sideways = vec.z;
         player_input.jumping = input.just_pressed(KeyCode::Space);
@@ -231,7 +280,7 @@ impl Plugin for NetworkClientPlugin {
                     .with_system(player_input)
                     .with_system(receive_chunk)
                     .with_system(request_chunk)
-                    .with_system(entity_sync)
+                    // .with_system(entity_sync)
                     .with_system(mesher)
                     .with_system(client_ping_test)
                     .with_system(client_send_input)

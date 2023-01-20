@@ -85,7 +85,7 @@ impl BlockType {
             Dirt => BlockTexture::full(2),
             Stone => BlockTexture::full(3),
             Sand => BlockTexture::full(4),
-            Wood => BlockTexture::new(5, 6, 5),
+            Wood => BlockTexture::new(6, 5, 6),
         }
     }
 }
