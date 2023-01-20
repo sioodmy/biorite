@@ -206,7 +206,9 @@ fn movement_axis(
 fn player_input(
     input: Res<Input<KeyCode>>,
     query: Query<(&MainCamera, &Transform), Without<ControlledPlayer>>,
-    mut players: Query<&mut Transform, With<ControlledPlayer>>,
+    // mut players: Query<&mut Velocity, With<ControlledPlayer>>,
+    mut ext_impulses: Query<&mut ExternalImpulse, With<ControlledPlayer>>,
+    mut player_pos: Query<&mut Transform, With<ControlledPlayer>>,
     mut player_input: ResMut<PlayerInput>,
     time: Res<Time>,
 ) {
@@ -222,15 +224,24 @@ fn player_input(
         f.y = 0.0;
         let mut l = transform.left();
         l.y = 0.0;
-        let mut vec = ((f * axis_h) + (l * axis_v)).normalize_or_zero();
+        let vec = ((f * axis_h) + (l * axis_v)).normalize_or_zero();
 
-        if input.just_pressed(KeyCode::Space) {
-            vec.y = 10.0;
+        if let Ok(mut pos) = player_pos.get_single_mut() {
+            pos.translation += vec * PLAYER_SPEED * time.delta().as_secs_f32();
+        };
+
+        // Jump signal
+        if let Ok(mut impulse) = ext_impulses.get_single_mut() {
+            let jump = if input.just_pressed(KeyCode::Space) {
+                500.0
+            } else {
+                0.0
+            };
+            impulse.impulse = Vec3::new(0.0, jump, 0.0);
+        } else {
+            warn!("More than one entity has ControlledPlayer component");
         }
-        for mut player in players.iter_mut() {
-            player.translation +=
-                vec * PLAYER_SPEED * time.delta().as_secs_f32();
-        }
+
         player_input.forward = vec.x;
         player_input.sideways = vec.z;
         player_input.jumping = input.just_pressed(KeyCode::Space);
