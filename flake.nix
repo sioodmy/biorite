@@ -3,12 +3,17 @@
     flake-utils.url = "github:numtide/flake-utils";
     naersk.url = "github:nix-community/naersk";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
     self,
     flake-utils,
     naersk,
+    fenix,
     nixpkgs,
   }:
     flake-utils.lib.eachDefaultSystem (
@@ -17,7 +22,21 @@
           inherit system;
         };
 
-        naersk' = pkgs.callPackage naersk {};
+        toolchain = with fenix.packages.${system};
+          combine [
+            minimal.rustc
+            minimal.cargo
+            complete.clippy-preview
+            complete.rustfmt-preview
+            complete.rust-analyzer-preview
+            targets.x86_64-unknown-linux-musl.latest.rust-std
+            targets.x86_64-pc-windows-gnu.latest.rust-std
+          ];
+
+        naersk' = naersk.lib.${system}.override {
+          cargo = toolchain;
+          rustc = toolchain;
+        };
 
         build-deps = with pkgs; [
           llvmPackages.bintools
@@ -42,7 +61,6 @@
           libxkbcommon
           wayland
           glfw-wayland
-          zstd
         ];
       in rec {
         # For `nix build` & `nix run`:
@@ -73,13 +91,7 @@
             RUST_LOG = "info,wgpu_core=warn,wgpu_hal=off,rechannel=warn,biorite=debug";
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtime-deps;
             buildInputs =
-              [
-                rustc
-                cargo
-                rustfmt
-                rust-analyzer
-                clippy
-              ]
+              [toolchain]
               ++ runtime-deps
               ++ build-deps;
           };
