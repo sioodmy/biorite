@@ -1,10 +1,9 @@
 use crate::prelude::*;
 use bevy::utils::HashMap;
 use local_ip_address::local_ip;
-use std::time::Duration;
 use std::{
     net::{SocketAddr, UdpSocket},
-    time::SystemTime,
+    time::{Duration, SystemTime},
 };
 
 pub fn create_renet_server() -> RenetServer {
@@ -63,11 +62,28 @@ fn server_events(
                         mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                         material: materials
                             .add(Color::rgb(0.8, 0.20, 0.6).into()),
-                        transform: Transform::from_xyz(0.0, 25.0, 0.0),
+                        transform: Transform::from_xyz(0.0, 50.0, 0.0),
                         ..Default::default()
                     })
                     .insert(PlayerInput::default())
                     .insert(Player { id: *id })
+                    .insert(RigidBody::Dynamic)
+                    .insert(ExternalImpulse::default())
+                    .insert(ExternalForce::default())
+                    .insert(LockedAxes::ROTATION_LOCKED)
+                    .insert(Friction {
+                        coefficient: 1.0,
+                        combine_rule: CoefficientCombineRule::Min,
+                    })
+                    .insert(Restitution {
+                        coefficient: 0.0,
+                        combine_rule: CoefficientCombineRule::Max,
+                    })
+                    .insert(AdditionalMassProperties::Mass(50.0))
+                    .insert(Collider::ball(0.5))
+                    .insert(GravityScale(3.0))
+                    .insert(Ccd::enabled())
+                    .insert(Velocity::zero())
                     .id();
 
                 // We could send an InitState with all the players id and

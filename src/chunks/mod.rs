@@ -28,8 +28,6 @@ pub const CHUNK_DIM: u32 = 16;
 pub type ChunkShape =
     ConstShape3u32<{ CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }>;
 
-use lz4::block::decompress;
-
 pub struct ChunkEntry {
     pub chunk: Chunk,
     pub entity: Entity,
@@ -67,11 +65,10 @@ impl Default for Chunk {
 impl Chunk {
     pub fn compress(&self) -> CompressedChunk {
         let message = bincode::serialize(self).unwrap();
-        compress(&message, Some(CompressionMode::HIGHCOMPRESSION(12)), true)
-            .unwrap()
+        compress_prepend_size(&message)
     }
     pub fn from_compressed(bytes: &CompressedChunk) -> Self {
-        let message = decompress(bytes, None).unwrap();
+        let message = decompress_size_prepended(&bytes).unwrap();
         bincode::deserialize(&message).unwrap()
     }
 }

@@ -8,6 +8,9 @@ impl Plugin for ChunkServerPlugin {
         let (tx, rx) = bounded::<Chunk>(1000);
         app.add_system(chunk_send)
             .add_system(chunk_despawner)
+            .add_system(server_chunk_spawn)
+            .add_system(mesher)
+            .insert_resource(MeshQueue(Vec::new()))
             .insert_resource(LoadedChunks(HashMap::new()))
             .insert_resource(ChunkUpdaterSender(tx))
             .insert_resource(ChunkUpdaterReceiver(rx));

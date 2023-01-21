@@ -1,5 +1,4 @@
-use bevy::input::mouse::MouseMotion;
-use bevy::window::CursorGrabMode;
+use bevy::{input::mouse::MouseMotion, window::CursorGrabMode};
 use std::f32::consts;
 
 use crate::*;

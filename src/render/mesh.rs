@@ -27,6 +27,49 @@ pub struct MeshedChunk {
     pos: IVec3,
 }
 
+pub fn server_chunk_spawn(
+    mut commands: Commands,
+    mut transform_tasks: Query<(Entity, &mut MeshTask)>,
+    mut loaded_chunks: ResMut<LoadedChunks>,
+) {
+    for (entity, mut task) in &mut transform_tasks {
+        if let Some(mesh) = future::block_on(future::poll_once(&mut task.0)) {
+            if let Some(meshed_chunk) = mesh {
+                info!("spawning chunk {:?}", meshed_chunk.pos);
+                let chunk_entity = commands
+                    .entity(entity)
+                    .insert(ColliderMassProperties::Density(100000.0))
+                    .insert(
+                        Collider::from_bevy_mesh(
+                            &meshed_chunk.mesh,
+                            &ComputedColliderShape::TriMesh,
+                        )
+                        .unwrap(),
+                    )
+                    .insert(Transform::from_xyz(
+                        meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
+                        meshed_chunk.pos.y as f32 * CHUNK_DIM as f32,
+                        meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
+                    ))
+                    .insert(RaycastMesh::<MyRaycastSet>::default())
+                    .id();
+                loaded_chunks.0.insert(
+                    meshed_chunk.pos,
+                    ChunkEntry {
+                        chunk: meshed_chunk.chunk,
+                        entity: chunk_entity,
+                    },
+                );
+            } else {
+                commands.entity(entity).despawn();
+            };
+
+            // Task is complete, so remove task component from entity
+            commands.entity(entity).remove::<MeshTask>();
+        }
+    }
+}
+
 /// Once mesh is generated, apply it to the chunk entity
 pub fn chunk_renderer(
     mut commands: Commands,
@@ -41,7 +84,13 @@ pub fn chunk_renderer(
                 let chunk_entity = commands
                     .entity(entity)
                     .insert(ColliderMassProperties::Density(100000.0))
-                    .insert(Collider::from_bevy_mesh(&meshed_chunk.mesh, &ComputedColliderShape::TriMesh).unwrap())
+                    .insert(
+                        Collider::from_bevy_mesh(
+                            &meshed_chunk.mesh,
+                            &ComputedColliderShape::TriMesh,
+                        )
+                        .unwrap(),
+                    )
                     .insert(MaterialMeshBundle {
                         mesh: meshes.add(meshed_chunk.mesh),
                         material: loading_texture.material.clone(),
@@ -49,7 +98,7 @@ pub fn chunk_renderer(
                     })
                     .insert(
                         Transform::from_xyz(
-                            meshed_chunk.pos.x as f32 * CHUNK_DIM as f32 ,
+                            meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
                             meshed_chunk.pos.y as f32 * CHUNK_DIM as f32 - 15.0,
                             meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
                         )
@@ -90,7 +139,8 @@ pub fn chunk_despawner(
     player_query: Query<&GlobalTransform, With<Player>>,
 ) {
     // List of chunks that we actually need
-    let _span = info_span!("unloading_chunks", name = "unloading_chunks").entered();
+    let _span =
+        info_span!("unloading_chunks", name = "unloading_chunks").entered();
     let mut relevant = Vec::new();
     for player in player_query.iter() {
         let player_coords = player.translation().as_ivec3();

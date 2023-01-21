@@ -1,6 +1,10 @@
-use bevy::render::render_resource::*;
-use bevy::render::settings::{Backends, WgpuSettings};
-use bevy::window::PresentMode;
+use bevy::{
+    render::{
+        render_resource::*,
+        settings::{Backends, WgpuSettings},
+    },
+    window::PresentMode,
+};
 use biorite::*;
 
 fn main() {

@@ -41,7 +41,7 @@ futures-lite = "1.12.0"
 bevy_mod_raycast = "0.7.0"
 belly = { git ="https://github.com/jkb0o/belly", rev="61b9aaed9a83cdcf99ccac2c79bb680a97cfd653"}
 kayak_ui = { git = "https://github.com/StarArawn/kayak_ui", rev="910a00cdd3857cc7515f153580afd057de0abaf0"}
-bevy_rapier3d = { version = "0.19.0", features = [ "parallel", "serde-serialize", "simd-stable"] }
+bevy_rapier3d = { version = "0.19.0", features = [ "parallel", "simd-nightly"] }
 rayon = "1.6.1"
 crossbeam-channel = "0.5.6"
 
@@ -49,7 +49,10 @@ crossbeam-channel = "0.5.6"
 serde = { version = "1.0", features = [ "derive" ] } 
 serde-big-array = "0.4.1"
 bevy_renet = "0.0.6"
-lz4 = "1.21.0"
+# lz4 = "1.21.0"
+# lz4_flex = { version = "0.9.5", default-features = false }
+lz4_flex = { version = "0.9.3" }
+
 public-ip = "0.2.2"
 tokio = { version = "1", features = ["full"] }
 local-ip-address = "0.4.8"
