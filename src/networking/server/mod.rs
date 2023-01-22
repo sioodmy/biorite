@@ -67,24 +67,9 @@ fn server_events(
                     })
                     .insert(PlayerInput::default())
                     .insert(Player { id: *id })
-                    .insert(RigidBody::Dynamic)
-                    .insert(ExternalImpulse::default())
-                    .insert(ExternalForce::default())
-                    .insert(LockedAxes::ROTATION_LOCKED)
-                    .insert(Friction {
-                        coefficient: 1.0,
-                        combine_rule: CoefficientCombineRule::Min,
-                    })
-                    .insert(Restitution {
-                        coefficient: 0.0,
-                        combine_rule: CoefficientCombineRule::Max,
-                    })
-                    .insert(AdditionalMassProperties::Mass(50.0))
-                    .insert(Collider::ball(0.5))
-                    .insert(GravityScale(3.0))
-                    .insert(Ccd::enabled())
-                    .insert(Velocity::zero())
                     .id();
+
+                insert_player_physics(&mut commands, player_entity);
 
                 // We could send an InitState with all the players id and
                 // positions for the client but this is easier

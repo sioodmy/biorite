@@ -1,25 +1,47 @@
 use crate::prelude::*;
-
-use std::sync::mpsc::channel;
+use rayon::prelude::*;
 
 /// Send chunks to the client
 pub fn chunk_send(
     mut server: ResMut<RenetServer>,
     mut queue: ResMut<MeshQueue>,
     msg: Res<CurrentServerMessages>,
+    lobby: Res<Lobby>,
+    query: Query<&GlobalTransform, With<Player>>,
     // query: Query<&mut GlobalTransform, Changed<PlayerInput>>,
 ) {
     for (id, message) in msg.iter() {
         if let ClientMessage::RequestChunk(vec) = message {
             // TODO: Validate each request
-            let (tx, rx) = channel();
-            for pos in vec.iter() {
-                info!("Generating chunk at {:?}", pos);
-                let sender = tx.clone();
-                let chunk = chunk_generator(pos);
-                sender.clone().send(chunk.compress()).unwrap();
-                queue.0.push(chunk);
+            // TODO: Queue chunk pending requests so that server sends chunks evenly
+            let (tx, rx) = bounded(1000);
+            if vec.len() > 512 {
+                warn!("Client requested too many chunks. Disconnecting");
+                server.disconnect(*id);
             }
+            let sender = tx.clone();
+            if let Some(player_entity) = lobby.players.get(id) {
+                let coords = query.get(*player_entity).expect("amogus");
+                vec.par_iter().for_each(move |pos| {
+                    debug!("Validating request");
+                    let player = coords.translation();
+                    let dx = pos.x as f32 - player.x / CHUNK_DIM as f32;
+                    let dy = pos.y as f32 - player.y / CHUNK_DIM as f32;
+                    let dz = pos.z as f32 - player.z / CHUNK_DIM as f32;
+                    let distance = (dx * dx + dy * dy + dz * dz).sqrt();
+                    if distance < 2. * (RENDER_DISTANCE + 1) as f32 {
+                        debug!("Generating chunk at {:?}", pos);
+                        let chunk = chunk_generator(pos);
+                        sender.clone().send(chunk.compress()).unwrap();
+                    } else {
+                        warn!(
+                            "Client {} tried requesting chunk too far away",
+                            id
+                        );
+                    }
+                });
+            }
+
             let vector: Vec<CompressedChunk> = rx.try_iter().collect();
 
             ServerChunkMessage::ChunkBatch(vector).send(&mut server, *id);

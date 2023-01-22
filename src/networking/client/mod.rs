@@ -1,5 +1,6 @@
 use super::messages::*;
 use bevy_easings::*;
+use bevy_rapier3d::na::Vector3;
 
 use crate::*;
 use local_ip_address::local_ip;
@@ -81,55 +82,19 @@ pub fn entity_spawn(
                 commands
                     .entity(player_entity)
                     .insert(ControlledPlayer)
-                    .insert(RigidBody::Dynamic)
-                    .insert(ExternalImpulse::default())
-                    .insert(ExternalForce::default())
-                    .insert(LockedAxes::ROTATION_LOCKED)
-                    .insert(Friction {
-                        coefficient: 1.0,
-                        combine_rule: CoefficientCombineRule::Min,
-                    })
-                    .insert(Restitution {
-                        coefficient: 0.0,
-                        combine_rule: CoefficientCombineRule::Max,
-                    })
-                    .insert(AdditionalMassProperties::Mass(50.0))
-                    .insert(Collider::cuboid(0.5, 1.9, 0.5))
-                    .insert(GravityScale(3.0))
-                    .insert(Ccd::enabled())
-                    .insert(Velocity::zero())
                     .insert(PbrBundle {
                         transform: Transform::from_xyz(0.0, 50.0, 0.0),
                         ..Default::default()
                     });
             } else {
-                commands
-                    .entity(player_entity)
-                    .insert(PbrBundle {
-                        mesh: meshes.add(Mesh::from(shape::Capsule::default())),
-                        material: materials
-                            .add(Color::rgb(0.8, 0.20, 0.6).into()),
-                        transform: Transform::from_xyz(0.0, 50.0, 0.0),
-                        ..Default::default()
-                    })
-                    .insert(RigidBody::Dynamic)
-                    .insert(ExternalImpulse::default())
-                    .insert(ExternalForce::default())
-                    .insert(LockedAxes::ROTATION_LOCKED)
-                    .insert(Friction {
-                        coefficient: 1.0,
-                        combine_rule: CoefficientCombineRule::Min,
-                    })
-                    .insert(Restitution {
-                        coefficient: 0.0,
-                        combine_rule: CoefficientCombineRule::Max,
-                    })
-                    .insert(AdditionalMassProperties::Mass(50.0))
-                    .insert(Collider::ball(0.5))
-                    .insert(GravityScale(3.0))
-                    .insert(Ccd::enabled())
-                    .insert(Velocity::zero());
+                commands.entity(player_entity).insert(PbrBundle {
+                    mesh: meshes.add(Mesh::from(shape::Capsule::default())),
+                    material: materials.add(Color::rgb(0.8, 0.20, 0.6).into()),
+                    transform: Transform::from_xyz(0.0, 50.0, 0.0),
+                    ..Default::default()
+                });
             }
+            insert_player_physics(&mut commands, player_entity);
             lobby.players.insert(*id, player_entity);
         }
     }
@@ -207,9 +172,17 @@ fn player_input(
     input: Res<Input<KeyCode>>,
     query: Query<(&MainCamera, &Transform), Without<ControlledPlayer>>,
     // mut players: Query<&mut Velocity, With<ControlledPlayer>>,
-    mut ext_impulses: Query<&mut ExternalImpulse, With<ControlledPlayer>>,
-    mut player_pos: Query<&mut Transform, With<ControlledPlayer>>,
+    mut player_pos: Query<
+        (
+            &mut ExternalForce,
+            &mut ExternalImpulse,
+            &Velocity,
+            &RapierRigidBodyHandle,
+        ),
+        With<ControlledPlayer>,
+    >,
     mut player_input: ResMut<PlayerInput>,
+    context: Res<RapierContext>,
     time: Res<Time>,
 ) {
     for (_options, transform) in query.iter() {
@@ -226,21 +199,36 @@ fn player_input(
         l.y = 0.0;
         let vec = ((f * axis_h) + (l * axis_v)).normalize_or_zero();
 
-        if let Ok(mut pos) = player_pos.get_single_mut() {
-            pos.translation += vec * PLAYER_SPEED * time.delta().as_secs_f32();
+        if let Ok((mut force, mut impulse, velocity, handle)) =
+            player_pos.get_single_mut()
+        {
+            let target = vec * PLAYER_SPEED;
+            force.force = (target - velocity.linvel) * 1000.0;
+            force.force.y = 0.0;
+
+            if input.just_pressed(KeyCode::Space) {
+                let body = match context.bodies.get(handle.0) {
+                    Some(b) => b,
+                    None => continue,
+                };
+                let e1 = body.gravitational_potential_energy(
+                    0.001,
+                    Vector3::new(0.0, -9.81, 0.0),
+                );
+                let e2 = body.gravitational_potential_energy(
+                    0.002,
+                    Vector3::new(0.0, -9.81, 0.0),
+                );
+                if e1 == e2 {
+                    impulse.impulse = Vec3::new(0.0, 500.0, 0.0);
+                }
+            }
+            // pos.translation += vec * PLAYER_SPEED * time.delta().as_secs_f32();
+            // body.linvel.x = vec.x * PLAYER_SPEED;
+            // body.linvel.z = vec.z * PLAYER_SPEED;
         };
 
         // Jump signal
-        if let Ok(mut impulse) = ext_impulses.get_single_mut() {
-            let jump = if input.just_pressed(KeyCode::Space) {
-                500.0
-            } else {
-                0.0
-            };
-            impulse.impulse = Vec3::new(0.0, jump, 0.0);
-        } else {
-            warn!("More than one entity has ControlledPlayer component");
-        }
 
         player_input.forward = vec.x;
         player_input.sideways = vec.z;

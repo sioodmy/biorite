@@ -54,7 +54,9 @@ pub fn request_chunk(
         }
 
         if !to_request.is_empty() {
-            ClientMessage::RequestChunk(to_request).send(&mut client);
+            let limit = usize::min(to_request.len(), REQUEST_LIMIT);
+            let batch = to_request.drain(..limit).collect();
+            ClientMessage::RequestChunk(batch).send(&mut client);
             info!("requesting");
         }
     }
