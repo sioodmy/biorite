@@ -17,6 +17,11 @@ use crate::prelude::*;
 #[derive(Resource, Deref, DerefMut)]
 pub struct MeshQueue(pub Vec<Chunk>);
 
+#[derive(Resource)]
+pub struct MeshQueueSender(pub Sender<Chunk>);
+#[derive(Resource)]
+pub struct MeshQueueReceiver(pub Receiver<Chunk>);
+
 #[derive(Component)]
 pub struct MeshTask(Task<Option<MeshedChunk>>);
 
@@ -174,11 +179,11 @@ pub fn chunk_despawner(
 
 /// Spawns `MeshTask` task to parallelize greedy meshing, because it's quite
 /// expensive operation
-pub fn mesher(mut mesh_queue: ResMut<MeshQueue>, mut commands: Commands) {
+pub fn mesher(mesh_queue: ResMut<MeshQueueReceiver>, mut commands: Commands) {
     let thread_pool = AsyncComputeTaskPool::get();
     // Limit how many chunks can be meshed per frame to avoid lag spikes
-    let limit = usize::min(mesh_queue.0.len(), 10);
-    for chunk in mesh_queue.0.drain(..limit) {
+    let _limit = usize::min(mesh_queue.0.len(), 10);
+    for chunk in mesh_queue.0.try_iter() {
         let task = thread_pool.spawn(async move {
             greedy_mesh(chunk.blocks).map(|mesh| MeshedChunk {
                 pos: chunk.position,

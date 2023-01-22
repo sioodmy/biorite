@@ -24,7 +24,7 @@ pub const RENDER_DISTANCE: i16 = 3;
 
 pub const REACH: f32 = 40.0;
 
-pub const REQUEST_LIMIT: usize = 512;
+pub const REQUEST_LIMIT: usize = 256;
 
 pub const PLAYER_SPEED: f32 = 24.3;
 

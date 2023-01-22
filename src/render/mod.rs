@@ -21,11 +21,14 @@ pub use raycast::*;
 pub struct RenderClientPlugin;
 impl Plugin for RenderClientPlugin {
     fn build(&self, app: &mut App) {
+        let (tx, rx) = bounded::<Chunk>(1000);
         app.add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
             .add_startup_system(load_chunk_texture)
             .add_plugin(DefaultRaycastingPlugin::<MyRaycastSet>::default())
             .add_system(create_array_texture)
             .insert_resource(MeshQueue(Vec::new()))
+            .insert_resource(MeshQueueReceiver(rx))
+            .insert_resource(MeshQueueSender(tx))
             .insert_resource(LoadedChunks(HashMap::new()))
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame)
@@ -39,8 +42,7 @@ impl Plugin for RenderClientPlugin {
                     .with_system(client_block_updates)
                     .with_system(cursor_grab_system)
                     .with_system(chunk_renderer)
-                    .with_system(intersection)
-                    .with_system(client_chunk_despawner),
+                    .with_system(intersection), // .with_system(client_chunk_despawner),
             )
             .add_plugin(AtmospherePlugin)
             .insert_resource(Msaa { samples: 4 });

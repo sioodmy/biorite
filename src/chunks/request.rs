@@ -7,14 +7,14 @@ pub struct AlreadyRequested(pub Vec<IVec3>);
 /// Push received chunks from the server into mesher
 pub fn receive_chunk(
     mut chunk_messages: ResMut<CurrentClientChunkMessages>,
-    mut mesh_queue: ResMut<MeshQueue>,
+    mesh_queue: Res<MeshQueueSender>,
 ) {
     for message in chunk_messages.drain(..) {
         if let ServerChunkMessage::ChunkBatch(compressed_batch) = message {
-            for compressed_chunk in compressed_batch.iter() {
+            compressed_batch.par_iter().for_each(|compressed_chunk| {
                 let chunk = Chunk::from_compressed(compressed_chunk);
-                mesh_queue.0.push(chunk)
-            }
+                mesh_queue.0.clone().send(chunk).unwrap();
+            });
         }
     }
 }

@@ -223,9 +223,9 @@ fn player_input(
                     impulse.impulse = Vec3::new(0.0, 500.0, 0.0);
                 }
             }
-            // pos.translation += vec * PLAYER_SPEED * time.delta().as_secs_f32();
-            // body.linvel.x = vec.x * PLAYER_SPEED;
-            // body.linvel.z = vec.z * PLAYER_SPEED;
+            // pos.translation += vec * PLAYER_SPEED *
+            // time.delta().as_secs_f32(); body.linvel.x = vec.x *
+            // PLAYER_SPEED; body.linvel.z = vec.z * PLAYER_SPEED;
         };
 
         // Jump signal
