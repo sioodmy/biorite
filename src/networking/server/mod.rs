@@ -1,5 +1,6 @@
 use crate::prelude::*;
-use bevy::utils::HashMap;
+
+use bevy::{time::FixedTimestep, utils::HashMap};
 use bevy_rapier3d::na::Vector3;
 use local_ip_address::local_ip;
 use std::{
@@ -16,6 +17,8 @@ pub fn create_renet_server() -> RenetServer {
     // TODO increase block package queue size from default 8
     let connection_config = RenetConnectionConfig {
         max_packet_size: 32 * 1024,
+        received_packets_buffer_size: 1000,
+        sent_packets_buffer_size: 1000,
         receive_channels_config: vec![
             ChannelConfig::Unreliable(UnreliableChannelConfig {
                 sequenced: true, // We don't care about old positions
@@ -214,7 +217,11 @@ impl Plugin for NetworkServerPlugin {
             .add_system(handle_block_updates)
             .add_system(server_receive_input)
             .add_system(move_players_system)
-            .add_system(server_sync_players)
-            .add_system(server_events);
+            .add_system(server_events)
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(FixedTimestep::step(TICK_SPEED))
+                    .with_system(server_sync_players),
+            );
     }
 }

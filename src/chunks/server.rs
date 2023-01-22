@@ -1,6 +1,5 @@
 use crate::prelude::*;
-use bevy_flycam::MovementSettings;
-use bevy_flycam::PlayerPlugin;
+use bevy_flycam::{MovementSettings, PlayerPlugin};
 use crossbeam_channel::bounded;
 
 pub struct ChunkServerPlugin;
