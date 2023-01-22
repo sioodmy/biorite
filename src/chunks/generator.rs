@@ -74,11 +74,9 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
                     let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
                     let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
 
-                    let n = level_noise.get_noise(gx as f32, gz as f32)
-                        * factor
-                        + offset;
+                    let n = level_noise.get_noise(gx, gz) * factor + offset;
 
-                    let surface = flat as f64 + n as f64;
+                    let surface = flat + n as f64;
                     let i = ChunkShape::linearize([x, y, z]);
                     if gy as f64 > surface {
                         blocks[i as usize] = BlockType::Air;
@@ -90,19 +88,13 @@ pub fn chunk_generator(position: &IVec3) -> Chunk {
                         level_noise.set_fractal_octaves(1);
                         level_noise.set_fractal_lacunarity(1.0);
 
-                        let temp = (temperature_noise
-                            .get_noise(gx as f32, gz as f32)
-                            + 1.0)
-                            * 2.5;
-                        let moisture = (moisture_noise
-                            .get_noise(gx as f32, gz as f32)
-                            + 1.0)
-                            * 2.5;
+                        let temp =
+                            (temperature_noise.get_noise(gx, gz) + 1.0) * 2.5;
+                        let moisture =
+                            (moisture_noise.get_noise(gx, gz) + 1.0) * 2.5;
 
-                        let forest = (forest_noise
-                            .get_noise(gx as f32, gz as f32)
-                            + 1.0)
-                            / 2.0;
+                        let forest =
+                            (forest_noise.get_noise(gx, gz) + 1.0) / 2.0;
 
                         debug!(
                             "moisture {:?}, temp: {:?}, forest: {:?}",

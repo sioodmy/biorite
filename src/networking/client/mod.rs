@@ -1,6 +1,5 @@
 use super::messages::*;
 use bevy_easings::*;
-use bevy_rapier3d::na::Vector3;
 
 use crate::*;
 use local_ip_address::local_ip;
@@ -172,7 +171,7 @@ fn player_input(
     input: Res<Input<KeyCode>>,
     query: Query<(&MainCamera, &Transform), Without<ControlledPlayer>>,
     // mut players: Query<&mut Velocity, With<ControlledPlayer>>,
-    mut player_pos: Query<
+    _player_pos: Query<
         (
             &mut ExternalForce,
             &mut ExternalImpulse,

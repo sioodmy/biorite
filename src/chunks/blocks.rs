@@ -60,20 +60,17 @@ impl BlockFace {
         BlockFace::Side
     }
 }
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(
+    PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize, Default,
+)]
 pub enum BlockType {
+    #[default]
     Air,
     Grass,
     Dirt,
     Stone,
     Sand,
     Wood,
-}
-
-impl Default for BlockType {
-    fn default() -> Self {
-        BlockType::Air
-    }
 }
 
 impl BlockType {

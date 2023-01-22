@@ -14,9 +14,6 @@ use futures_lite::future;
 
 use crate::prelude::*;
 
-#[derive(Resource, Deref, DerefMut)]
-pub struct MeshQueue(pub Vec<Chunk>);
-
 #[derive(Resource)]
 pub struct MeshQueueSender(pub Sender<Chunk>);
 #[derive(Resource)]
@@ -166,7 +163,7 @@ pub fn chunk_despawner(
                 for z in (chunk_z - RENDER_DISTANCE as i32)
                     ..=(chunk_z + RENDER_DISTANCE as i32)
                 {
-                    let chunk = IVec3::new(x as i32, y as i32, z as i32);
+                    let chunk = IVec3::new(x, y, z);
                     relevant.push(chunk);
                 }
             }

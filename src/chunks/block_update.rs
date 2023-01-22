@@ -19,9 +19,8 @@ pub fn handle_block_updates(
 
 pub fn client_block_updates(
     msg: Res<CurrentClientMessages>,
-    mut mesh_queue: ResMut<MeshQueue>,
     mut chunks: ResMut<LoadedChunks>,
-    mut commands: Commands,
+    _commands: Commands,
 ) {
     for message in msg.iter() {
         if let ServerMessage::BlockDelta { pos, block } = message {
@@ -44,7 +43,6 @@ pub fn client_block_updates(
                     r_z.try_into().unwrap(),
                 ]);
                 entry.chunk.blocks[i as usize] = *block;
-                mesh_queue.0.push(entry.chunk);
             };
         };
     }

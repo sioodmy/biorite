@@ -1,4 +1,4 @@
-use bevy::{log::LogPlugin, render::settings::WgpuSettings};
+use bevy::log::LogPlugin;
 use bevy_rapier3d::prelude::*;
 use biorite::*;
 

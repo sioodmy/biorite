@@ -18,7 +18,6 @@ impl Plugin for ChunkServerPlugin {
                 sensitivity: 0.00015, // default: 0.00012
                 speed: 12.0,          // default: 12.0
             })
-            .insert_resource(MeshQueue(Vec::new()))
             .insert_resource(LoadedChunks(HashMap::new()))
             .insert_resource(MeshQueueReceiver(mrx))
             .insert_resource(MeshQueueSender(mtx))

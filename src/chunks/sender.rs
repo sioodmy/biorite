@@ -6,9 +6,7 @@ use rayon::prelude::*;
 /// Send chunks to the client
 pub fn chunk_send(
     mut server: ResMut<RenetServer>,
-    mut queue: ResMut<MeshQueue>,
-    mut mtx: ResMut<MeshQueueSender>,
-    mut mrx: ResMut<MeshQueueReceiver>,
+    mtx: ResMut<MeshQueueSender>,
     msg: Res<CurrentServerMessages>,
     lobby: Res<Lobby>,
     query: Query<&GlobalTransform, With<Player>>,

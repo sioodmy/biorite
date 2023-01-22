@@ -44,7 +44,7 @@ pub fn request_chunk(
                 for z in (chunk_z - RENDER_DISTANCE as i32)
                     ..=(chunk_z + RENDER_DISTANCE as i32)
                 {
-                    let chunk = IVec3::new(x as i32, y as i32, z as i32);
+                    let chunk = IVec3::new(x, y, z);
                     if !sent.0.contains(&chunk) {
                         to_request.push(chunk);
                         sent.0.push(chunk);
@@ -86,7 +86,7 @@ pub fn client_chunk_despawner(
                 for z in (chunk_z - RENDER_DISTANCE as i32)
                     ..=(chunk_z + RENDER_DISTANCE as i32)
                 {
-                    let chunk = IVec3::new(x as i32, y as i32, z as i32);
+                    let chunk = IVec3::new(x, y, z);
                     relevant.push(chunk);
                 }
             }

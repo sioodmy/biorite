@@ -68,7 +68,7 @@ impl Chunk {
         compress_prepend_size(&message)
     }
     pub fn from_compressed(bytes: &CompressedChunk) -> Self {
-        let message = decompress_size_prepended(&bytes).unwrap();
+        let message = decompress_size_prepended(bytes).unwrap();
         bincode::deserialize(&message).unwrap()
     }
 }

@@ -26,7 +26,6 @@ impl Plugin for RenderClientPlugin {
             .add_startup_system(load_chunk_texture)
             .add_plugin(DefaultRaycastingPlugin::<MyRaycastSet>::default())
             .add_system(create_array_texture)
-            .insert_resource(MeshQueue(Vec::new()))
             .insert_resource(MeshQueueReceiver(rx))
             .insert_resource(MeshQueueSender(tx))
             .insert_resource(LoadedChunks(HashMap::new()))
