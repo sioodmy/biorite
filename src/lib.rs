@@ -20,7 +20,7 @@ pub enum AppState {
 }
 
 /// For now its hardcoded, might change in future
-pub const RENDER_DISTANCE: i16 = 3;
+pub const RENDER_DISTANCE: i16 = 1;
 
 pub const REACH: f32 = 40.0;
 

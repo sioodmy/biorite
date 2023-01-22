@@ -43,6 +43,14 @@ pub fn server_chunk_spawn(
                 info!("spawning chunk {:?}", meshed_chunk.pos);
                 let chunk_entity = commands
                     .entity(entity)
+                    .insert(PbrBundle{
+                        transform: Transform::from_xyz(
+                        meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
+                        meshed_chunk.pos.y as f32 * CHUNK_DIM as f32,
+                        meshed_chunk.pos.z as f32 * CHUNK_DIM as f32),
+                            ..Default::default()
+                            }
+                    )
                     .insert(ColliderMassProperties::Density(100000.0))
                     .insert(
                         Collider::from_bevy_mesh(
@@ -51,11 +59,6 @@ pub fn server_chunk_spawn(
                         )
                         .unwrap(),
                     )
-                    .insert(Transform::from_xyz(
-                        meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
-                        meshed_chunk.pos.y as f32 * CHUNK_DIM as f32,
-                        meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
-                    ))
                     .insert(RaycastMesh::<MyRaycastSet>::default())
                     .id();
                 loaded_chunks.0.insert(

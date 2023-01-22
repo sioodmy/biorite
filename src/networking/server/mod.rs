@@ -26,7 +26,7 @@ pub fn create_renet_server() -> RenetServer {
                 ..Default::default()
             }),
             ChannelConfig::Chunk(ChunkChannelConfig {
-                resend_time: Duration::from_millis(200),
+                resend_time: Duration::from_millis(500),
                 ..Default::default()
             }),
         ],

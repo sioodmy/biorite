@@ -29,6 +29,8 @@ opt-level = 3
 # Game engine
 bevy = {version = "0.9.1", features = [ "wayland", "dynamic"]}
 block-mesh = { git="https://github.com/bonsairobo/block-mesh-rs", rev="793c53e82c12b3f7e9502006664c6e81f8b1c78a"}
+bevy_flycam = { git = "https://github.com/sburris0/bevy_flycam" }
+
 bevy_spectator = "0.1.1"
 bevy_atmosphere = "0.5.0"
 bevy_easings = "0.9.1"
