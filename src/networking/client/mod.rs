@@ -1,5 +1,6 @@
 use super::messages::*;
 use bevy_easings::*;
+use bevy_rapier3d::na::Vector3;
 
 use crate::*;
 use local_ip_address::local_ip;
@@ -117,21 +118,40 @@ pub fn entity_spawn(
     }
 }
 
+/// Slippage between predicted player movement and sync packets
+fn calculate_delta(predicted: [f32; 3], translation: [f32; 3]) -> f32 {
+    predicted
+        .iter()
+        .zip(translation.iter())
+        .map(|(p, t)| (p - t).abs())
+        .max_by(|x, y| x.partial_cmp(y).unwrap())
+        .unwrap()
+}
+
 pub fn entity_sync(
     lobby: ResMut<Lobby>,
     mut commands: Commands,
     messages: Res<CurrentClientMessages>,
+    query: Query<&Transform, With<Player>>,
 ) {
     for message in messages.iter() {
         #[allow(irrefutable_let_patterns)]
         if let ServerMessage::EntitySync(sync) = message {
             for (player_id, translation) in sync.iter() {
                 if let Some(player_entity) = lobby.players.get(player_id) {
-                    let transform = Transform {
-                        translation: (*translation).into(),
-                        ..Default::default()
-                    };
-                    commands.entity(*player_entity).insert(transform);
+                    let predicted =
+                        query.get(*player_entity).unwrap().translation;
+
+                    let delta = calculate_delta(predicted.into(), *translation);
+
+                    // Do not bother if our prediction is correct
+                    if delta > 0.3 {
+                        let transform = Transform {
+                            translation: (*translation).into(),
+                            ..Default::default()
+                        };
+                        commands.entity(*player_entity).insert(transform);
+                    }
                 }
             }
         }
@@ -170,8 +190,7 @@ fn movement_axis(
 fn player_input(
     input: Res<Input<KeyCode>>,
     query: Query<(&MainCamera, &Transform), Without<ControlledPlayer>>,
-    // mut players: Query<&mut Velocity, With<ControlledPlayer>>,
-    _player_pos: Query<
+    mut player_pos: Query<
         (
             &mut ExternalForce,
             &mut ExternalImpulse,
@@ -181,6 +200,7 @@ fn player_input(
         With<ControlledPlayer>,
     >,
     mut player_input: ResMut<PlayerInput>,
+    context: Res<RapierContext>,
 ) {
     for (_options, transform) in query.iter() {
         let (axis_h, axis_v) = (
@@ -196,6 +216,32 @@ fn player_input(
         l.y = 0.0;
         let vec = ((f * axis_h) + (l * axis_v)).normalize_or_zero();
 
+        // Predict player movement
+        for (mut force, mut impulse, velocity, handle) in player_pos.iter_mut()
+        {
+            let target_force = Vec3::new(vec.x, 0.0, vec.z) * PLAYER_SPEED;
+            force.force = (target_force - velocity.linvel) * 1000.0;
+            force.force.y = 0.0;
+
+            if input.pressed(KeyCode::Space) {
+                // Avoid double jumping by checking gravitational potential energy
+                let body = match context.bodies.get(handle.0) {
+                    Some(b) => b,
+                    None => continue,
+                };
+                let e1 = body.gravitational_potential_energy(
+                    0.001,
+                    Vector3::new(0.0, -9.81, 0.0),
+                );
+                let e2 = body.gravitational_potential_energy(
+                    0.002,
+                    Vector3::new(0.0, -9.81, 0.0),
+                );
+                if e1 == e2 {
+                    impulse.impulse = Vec3::new(0.0, 500.0, 0.0);
+                }
+            }
+        }
         player_input.forward = vec.x;
         player_input.sideways = vec.z;
         player_input.jumping = input.pressed(KeyCode::Space);
