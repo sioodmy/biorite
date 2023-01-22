@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use bevy::utils::HashMap;
+use bevy_rapier3d::na::Vector3;
 use local_ip_address::local_ip;
 use std::{
     net::{SocketAddr, UdpSocket},
@@ -126,19 +127,55 @@ pub fn server_ping_test(
 }
 
 fn move_players_system(
-    mut query: Query<(&mut Transform, &PlayerInput)>,
-    time: Res<Time>,
+    mut player_pos: Query<
+        (
+            &mut ExternalForce,
+            &mut ExternalImpulse,
+            &PlayerInput,
+            &Velocity,
+            &RapierRigidBodyHandle,
+        ),
+        With<Player>,
+    >,
+    context: Res<RapierContext>,
 ) {
-    for (mut transform, input) in query.iter_mut() {
-        transform.translation.x +=
-            input.forward * PLAYER_SPEED * time.delta().as_secs_f32();
-        transform.translation.z +=
-            input.sideways * PLAYER_SPEED * time.delta().as_secs_f32();
+    for (mut force, mut impulse, input, velocity, handle) in
+        player_pos.iter_mut()
+    {
+        let target_force =
+            Vec3::new(input.forward, 0.0, input.sideways) * PLAYER_SPEED;
+        force.force = (target_force - velocity.linvel) * 1000.0;
+        force.force.y = 0.0;
+
         if input.jumping {
-            debug!("{:?} {:?}", transform.translation, input.jumping);
-            transform.translation.y += 1.0;
+            // Avoid double jumping by checking gravitational potential energy
+            let body = match context.bodies.get(handle.0) {
+                Some(b) => b,
+                None => continue,
+            };
+            let e1 = body.gravitational_potential_energy(
+                0.001,
+                Vector3::new(0.0, -9.81, 0.0),
+            );
+            let e2 = body.gravitational_potential_energy(
+                0.002,
+                Vector3::new(0.0, -9.81, 0.0),
+            );
+            if e1 == e2 {
+                impulse.impulse = Vec3::new(0.0, 500.0, 0.0);
+            }
         }
     }
+    // for (mut transform, input) in query.iter_mut() {
+    // transform.translation.x +=
+    //     input.forward * PLAYER_SPEED * time.delta().as_secs_f32();
+    // transform.translation.z +=
+    //     input.sideways * PLAYER_SPEED * time.delta().as_secs_f32();
+    // if input.jumping {
+    //     debug!("{:?} {:?}", transform.translation, input.jumping);
+    //     transform.translation.y += 1.0;
+    // }
+    // }
 }
 
 pub fn chunk_unloader(query: Query<(&GlobalTransform, &Player)>) {

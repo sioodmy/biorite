@@ -49,7 +49,6 @@ pub struct PlayerInput {
     pub forward: f32,
     pub sideways: f32,
     pub jumping: bool,
-    pub sneaking: bool,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ServerInfo {

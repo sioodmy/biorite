@@ -182,8 +182,6 @@ fn player_input(
         With<ControlledPlayer>,
     >,
     mut player_input: ResMut<PlayerInput>,
-    context: Res<RapierContext>,
-    time: Res<Time>,
 ) {
     for (_options, transform) in query.iter() {
         let (axis_h, axis_v) = (
@@ -199,41 +197,9 @@ fn player_input(
         l.y = 0.0;
         let vec = ((f * axis_h) + (l * axis_v)).normalize_or_zero();
 
-        if let Ok((mut force, mut impulse, velocity, handle)) =
-            player_pos.get_single_mut()
-        {
-            let target = vec * PLAYER_SPEED;
-            force.force = (target - velocity.linvel) * 1000.0;
-            force.force.y = 0.0;
-
-            if input.just_pressed(KeyCode::Space) {
-                let body = match context.bodies.get(handle.0) {
-                    Some(b) => b,
-                    None => continue,
-                };
-                let e1 = body.gravitational_potential_energy(
-                    0.001,
-                    Vector3::new(0.0, -9.81, 0.0),
-                );
-                let e2 = body.gravitational_potential_energy(
-                    0.002,
-                    Vector3::new(0.0, -9.81, 0.0),
-                );
-                if e1 == e2 {
-                    impulse.impulse = Vec3::new(0.0, 500.0, 0.0);
-                }
-            }
-            // pos.translation += vec * PLAYER_SPEED *
-            // time.delta().as_secs_f32(); body.linvel.x = vec.x *
-            // PLAYER_SPEED; body.linvel.z = vec.z * PLAYER_SPEED;
-        };
-
-        // Jump signal
-
         player_input.forward = vec.x;
         player_input.sideways = vec.z;
-        player_input.jumping = input.just_pressed(KeyCode::Space);
-        player_input.sneaking = input.pressed(KeyCode::LShift);
+        player_input.jumping = input.pressed(KeyCode::Space);
     }
 }
 
@@ -244,7 +210,6 @@ fn client_send_input(
 ) {
     if player_input.forward != 0.0 && player_input.sideways != 0.0
         || player_input.jumping
-        || player_input.sneaking
     {
         ClientMessage::PlayerInput(*player_input).send(&mut client);
         *is_moving = true;
