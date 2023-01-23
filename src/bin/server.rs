@@ -1,3 +1,6 @@
+#[global_allocator]
+static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
+
 use bevy::log::LogPlugin;
 use bevy_rapier3d::prelude::*;
 use biorite::*;

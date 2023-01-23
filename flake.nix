@@ -46,6 +46,7 @@
           makeWrapper
           libxkbcommon
           wayland
+          jemalloc
         ];
         runtime-deps = with pkgs; [
           alsa-lib
@@ -68,6 +69,8 @@
           buildInputs = runtime-deps;
           nativeBuildInputs = build-deps;
           src = ./.;
+          BEVY_ASSET_PATH = ./assets;
+          cargoBuildOptions = x: x ++ ["--no-default-features"];
           overrideMain = attrs: {
             fixupPhase = ''
               wrapProgram $out/bin/biorite\
@@ -75,8 +78,6 @@
                 pkgs.lib.makeLibraryPath runtime-deps
               } \
                 --set CARGO_MANIFEST_DIR $out/share/biorite
-                mkdir -p $out/share/biorite
-                cp -a assets $out/share/biorite
             '';
           };
         };
