@@ -5,6 +5,7 @@ use bevy::{
     },
     window::PresentMode,
 };
+use bevy_embedded_assets::EmbeddedAssetPlugin;
 use biorite::*;
 
 fn main() {
@@ -15,6 +16,8 @@ fn main() {
         })
         .add_plugins(
             DefaultPlugins
+                .build()
+                .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin)
                 .set(WindowPlugin {
                     window: WindowDescriptor {
                         width: 1280.,
