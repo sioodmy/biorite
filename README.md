@@ -9,3 +9,6 @@
 [![Donate: Kofi](https://img.shields.io/badge/donate-kofi-red)](https://ko-fi.com/sioodmy)
 
 Most of the project is just modified bevy examples, prototypes, buggy/unsafe wip code
+
+# Building
+Use `nix build`. That's it!
