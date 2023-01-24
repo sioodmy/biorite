@@ -104,7 +104,7 @@ pub fn chunk_renderer(
                     .insert(
                         Transform::from_xyz(
                             meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
-                            meshed_chunk.pos.y as f32 * CHUNK_DIM as f32 - 15.0,
+                            meshed_chunk.pos.y as f32 * CHUNK_DIM as f32 - 0.0,
                             meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
                         )
                         .ease_to(

@@ -14,6 +14,14 @@ pub fn handle_block_updates(
             }
             .send(&mut server, *id);
         }
+        if let ClientMessage::PlaceBlock { pos, block } = message {
+            debug!("Got block place packet at {:?}, from {}", block, id);
+            ServerMessage::BlockDelta {
+                pos: *pos,
+                block: *block,
+            }
+            .send(&mut server, *id);
+        }
     }
 }
 
@@ -28,6 +36,7 @@ pub fn client_block_updates(
     for message in msg.iter() {
         if let ServerMessage::BlockDelta { pos, block } = message {
             info!("Got block delta at {:?} {:?}", pos, block);
+            // TODO: rewrite all of this shit
             // Chunk coords
             let x: i32 = pos.x / CHUNK_DIM as i32;
             let y: i32 = pos.y / CHUNK_DIM as i32;

@@ -9,6 +9,7 @@ pub enum ClientMessage {
     PlayerInput(PlayerInput),
     // TODO: Implement blockabort packet
     BreakBlock(IVec3),
+    PlaceBlock { pos: IVec3, block: BlockType },
 
     // RequestChunkBox([IVec3; 4]),
     RequestChunk(Vec<IVec3>),

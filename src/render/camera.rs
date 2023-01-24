@@ -14,8 +14,8 @@ impl Default for Camera {
     fn default() -> Self {
         Camera {
             yaw: 0.3,
-            pitch: 0.0,
-            fov: 60.0,
+            pitch: 0.3,
+            fov: 90.0,
             sensitivity: 8.0,
         }
     }

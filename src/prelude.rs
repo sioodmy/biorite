@@ -3,4 +3,5 @@ pub use crate::{
 };
 pub use bevy::prelude::*;
 pub use crossbeam_channel::{bounded, Receiver, Sender};
+pub use lazy_static::lazy_static;
 pub use rayon::prelude::*;

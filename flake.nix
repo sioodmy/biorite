@@ -56,6 +56,7 @@
           xorg.libXrandr
           xorg.libXi
           xorg.libxcb
+          xlibsWrapper
           libGL
           vulkan-loader
           vulkan-headers
