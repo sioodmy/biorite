@@ -12,3 +12,11 @@ Most of the project is just modified bevy examples, prototypes, buggy/unsafe wip
 
 # Building
 Use `nix build`. That's it!
+
+That's also the only supported way of building Biorite, no
+support will be provided for any other builds
+
+Currently supported platforms: 
+- Linux
+- macOS
+- ~~windows~~ (planned)
