@@ -9,6 +9,7 @@ pub fn chunk_send(
     mtx: ResMut<MeshQueueSender>,
     msg: Res<CurrentServerMessages>,
     lobby: Res<Lobby>,
+    loaded_chunks: Res<LoadedChunks>,
     query: Query<&GlobalTransform, With<Player>>,
     // query: Query<&mut GlobalTransform, Changed<PlayerInput>>,
 ) {
@@ -31,6 +32,7 @@ pub fn chunk_send(
                     debug!("Validating request");
 
                     let player = coords.translation();
+                    // FIXME: Actually its incorrect (I think)
                     let dx = pos.x as f32 - player.x / CHUNK_DIM as f32;
                     let dy = pos.y as f32 - player.y / CHUNK_DIM as f32;
                     let dz = pos.z as f32 - player.z / CHUNK_DIM as f32;

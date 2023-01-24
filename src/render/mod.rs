@@ -6,7 +6,6 @@ pub use bevy_mod_raycast::{
     DefaultPluginState, DefaultRaycastingPlugin, Intersection, RaycastMesh,
     RaycastSource,
 };
-pub use bevy_spectator::SpectatorPlugin;
 
 pub mod camera;
 pub mod material;

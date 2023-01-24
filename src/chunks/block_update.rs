@@ -20,7 +20,10 @@ pub fn handle_block_updates(
 pub fn client_block_updates(
     msg: Res<CurrentClientMessages>,
     mut chunks: ResMut<LoadedChunks>,
-    _commands: Commands,
+    mut mesh_queue: ResMut<MeshQueueSender>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    loading_texture: Res<LoadingTexture>,
 ) {
     for message in msg.iter() {
         if let ServerMessage::BlockDelta { pos, block } = message {
@@ -42,7 +45,10 @@ pub fn client_block_updates(
                     r_y.try_into().unwrap(),
                     r_z.try_into().unwrap(),
                 ]);
-                entry.chunk.blocks[i as usize] = *block;
+                // TODO
+                let mut newchunk = entry.chunk;
+                newchunk.blocks[i as usize] = BlockType::Stone;
+                mesh_queue.0.send(newchunk).unwrap();
             };
         };
     }

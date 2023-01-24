@@ -14,9 +14,8 @@ pub fn create_renet_server() -> RenetServer {
     info!("Creating Server! {:?}", server_addr);
 
     let socket = UdpSocket::bind(server_addr).unwrap();
-    // TODO increase block package queue size from default 8
     let connection_config = RenetConnectionConfig {
-        max_packet_size: 32 * 1024,
+        max_packet_size: 12 * 1024,
         received_packets_buffer_size: 1000,
         sent_packets_buffer_size: 1000,
         receive_channels_config: vec![
@@ -25,7 +24,7 @@ pub fn create_renet_server() -> RenetServer {
                 ..Default::default()
             }),
             ChannelConfig::Reliable(ReliableChannelConfig {
-                packet_budget: 30000,
+                packet_budget: 10000,
                 max_message_size: 9000,
                 ..Default::default()
             }),
@@ -138,7 +137,7 @@ fn move_players_system(
             &Velocity,
             &RapierRigidBodyHandle,
         ),
-        With<Player>,
+        &Player,
     >,
     context: Res<RapierContext>,
 ) {

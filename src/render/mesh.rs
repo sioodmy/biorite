@@ -179,19 +179,30 @@ pub fn chunk_despawner(
 
 /// Spawns `MeshTask` task to parallelize greedy meshing, because it's quite
 /// expensive operation
-pub fn mesher(mesh_queue: ResMut<MeshQueueReceiver>, mut commands: Commands) {
+pub fn mesher(
+    mesh_queue: ResMut<MeshQueueReceiver>,
+    mut commands: Commands,
+    loaded_chunks: ResMut<LoadedChunks>,
+) {
     let thread_pool = AsyncComputeTaskPool::get();
     // Limit how many chunks can be meshed per frame to avoid lag spikes
     let _limit = usize::min(mesh_queue.0.len(), 10);
     for chunk in mesh_queue.0.try_iter() {
-        let task = thread_pool.spawn(async move {
+        let mut task = thread_pool.spawn(async move {
             greedy_mesh(chunk.blocks).map(|mesh| MeshedChunk {
                 pos: chunk.position,
                 mesh,
                 chunk,
             })
         });
-        commands.spawn(MeshTask(task));
+
+        if let Some(existing_chunk) = loaded_chunks.0.get(&chunk.position) {
+            commands
+                .entity(existing_chunk.entity)
+                .insert(MeshTask(task));
+        } else {
+            commands.spawn(MeshTask(task));
+        }
     }
 }
 

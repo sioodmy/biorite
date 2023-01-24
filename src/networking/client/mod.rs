@@ -4,7 +4,6 @@ use bevy_rapier3d::na::Vector3;
 
 use crate::*;
 use local_ip_address::local_ip;
-use smooth_bevy_cameras::LookTransformPlugin;
 use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
@@ -133,19 +132,42 @@ pub fn entity_sync(
     mut commands: Commands,
     messages: Res<CurrentClientMessages>,
     query: Query<&Transform, With<Player>>,
+    client: Res<RenetClient>,
 ) {
     for message in messages.iter() {
         #[allow(irrefutable_let_patterns)]
+        // TODO: Rework all of this shit
         if let ServerMessage::EntitySync(sync) = message {
             for (player_id, translation) in sync.iter() {
                 if let Some(player_entity) = lobby.players.get(player_id) {
-                    let predicted =
-                        query.get(*player_entity).unwrap().translation;
+                    // Self prediciton
+                    if *player_id == client.client_id() {
+                        let predicted =
+                            query.get(*player_entity).unwrap().translation;
 
-                    let delta = calculate_delta(predicted.into(), *translation);
+                        let delta =
+                            calculate_delta(predicted.into(), *translation);
 
-                    // Do not bother if our prediction is correct
-                    if delta > 0.3 {
+                        // Do not bother if our prediction is correct
+                        // Rollback
+                        if delta > 30. {
+                            let transform = Transform {
+                                translation: (*translation).into(),
+                                ..Default::default()
+                            };
+                            commands.entity(*player_entity).insert(transform);
+                        }
+                    } else {
+                        if let Ok(old_pos) = query.get(*player_entity) {
+                            let old: [f32; 3] = old_pos.translation.into();
+                            let diff: Vec<f32> = old
+                                .iter()
+                                .zip(translation.iter())
+                                .map(|(p, t)| (p - t).abs())
+                                .collect();
+                            dbg!(diff);
+                        }
+
                         let transform = Transform {
                             translation: (*translation).into(),
                             ..Default::default()
@@ -224,7 +246,8 @@ fn player_input(
             force.force.y = 0.0;
 
             if input.pressed(KeyCode::Space) {
-                // Avoid double jumping by checking gravitational potential energy
+                // Avoid double jumping by checking gravitational potential
+                // energy
                 let body = match context.bodies.get(handle.0) {
                     Some(b) => b,
                     None => continue,
@@ -295,7 +318,6 @@ impl Plugin for NetworkClientPlugin {
                     .with_system(client_send_input)
                     .with_system(update_player_pos)
                     .with_run_criteria(run_if_client_connected),
-            )
-            .add_plugin(LookTransformPlugin);
+            );
     }
 }
