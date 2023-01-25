@@ -41,6 +41,18 @@ features = [
   "bevy_core_pipeline",
 ]
 
+[dependencies.bevy_kira_audio]
+version = "0.13.0"
+# `ogg` format support is enabled by default, disable if you don't want it
+default-features = false
+# enable the features you care about
+features = [
+  "wav",
+  "flac",
+  "mp3",
+  "ogg",
+]
+
 [features]
 default = ["fast-compile"]
 fast-compile = ["bevy/dynamic"]
@@ -61,7 +73,6 @@ belly = { git ="https://github.com/jkb0o/belly", rev="61b9aaed9a83cdcf99ccac2c79
 bevy_rapier3d = { version = "0.19.0", features = [ "parallel", "simd-nightly"] }
 rayon = "1.6.1"
 crossbeam-channel = "0.5.6"
-
 # Network stuff
 serde = { version = "1.0", features = [ "derive" ] } 
 serde-big-array = "0.4.1"

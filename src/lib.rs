@@ -4,6 +4,7 @@ pub use bevy_rapier3d::prelude::*;
 pub use bevy_renet::{renet::*, *};
 pub use lz4_flex::{compress_prepend_size, decompress_size_prepended};
 
+mod audio;
 mod chunks;
 mod debugging;
 mod networking;

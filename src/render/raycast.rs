@@ -106,40 +106,39 @@ pub fn intersection(
     input: Res<Input<MouseButton>>,
 ) {
     if let Ok(intersection) = &query.get_single() {
-        if let Some(dis) = intersection.distance() {
-            if let Some(pos) = intersection.position() {
-                if let Some(normal) = intersection.normal() {
-                    // Placing block
-                    if input.just_pressed(MouseButton::Right) {
-                        if dis <= REACH && dis > 1. {
-                            let x = if normal.x < 0. { -1. } else { 0. };
-                            let y = if normal.y < 0. { -1. } else { 0. };
-                            let z = if normal.z < 0. { -1. } else { 0. };
-                            let target_block = IVec3::new(
-                                (pos.x.floor() + x) as i32 - 1,
-                                (pos.y.floor() + y) as i32 - 1,
-                                (pos.z.floor() + z) as i32 - 1,
-                            );
+        if let (Some(dis), Some(pos), Some(normal)) = (
+            intersection.distance(),
+            intersection.position(),
+            intersection.normal(),
+        ) {
+            // Placing block
+            if input.just_pressed(MouseButton::Right) {
+                if dis <= REACH && dis > 1. {
+                    let x = if normal.x < 0. { -1. } else { 0. };
+                    let y = if normal.y < 0. { -1. } else { 0. };
+                    let z = if normal.z < 0. { -1. } else { 0. };
+                    let target_block = IVec3::new(
+                        (pos.x.floor() + x) as i32 - 1,
+                        (pos.y.floor() + y) as i32 - 1,
+                        (pos.z.floor() + z) as i32 - 1,
+                    );
 
-                            if let Some(Item::Block { block, .. }) = holding.0 {
-                                ClientMessage::PlaceBlock {
-                                    pos: target_block,
-                                    block,
-                                }
-                                .send(&mut client);
-                            }
+                    if let Some(Item::Block { block, .. }) = holding.0 {
+                        ClientMessage::PlaceBlock {
+                            pos: target_block,
+                            block,
                         }
-                    } else if input.just_pressed(MouseButton::Left) {
-                        let target_block = IVec3::new(
-                            pos.x.floor() as i32 - 1 - normal.x.abs() as i32,
-                            pos.y.floor() as i32 - 1 - normal.y.abs() as i32,
-                            pos.z.floor() as i32 - 1 - normal.z.abs() as i32,
-                        );
-
-                        ClientMessage::BreakBlock(target_block)
-                            .send(&mut client);
+                        .send(&mut client);
                     }
                 }
+            } else if input.just_pressed(MouseButton::Left) {
+                let target_block = IVec3::new(
+                    pos.x.floor() as i32 - 1 - normal.x.abs() as i32,
+                    pos.y.floor() as i32 - 1 - normal.y.abs() as i32,
+                    pos.z.floor() as i32 - 1 - normal.z.abs() as i32,
+                );
+
+                ClientMessage::BreakBlock(target_block).send(&mut client);
             }
         }
         // breaking block
