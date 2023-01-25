@@ -189,7 +189,10 @@ pub fn update_camera_system(
 ) {
     if let Ok(player_pos) = &players.get_single() {
         for (_, mut camera_pos) in &mut cameras {
-            camera_pos.translation = player_pos.translation;
+            camera_pos.translation =
+                // Player collider is smaller than it seems, so move camera
+                // up to ~1.8m 
+                player_pos.translation + Vec3::new(0., 0.8, 0.);
         }
     }
 }

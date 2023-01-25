@@ -1,11 +1,18 @@
 use crate::prelude::*;
 
 // TODO: Move
+
 #[derive(Clone, Copy)]
-pub struct ItemSlot(pub Option<BlockType>);
+pub enum Item {
+    Block { block: BlockType, stackable: bool },
+    Misc { item: u64, stackable: bool },
+}
+
+#[derive(Clone, Copy)]
+pub struct ItemSlot(pub Option<Item>);
 
 #[derive(Resource)]
-pub struct HoldingItem(pub Option<BlockType>);
+pub struct HoldingItem(pub Option<Item>);
 
 #[derive(Resource)]
 pub struct Hotbar {
@@ -26,15 +33,42 @@ impl Hotbar {
     pub fn debug() -> Self {
         Hotbar {
             slots: [
-                ItemSlot(Some(BlockType::Bricks)),
-                ItemSlot(Some(BlockType::Stone)),
-                ItemSlot(Some(BlockType::Wood)),
-                ItemSlot(Some(BlockType::Dirt)),
-                ItemSlot(Some(BlockType::Sand)),
-                ItemSlot(Some(BlockType::Bricks)),
-                ItemSlot(Some(BlockType::Bricks)),
-                ItemSlot(Some(BlockType::Bricks)),
-                ItemSlot(Some(BlockType::Bricks)),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Bricks,
+                    stackable: true,
+                })),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Stone,
+                    stackable: true,
+                })),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Wood,
+                    stackable: true,
+                })),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Bricks,
+                    stackable: true,
+                })),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Bricks,
+                    stackable: true,
+                })),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Bricks,
+                    stackable: true,
+                })),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Bricks,
+                    stackable: true,
+                })),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Bricks,
+                    stackable: true,
+                })),
+                ItemSlot(Some(Item::Block {
+                    block: BlockType::Bricks,
+                    stackable: true,
+                })),
             ],
             selected: 1,
         }
@@ -73,11 +107,11 @@ pub fn intersection(
 ) {
     if let Ok(intersection) = &query.get_single() {
         if let Some(dis) = intersection.distance() {
-            if dis <= REACH && dis > 1. {
-                if let Some(pos) = intersection.position() {
-                    if let Some(normal) = intersection.normal() {
-                        // Placing block
-                        if input.just_pressed(MouseButton::Right) {
+            if let Some(pos) = intersection.position() {
+                if let Some(normal) = intersection.normal() {
+                    // Placing block
+                    if input.just_pressed(MouseButton::Right) {
+                        if dis <= REACH && dis > 1. {
                             let x = if normal.x < 0. { -1. } else { 0. };
                             let y = if normal.y < 0. { -1. } else { 0. };
                             let z = if normal.z < 0. { -1. } else { 0. };
@@ -87,43 +121,23 @@ pub fn intersection(
                                 (pos.z.floor() + z) as i32 - 1,
                             );
 
-                            if let Some(block) = holding.0 {
+                            if let Some(Item::Block { block, .. }) = holding.0 {
                                 ClientMessage::PlaceBlock {
                                     pos: target_block,
                                     block,
                                 }
                                 .send(&mut client);
-                                info!(
-                                    "{:?} {:?} {:?} {:?}",
-                                    target_block,
-                                    dis,
-                                    pos,
-                                    intersection.normal()
-                                );
                             }
-                        } else if input.just_pressed(MouseButton::Left) {
-                            let target_block = IVec3::new(
-                                pos.x.floor() as i32
-                                    - 1
-                                    - normal.x.abs() as i32,
-                                pos.y.floor() as i32
-                                    - 1
-                                    - normal.y.abs() as i32,
-                                pos.z.floor() as i32
-                                    - 1
-                                    - normal.z.abs() as i32,
-                            );
-
-                            ClientMessage::BreakBlock(target_block)
-                                .send(&mut client);
-                            info!(
-                                "{:?} {:?} {:?} {:?}",
-                                target_block,
-                                dis,
-                                pos,
-                                intersection.normal()
-                            );
                         }
+                    } else if input.just_pressed(MouseButton::Left) {
+                        let target_block = IVec3::new(
+                            pos.x.floor() as i32 - 1 - normal.x.abs() as i32,
+                            pos.y.floor() as i32 - 1 - normal.y.abs() as i32,
+                            pos.z.floor() as i32 - 1 - normal.z.abs() as i32,
+                        );
+
+                        ClientMessage::BreakBlock(target_block)
+                            .send(&mut client);
                     }
                 }
             }
