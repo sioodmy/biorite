@@ -17,9 +17,9 @@ pub fn intersection(
                             let y = if normal.y < 0. { -1. } else { 0. };
                             let z = if normal.z < 0. { -1. } else { 0. };
                             let target_block = IVec3::new(
-                                (pos.x.floor() + x) as i32,
-                                (pos.y.floor() + y) as i32,
-                                (pos.z.floor() + z) as i32,
+                                (pos.x.floor() + x) as i32 - 1,
+                                (pos.y.floor() + y) as i32 - 1,
+                                (pos.z.floor() + z) as i32 - 1,
                             );
 
                             ClientMessage::PlaceBlock {

@@ -92,6 +92,9 @@
             RUST_SRC_PATH = rustPlatform.rustLibSrc;
             RUST_LOG = "info,wgpu_core=warn,wgpu_hal=off,rechannel=warn,biorite=debug";
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtime-deps;
+            shellHook = ''
+              mkdir -p world/chunks
+            '';
             buildInputs =
               [toolchain]
               ++ runtime-deps

@@ -41,14 +41,22 @@ pub fn client_block_updates(
             let x: i32 = pos.x / CHUNK_DIM as i32;
             let y: i32 = pos.y / CHUNK_DIM as i32;
             let z: i32 = pos.z / CHUNK_DIM as i32;
+
             info!("chunk {}/{}/{}", x, y, z);
 
-            let r_x = pos.x.abs() - x.abs() * CHUNK_DIM as i32;
-            let r_y = pos.y.abs() - y.abs() * CHUNK_DIM as i32;
-            let r_z = pos.z.abs() - z.abs() * CHUNK_DIM as i32;
+            let x = pos.x.div_euclid(CHUNK_DIM as i32);
+            let y = pos.y.div_euclid(CHUNK_DIM as i32);
+            let z = pos.z.div_euclid(CHUNK_DIM as i32);
+
+            let r_x = pos.x.rem_euclid(CHUNK_DIM as i32) + 1;
+            let r_y = pos.y.rem_euclid(CHUNK_DIM as i32) + 1;
+            let r_z = pos.z.rem_euclid(CHUNK_DIM as i32) + 1;
+
             info!("relative to chunk {}/{}/{}", r_x, r_y, r_z);
 
-            if let Some(entry) = chunks.0.get_mut(&IVec3::new(x, y, z)) {
+            if let Some(entry) =
+                chunks.0.get_mut(&IVec3::new(x as i32, y as i32, z as i32))
+            {
                 let i = ChunkShape::linearize([
                     r_x.try_into().unwrap(),
                     r_y.try_into().unwrap(),

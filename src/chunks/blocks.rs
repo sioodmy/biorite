@@ -98,13 +98,15 @@ impl Voxel for BlockType {
 
 impl MergeVoxel for BlockType {
     type MergeValue = Self;
-    type MergeValueFacingNeighbour = bool;
+    // type MergeValueFacingNeighbour = bool;
+    type MergeValueFacingNeighbour = Self;
 
     fn merge_value(&self) -> Self::MergeValue {
         *self
     }
     fn merge_value_facing_neighbour(&self) -> Self::MergeValueFacingNeighbour {
         // TODO
-        true
+        // true
+        *self
     }
 }
