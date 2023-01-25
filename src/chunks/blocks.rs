@@ -71,6 +71,7 @@ pub enum BlockType {
     Stone,
     Sand,
     Wood,
+    Bricks,
 }
 
 impl BlockType {
@@ -83,6 +84,7 @@ impl BlockType {
             Stone => BlockTexture::full(3),
             Sand => BlockTexture::full(4),
             Wood => BlockTexture::new(6, 5, 6),
+            Bricks => BlockTexture::full(8),
         }
     }
 }

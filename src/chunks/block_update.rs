@@ -64,7 +64,7 @@ pub fn client_block_updates(
                 ]);
                 // TODO
                 let mut newchunk = entry.chunk;
-                newchunk.blocks[i as usize] = BlockType::Stone;
+                newchunk.blocks[i as usize] = *block;
                 mesh_queue.0.send(newchunk).unwrap();
             };
         };

@@ -27,6 +27,8 @@ impl Plugin for RenderClientPlugin {
             .add_system(create_array_texture)
             .insert_resource(MeshQueueReceiver(rx))
             .insert_resource(MeshQueueSender(tx))
+            .insert_resource(Hotbar::debug())
+            .insert_resource(HoldingItem(None))
             .insert_resource(LoadedChunks(HashMap::new()))
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame)
@@ -38,6 +40,8 @@ impl Plugin for RenderClientPlugin {
                 SystemSet::on_update(AppState::InGame)
                     .with_system(mouse_movement)
                     .with_system(client_block_updates)
+                    .with_system(hotbar_prototype)
+                    .with_system(holding_item)
                     .with_system(cursor_grab_system)
                     .with_system(chunk_renderer)
                     .with_system(intersection), // .with_system(client_chunk_despawner),
