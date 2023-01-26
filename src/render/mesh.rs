@@ -87,23 +87,23 @@ pub fn chunk_renderer(
     for (entity, mut task) in &mut transform_tasks {
         if let Some(mesh) = future::block_on(future::poll_once(&mut task.0)) {
             if let Some(meshed_chunk) = mesh {
-                    commands.entity(entity).insert((
-                        Collider::from_bevy_mesh(
-                            &meshed_chunk.mesh,
-                            &ComputedColliderShape::TriMesh,
-                        )
-                        .unwrap(),
-                        MaterialMeshBundle {
-                            mesh: meshes.add(meshed_chunk.mesh),
-                            material: loading_texture.material.clone(),
-                            transform: Transform::from_xyz(
-                                meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
-                                meshed_chunk.pos.y as f32 * CHUNK_DIM as f32,
-                                meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
-                            ),
-                            ..Default::default()
-                        },
-                    ));
+                commands.entity(entity).insert((
+                    Collider::from_bevy_mesh(
+                        &meshed_chunk.mesh,
+                        &ComputedColliderShape::TriMesh,
+                    )
+                    .unwrap(),
+                    MaterialMeshBundle {
+                        mesh: meshes.add(meshed_chunk.mesh),
+                        material: loading_texture.material.clone(),
+                        transform: Transform::from_xyz(
+                            meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
+                            meshed_chunk.pos.y as f32 * CHUNK_DIM as f32,
+                            meshed_chunk.pos.z as f32 * CHUNK_DIM as f32,
+                        ),
+                        ..Default::default()
+                    },
+                ));
 
                 if meshed_chunk.is_new {
                     commands
@@ -134,14 +134,14 @@ pub fn chunk_renderer(
                             ),
                         )
                         .insert(RaycastMesh::<MyRaycastSet>::default());
-                    }
-                    loaded_chunks.0.insert(
-                        meshed_chunk.pos,
-                        ChunkEntry {
-                            chunk: meshed_chunk.chunk,
-                            entity,
-                        },
-                    );
+                }
+                loaded_chunks.0.insert(
+                    meshed_chunk.pos,
+                    ChunkEntry {
+                        chunk: meshed_chunk.chunk,
+                        entity,
+                    },
+                );
             } else {
                 commands.entity(entity).despawn();
             };
