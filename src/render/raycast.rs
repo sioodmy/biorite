@@ -132,12 +132,19 @@ pub fn intersection(
                     }
                 }
             } else if input.just_pressed(MouseButton::Left) {
+                info!("{:?}", normal);
                 let target_block = IVec3::new(
-                    pos.x.floor() as i32 - 1 - normal.x.abs() as i32,
-                    pos.y.floor() as i32 - 1 - normal.y.abs() as i32,
-                    pos.z.floor() as i32 - 1 - normal.z.abs() as i32,
+                    pos.x.floor() as i32 - 1 - normal.x as i32,
+                    pos.y.floor() as i32 - 1 - normal.y as i32,
+                    pos.z.floor() as i32 - 1 - normal.z as i32,
                 );
 
+                // ClientMessage::BreakBlock(IVec3::new(
+                //     target_block.x.floor() as i32,
+                //     target_block.y.floor() as i32,
+                //     target_block.z.floor() as i32,
+                // ))
+                // .send(&mut client);
                 ClientMessage::BreakBlock(target_block).send(&mut client);
             }
         }

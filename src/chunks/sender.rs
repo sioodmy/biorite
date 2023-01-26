@@ -9,7 +9,6 @@ pub fn chunk_send(
     mtx: ResMut<MeshQueueSender>,
     msg: Res<CurrentServerMessages>,
     lobby: Res<Lobby>,
-    loaded_chunks: Res<LoadedChunks>,
     query: Query<&GlobalTransform, With<Player>>,
     // query: Query<&mut GlobalTransform, Changed<PlayerInput>>,
 ) {
@@ -43,7 +42,7 @@ pub fn chunk_send(
                     if distance < 2. * (RENDER_DISTANCE + 1) as f32 {
                         debug!("Generating chunk at {:?}", pos);
                         let chunk = chunk_generator(pos);
-                        mesh_sender.send(chunk).unwrap();
+                        mesh_sender.send((chunk, false)).unwrap();
                         chunk_sender.send(chunk.compress()).unwrap();
                     } else {
                         warn!(
