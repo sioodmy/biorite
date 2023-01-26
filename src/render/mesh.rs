@@ -27,7 +27,7 @@ pub struct MeshedChunk {
     mesh: Mesh,
     chunk: Chunk,
     pos: IVec3,
-    is_update: bool,
+    is_new: bool,
 }
 
 pub fn server_chunk_spawn(
@@ -87,7 +87,6 @@ pub fn chunk_renderer(
     for (entity, mut task) in &mut transform_tasks {
         if let Some(mesh) = future::block_on(future::poll_once(&mut task.0)) {
             if let Some(meshed_chunk) = mesh {
-                if meshed_chunk.is_update {
                     commands.entity(entity).insert((
                         Collider::from_bevy_mesh(
                             &meshed_chunk.mesh,
@@ -105,22 +104,11 @@ pub fn chunk_renderer(
                             ..Default::default()
                         },
                     ));
-                } else {
-                    let chunk_entity = commands
+
+                if meshed_chunk.is_new {
+                    commands
                         .entity(entity)
                         .insert(ColliderMassProperties::Density(100000.0))
-                        .insert(
-                            Collider::from_bevy_mesh(
-                                &meshed_chunk.mesh,
-                                &ComputedColliderShape::TriMesh,
-                            )
-                            .unwrap(),
-                        )
-                        .insert(MaterialMeshBundle {
-                            mesh: meshes.add(meshed_chunk.mesh),
-                            material: loading_texture.material.clone(),
-                            ..Default::default()
-                        })
                         .insert(
                             Transform::from_xyz(
                                 meshed_chunk.pos.x as f32 * CHUNK_DIM as f32,
@@ -145,16 +133,15 @@ pub fn chunk_renderer(
                                 },
                             ),
                         )
-                        .insert(RaycastMesh::<MyRaycastSet>::default())
-                        .id();
+                        .insert(RaycastMesh::<MyRaycastSet>::default());
+                    }
                     loaded_chunks.0.insert(
                         meshed_chunk.pos,
                         ChunkEntry {
                             chunk: meshed_chunk.chunk,
-                            entity: chunk_entity,
+                            entity,
                         },
                     );
-                }
             } else {
                 commands.entity(entity).despawn();
             };
@@ -214,14 +201,14 @@ pub fn mesher(
     let thread_pool = AsyncComputeTaskPool::get();
     // Limit how many chunks can be meshed per frame to avoid lag spikes
     let _limit = usize::min(mesh_queue.0.len(), 10);
-    for (chunk, is_update) in mesh_queue.0.try_iter() {
+    for (chunk, is_new) in mesh_queue.0.try_iter() {
         let exists = loaded_chunks.0.get(&chunk.position);
         let task = thread_pool.spawn(async move {
             greedy_mesh(chunk.blocks).map(|mesh| MeshedChunk {
                 pos: chunk.position,
                 mesh,
                 chunk,
-                is_update,
+                is_new,
             })
         });
 

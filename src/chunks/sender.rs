@@ -42,7 +42,7 @@ pub fn chunk_send(
                     if distance < 2. * (RENDER_DISTANCE + 1) as f32 {
                         debug!("Generating chunk at {:?}", pos);
                         let chunk = chunk_generator(pos);
-                        mesh_sender.send((chunk, false)).unwrap();
+                        mesh_sender.send((chunk, true)).unwrap();
                         chunk_sender.send(chunk.compress()).unwrap();
                     } else {
                         warn!(
