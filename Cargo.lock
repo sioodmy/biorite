@@ -1198,6 +1198,7 @@ dependencies = [
  "public-ip",
  "rand",
  "rayon",
+ "scc",
  "serde",
  "serde-big-array",
  "tokio",
@@ -4314,6 +4315,12 @@ checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
 ]
+
+[[package]]
+name = "scc"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "958f09ac02e0e9f93544faa348b1799b9a05c04dbea3973430aea0b4c706f9ae"
 
 [[package]]
 name = "scoped-tls"

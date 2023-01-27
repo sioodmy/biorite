@@ -67,6 +67,7 @@ bevy-inspector-egui = "0.15.0"
 bevy_embedded_assets = "0.6.2"
 bevy_asset_loader = "0.14.1"
 bevy_egui = "0.18.0"
+scc = "1.1.0"
 futures-lite = "1.12.0"
 bevy_mod_raycast = "0.7.0"
 belly = { git ="https://github.com/jkb0o/belly", rev="61b9aaed9a83cdcf99ccac2c79bb680a97cfd653"}

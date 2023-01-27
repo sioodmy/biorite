@@ -10,6 +10,8 @@ pub fn chunk_send(
     msg: Res<CurrentServerMessages>,
     lobby: Res<Lobby>,
     query: Query<&GlobalTransform, With<Player>>,
+    mut modified: ResMut<ModifiedRegions>,
+    mut save: ResMut<SaveFile>,
     // query: Query<&mut GlobalTransform, Changed<PlayerInput>>,
 ) {
     for (id, message) in msg.iter() {
@@ -27,7 +29,7 @@ pub fn chunk_send(
             let mesh_sender = mtx.0.clone();
             if let Some(player_entity) = lobby.players.get(id) {
                 let coords = query.get(*player_entity).expect("amogus");
-                vec.par_iter().for_each(move |pos| {
+                vec.iter().for_each(|pos| {
                     debug!("Validating request");
 
                     let player = coords.translation();
@@ -41,14 +43,39 @@ pub fn chunk_send(
 
                     if distance < 2. * (RENDER_DISTANCE + 1) as f32 {
                         debug!("Generating chunk at {:?}", pos);
-                        let chunk = chunk_generator(pos);
+                        let chunk: Chunk = match save.regions.get(&pos) {
+                            Some(c) => match c.get(&pos) {
+                                Some(mc) => *mc,
+                                None => {
+                                    let chunk = chunk_generator(pos, save.seed);
+                                    save.insert_chunk(chunk);
+                                    save.save_region(*pos >> 5);
+                                    debug!("generating");
+                                    chunk
+                                }
+                            },
+                            None => {
+                                match save.load_region(*pos >> 5).get(pos) {
+                                    Some(lc) => *lc,
+                                    None => {
+                                        let chunk =
+                                            chunk_generator(pos, save.seed);
+                                        save.insert_chunk(chunk);
+                                        save.save_region(*pos >> 5);
+                                        debug!("generating");
+                                        chunk
+                                    }
+                                }
+                            }
+                        };
+                        debug!("sending");
+                        chunk_sender.send(chunk.compress()).unwrap();
                         mesh_sender
                             .send(QueuedChunk {
                                 chunk,
                                 is_new: true,
                             })
                             .unwrap();
-                        chunk_sender.send(chunk.compress()).unwrap();
                     } else {
                         warn!(
                             "Client {} tried requesting chunk too far away",
