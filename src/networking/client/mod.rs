@@ -150,7 +150,7 @@ pub fn entity_sync(
 
                         // Do not bother if our prediction is correct
                         // Rollback
-                        if delta > 30. {
+                        if delta > 3. {
                             let transform = Transform {
                                 translation: (*translation).into(),
                                 ..Default::default()

@@ -13,7 +13,14 @@ pub fn receive_chunk(
         if let ServerChunkMessage::ChunkBatch(compressed_batch) = message {
             compressed_batch.par_iter().for_each(|compressed_chunk| {
                 let chunk = Chunk::from_compressed(compressed_chunk);
-                mesh_queue.0.clone().send((chunk, true)).unwrap();
+                mesh_queue
+                    .0
+                    .clone()
+                    .send(QueuedChunk {
+                        chunk,
+                        is_new: true,
+                    })
+                    .unwrap();
             });
         }
     }

@@ -3,6 +3,8 @@ use bracket_noise::prelude::*;
 
 use std::{fs, path::Path};
 
+// TODO: Divide chunks into regions
+
 pub fn chunk_generator(position: &IVec3) -> Chunk {
     // TODO: world regions
     // TODO: async

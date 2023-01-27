@@ -49,7 +49,13 @@ pub fn client_block_updates(
                     r_y.try_into().unwrap(),
                     r_z.try_into().unwrap(),
                 ]) as usize] = *block;
-                mesh_queue.0.send((e.chunk, false)).unwrap();
+                mesh_queue
+                    .0
+                    .send(QueuedChunk {
+                        chunk: e.chunk,
+                        is_new: false,
+                    })
+                    .unwrap();
             });
         };
     }

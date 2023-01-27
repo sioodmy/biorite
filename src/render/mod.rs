@@ -20,7 +20,7 @@ pub use raycast::*;
 pub struct RenderClientPlugin;
 impl Plugin for RenderClientPlugin {
     fn build(&self, app: &mut App) {
-        let (tx, rx) = bounded::<(Chunk, bool)>(1000);
+        let (tx, rx) = bounded::<QueuedChunk>(1000);
         app.add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
             .add_startup_system(load_chunk_texture)
             .add_plugin(DefaultRaycastingPlugin::<MyRaycastSet>::default())

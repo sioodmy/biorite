@@ -96,7 +96,7 @@
               mkdir -p world/chunks
             '';
             buildInputs =
-              [toolchain]
+              [toolchain pciutils]
               ++ runtime-deps
               ++ build-deps;
           };

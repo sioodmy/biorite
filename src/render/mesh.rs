@@ -14,10 +14,14 @@ use futures_lite::future;
 
 use crate::prelude::*;
 
+pub struct QueuedChunk{
+    pub chunk: Chunk,
+    pub is_new: bool,
+}
 #[derive(Resource)]
-pub struct MeshQueueSender(pub Sender<(Chunk, bool)>);
+pub struct MeshQueueSender(pub Sender<QueuedChunk>);
 #[derive(Resource)]
-pub struct MeshQueueReceiver(pub Receiver<(Chunk, bool)>);
+pub struct MeshQueueReceiver(pub Receiver<QueuedChunk>);
 
 #[derive(Component)]
 pub struct MeshTask(Task<Option<MeshedChunk>>);
@@ -28,6 +32,7 @@ pub struct MeshedChunk {
     chunk: Chunk,
     pos: IVec3,
     is_new: bool,
+    // _headless: bool,
 }
 
 pub fn server_chunk_spawn(
@@ -201,14 +206,14 @@ pub fn mesher(
     let thread_pool = AsyncComputeTaskPool::get();
     // Limit how many chunks can be meshed per frame to avoid lag spikes
     let _limit = usize::min(mesh_queue.0.len(), 10);
-    for (chunk, is_new) in mesh_queue.0.try_iter() {
-        let exists = loaded_chunks.0.get(&chunk.position);
+    for queued in mesh_queue.0.try_iter() {
+        let exists = loaded_chunks.0.get(&queued.chunk.position);
         let task = thread_pool.spawn(async move {
-            greedy_mesh(chunk.blocks).map(|mesh| MeshedChunk {
-                pos: chunk.position,
+            greedy_mesh(queued.chunk.blocks).map(|mesh| MeshedChunk {
+                pos: queued.chunk.position,
                 mesh,
-                chunk,
-                is_new,
+                chunk: queued.chunk,
+                is_new: queued.is_new,
             })
         });
 
