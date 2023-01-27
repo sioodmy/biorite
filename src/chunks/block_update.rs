@@ -9,11 +9,35 @@ pub fn handle_block_updates(
         if let ClientMessage::BreakBlock(block) = message {
             debug!("got break block packet at {:?} from {}", block, id);
 
-            ServerMessage::BlockDelta {
-                pos: *block,
-                block: BlockType::Air,
+            let x = block.x.div_euclid(CHUNK_DIM as i32);
+            let y = block.y.div_euclid(CHUNK_DIM as i32);
+            let z = block.z.div_euclid(CHUNK_DIM as i32);
+
+            let r_x = block.x.rem_euclid(CHUNK_DIM as i32) + 1;
+            let r_y = block.y.rem_euclid(CHUNK_DIM as i32) + 1;
+            let r_z = block.z.rem_euclid(CHUNK_DIM as i32) + 1;
+
+            let chunk_pos = IVec3::new(x, y, z);
+            if let Some(mut chunk) = save.modify_chunk(chunk_pos) {
+                info!("modifying chunk");
+                let i = ChunkShape::linearize([
+                    r_x.try_into().unwrap(),
+                    r_y.try_into().unwrap(),
+                    r_z.try_into().unwrap(),
+                ]);
+                if chunk.blocks[i as usize] != BlockType::Air {
+                    chunk.blocks[i as usize] = BlockType::Air
+                } else {
+                    warn!("Incorrect block break packet from client {}", id);
+                }
+                ServerMessage::BlockDelta {
+                    pos: *block,
+                    block: BlockType::Air,
+                }
+                .broadcast(&mut server);
+                info!("saving chunk");
+                save.save_region(chunk_pos >> REGION_DIM);
             }
-            .send(&mut server, *id);
         }
         if let ClientMessage::PlaceBlock { pos, block } = message {
             debug!("Got block place packet at {:?}, from {}", block, id);
@@ -28,20 +52,24 @@ pub fn handle_block_updates(
             let chunk_pos = IVec3::new(x, y, z);
             if let Some(mut chunk) = save.modify_chunk(chunk_pos) {
                 info!("modifying chunk");
-                chunk.blocks[ChunkShape::linearize([
+                // Avoid replacing already existing blocks
+                let i = ChunkShape::linearize([
                     r_x.try_into().unwrap(),
                     r_y.try_into().unwrap(),
                     r_z.try_into().unwrap(),
-                ]) as usize] = *block;
+                ]);
+                if chunk.blocks[i as usize] == BlockType::Air {
+                    chunk.blocks[i as usize] = *block;
+                } else {
+                    warn!("Client {} tried to replace existing block", id);
+                }
                 ServerMessage::BlockDelta {
                     pos: *pos,
                     block: *block,
                 }
-                .send(&mut server, *id);
+                .broadcast(&mut server);
                 info!("saving chunk");
                 save.save_region(chunk_pos >> REGION_DIM);
-            } else {
-                warn!("couldnt get chunk");
             }
         }
     }
