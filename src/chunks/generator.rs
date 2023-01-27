@@ -10,8 +10,8 @@ use std::{fs, path::Path};
 // TODO: Divide chunks into regions
 
 /// Size of chunk region defined as power of 2
-/// by default: 2^4 = 16
-const REGION_DIM: u32 = 4;
+/// by default: 2^5 = 32
+pub const REGION_DIM: u32 = 5;
 
 pub type Region = ConstShape3i32<
     { 2_i32.pow(REGION_DIM) },
@@ -23,6 +23,10 @@ pub type Region = ConstShape3i32<
 #[derive(Resource, Default)]
 pub struct ModifiedRegions(pub HashSet<IVec3>);
 
+/// Optimized world save storage format
+/// Chunks are now stored in 32x32x32 regions.
+/// Its more efficient to store them that way
+/// Inspired by amazing minecraft mod made by Scaevolus
 #[derive(Resource)]
 pub struct SaveFile {
     pub name: String,
@@ -40,6 +44,7 @@ impl SaveFile {
             dirty: HashSet::new(),
         }
     }
+
     pub fn insert_chunk(&mut self, chunk: Chunk) {
         let region_pos = chunk.position >> REGION_DIM;
         info!(
@@ -58,7 +63,7 @@ impl SaveFile {
             let bytes = bincode::serialize(region).unwrap();
             fs::write(
                 format!(
-                    "world/chunks/r.{}.{}.{}.cum",
+                    "world/regions/r.{}.{}.{}.cum",
                     region_pos.x, region_pos.y, region_pos.z
                 ),
                 bytes,
@@ -69,13 +74,19 @@ impl SaveFile {
 
     pub fn load_region(&mut self, region_pos: IVec3) -> HashMap<IVec3, Chunk> {
         if let Ok(bytes) = fs::read(format!(
-            "world/chunks/r.{}.{}.{}.cum",
+            "world/regions/r.{}.{}.{}.cum",
             region_pos.x, region_pos.y, region_pos.z
         )) {
             bincode::deserialize(&bytes).unwrap()
         } else {
             HashMap::new()
         }
+    }
+
+    pub fn modify_chunk(&mut self, chunk_pos: IVec3) -> Option<&mut Chunk> {
+        self.regions
+            .get_mut(&(chunk_pos >> REGION_DIM))?
+            .get_mut(&chunk_pos)
     }
 }
 
