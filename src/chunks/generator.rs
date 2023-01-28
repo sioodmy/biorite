@@ -1,4 +1,6 @@
 use crate::prelude::*;
+use splines::{Interpolation, Key, Spline};
+
 use bevy::tasks::AsyncComputeTaskPool;
 use scc::HashSet;
 
@@ -110,7 +112,7 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     let mut level_noise = FastNoise::seeded(seed);
     level_noise.set_noise_type(NoiseType::Perlin);
     level_noise.set_fractal_octaves(2);
-    level_noise.set_fractal_gain(0.39);
+    level_noise.set_fractal_gain(1.39);
     level_noise.set_fractal_lacunarity(0.15);
     level_noise.set_frequency(0.039);
 
@@ -121,6 +123,13 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     temperature_noise.set_fractal_lacunarity(1.25);
     temperature_noise.set_frequency(0.03);
 
+    let mut hill_noise = FastNoise::seeded(seed);
+    hill_noise.set_noise_type(NoiseType::Value);
+    hill_noise.set_fractal_octaves(16);
+    hill_noise.set_fractal_gain(1.9);
+    hill_noise.set_fractal_lacunarity(1.25);
+    hill_noise.set_frequency(0.03);
+
     let mut moisture_noise = FastNoise::seeded(12);
     moisture_noise.set_noise_type(NoiseType::Value);
     moisture_noise.set_fractal_octaves(4);
@@ -128,12 +137,12 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     moisture_noise.set_fractal_lacunarity(0.75);
     moisture_noise.set_frequency(0.03);
 
-    let mut forest_noise = FastNoise::seeded(seed);
-    forest_noise.set_noise_type(NoiseType::WhiteNoise);
-    forest_noise.set_fractal_octaves(8);
-    forest_noise.set_fractal_gain(5.5);
-    forest_noise.set_fractal_lacunarity(4.75);
-    forest_noise.set_frequency(0.1);
+    let mut cave_noise = FastNoise::seeded(seed);
+    cave_noise.set_noise_type(NoiseType::Perlin);
+    cave_noise.set_fractal_octaves(16);
+    cave_noise.set_fractal_gain(0.45);
+    cave_noise.set_fractal_lacunarity(3.75);
+    cave_noise.set_frequency(0.07);
 
     // placeholder for propper chunk generation
     let mut blocks: [BlockType; ChunkShape::SIZE as usize] =
@@ -145,8 +154,13 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     let offset = 10.0;
     // let factor = 7.37;
     let factor = 19.0;
-    let flat: f64 = 5.0;
+    let flat: f64 = 10.0;
     let _rng = rand::thread_rng();
+
+    let start = Key::new(0., 0., Interpolation::Linear);
+    let mid = Key::new(3., 10., Interpolation::Linear);
+    let end = Key::new(7., 40., Interpolation::default());
+    let hill_spline = Spline::from_vec(vec![start, mid, end]);
 
     // 16^3 chunk with one block boundary
     for x in 1..CHUNK_DIM + 1 {
@@ -157,40 +171,32 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
                 let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
                 let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
 
-                let n = level_noise.get_noise(gx, gz) * factor + offset;
+                let n = cave_noise.get_noise3d(gx, gy, gz) * factor + offset;
+                let moisture = (moisture_noise.get_noise(gx, gz) + 1.0) * 2.5;
 
-                let surface = flat + n as f64;
+                debug!("{:?}", n);
                 let i = ChunkShape::linearize([x, y, z]);
-                if gy as f64 > surface {
-                    blocks[i as usize] = BlockType::Air;
-                } else if gy < surface as f32 {
-                    blocks[i as usize] = BlockType::Stone;
-                }
+                // let density = if gy > 34. { 13. } else { 3. };
+                // let density = if gy > 20. { 8. + gy / 10. } else { 3. };
+                // let density = moisture + 5. + gy / 5.;
+                // // let density = gy * 3.8;
+                // if n > density {
+                //     blocks[i as usize] = BlockType::Stone;
+                // } else {
+                //     blocks[i as usize] = BlockType::Air;
+                // }
 
-                if gy == surface.floor() as f32 {
-                    level_noise.set_fractal_octaves(1);
-                    level_noise.set_fractal_lacunarity(1.0);
+                let terrain = level_noise.get_noise(gx, gz) * factor + offset;
+                let temp = (temperature_noise.get_noise(gx, gz) + 1.0) * 2.5;
+                let hill = hill_noise.get_noise(gx, gz) * 10.;
 
-                    let temp =
-                        (temperature_noise.get_noise(gx, gz) + 1.0) * 2.5;
-                    let moisture =
-                        (moisture_noise.get_noise(gx, gz) + 1.0) * 2.5;
-
-                    let forest = (forest_noise.get_noise(gx, gz) + 1.0) / 2.0;
-
-                    debug!(
-                        "moisture {:?}, temp: {:?}, forest: {:?}",
-                        moisture, temp, forest
-                    );
-
-                    if temp > 2.0 && moisture < 2.0 {
-                        // desert
-                        blocks[i as usize] = BlockType::Sand;
-                    } else {
-                        blocks[i as usize] = BlockType::Grass;
+                if let Some(s) = hill_spline.clamped_sample(hill) {
+                    let surface = flat + terrain as f64 + s;
+                    if gy < surface as f32 {
+                        blocks[i as usize] = BlockType::Stone;
                     }
-                    if forest > 0.1 && forest < 0.16 {
-                        blocks[i as usize] = BlockType::Wood;
+                    if gy == surface.floor() as f32 {
+                        blocks[i as usize] = BlockType::Grass;
                     }
                 }
             }

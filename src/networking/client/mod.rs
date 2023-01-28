@@ -82,7 +82,7 @@ pub fn entity_spawn(
                     .entity(player_entity)
                     .insert(ControlledPlayer)
                     .insert(PbrBundle {
-                        transform: Transform::from_xyz(0.0, 50.0, 0.0),
+                        transform: Transform::from_xyz(0.0, 60.0, 0.0),
                         ..Default::default()
                     });
             } else {
@@ -150,7 +150,7 @@ pub fn entity_sync(
 
                         // Do not bother if our prediction is correct
                         // Rollback
-                        if delta > 3. {
+                        if delta > 3000. {
                             let transform = Transform {
                                 translation: (*translation).into(),
                                 ..Default::default()
