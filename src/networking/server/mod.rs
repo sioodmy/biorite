@@ -16,8 +16,8 @@ pub fn create_renet_server() -> RenetServer {
     let socket = UdpSocket::bind(server_addr).unwrap();
     let connection_config = RenetConnectionConfig {
         max_packet_size: 12 * 1024,
-        received_packets_buffer_size: 1000,
-        sent_packets_buffer_size: 1000,
+        received_packets_buffer_size: 9000,
+        sent_packets_buffer_size: 9000,
         receive_channels_config: vec![
             ChannelConfig::Unreliable(UnreliableChannelConfig {
                 sequenced: true, // We don't care about old positions
@@ -25,11 +25,13 @@ pub fn create_renet_server() -> RenetServer {
             }),
             ChannelConfig::Reliable(ReliableChannelConfig {
                 packet_budget: 10000,
-                max_message_size: 9000,
+                max_message_size: 5000,
+                message_send_queue_size: 1024 * 5,
                 ..Default::default()
             }),
             ChannelConfig::Chunk(ChunkChannelConfig {
-                resend_time: Duration::from_millis(500),
+                resend_time: Duration::from_millis(800),
+                message_send_queue_size: 999,
                 ..Default::default()
             }),
         ],

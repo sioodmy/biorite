@@ -1,4 +1,5 @@
 use super::messages::*;
+use bevy::time::FixedTimestep;
 use bevy_easings::*;
 use bevy_rapier3d::na::Vector3;
 
@@ -19,15 +20,19 @@ pub fn create_renet_client() -> RenetClient {
 
     let connection_config = RenetConnectionConfig {
         max_packet_size: 32 * 1024,
-        received_packets_buffer_size: 1000,
+        received_packets_buffer_size: 9000,
         sent_packets_buffer_size: 1000,
         send_channels_config: vec![
             ChannelConfig::Reliable(ReliableChannelConfig {
                 packet_budget: 30000,
                 max_message_size: 9 * 1024,
+                message_receive_queue_size: 1024 * 5,
                 ..Default::default()
             }),
-            ChannelConfig::Unreliable(UnreliableChannelConfig::default()),
+            ChannelConfig::Unreliable(UnreliableChannelConfig {
+                sequenced: true,
+                ..Default::default()
+            }),
         ],
         ..Default::default()
     };
@@ -264,7 +269,7 @@ fn player_input(
                     Vector3::new(0.0, -9.81, 0.0),
                 );
                 if e1 == e2 {
-                    impulse.impulse = Vec3::new(0.0, 500.0, 0.0);
+                    impulse.impulse = Vec3::new(0.0, 900.0, 0.0);
                 }
             }
         }
@@ -307,6 +312,11 @@ impl Plugin for NetworkClientPlugin {
             .insert_resource(PlayerInput::default())
             .insert_resource(AlreadyRequested::default())
             .insert_resource(Lobby::default())
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(FixedTimestep::step(1.))
+                    .with_system(request_chunk),
+            )
             .add_system_set(
                 SystemSet::on_update(AppState::InGame)
                     .with_system(update_camera_system)

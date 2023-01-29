@@ -24,7 +24,7 @@ pub mod sender;
 pub mod server;
 
 pub type CompressedChunk = Vec<u8>;
-pub const CHUNK_DIM: u32 = 16;
+pub const CHUNK_DIM: u32 = 32;
 pub type ChunkShape =
     ConstShape3u32<{ CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }>;
 

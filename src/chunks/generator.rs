@@ -102,6 +102,10 @@ pub fn chunk_saver(
         // modified.0.remove(region);
     });
 }
+
+// I know this is poorly written
+// its just a prototype
+// im just playing around with it (we good?)
 pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     // TODO: world regions
     // TODO: async
@@ -127,8 +131,8 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     hill_noise.set_noise_type(NoiseType::Value);
     hill_noise.set_fractal_octaves(16);
     hill_noise.set_fractal_gain(1.9);
-    hill_noise.set_fractal_lacunarity(1.25);
-    hill_noise.set_frequency(0.03);
+    hill_noise.set_fractal_lacunarity(0.45);
+    hill_noise.set_frequency(0.0115);
 
     let mut moisture_noise = FastNoise::seeded(12);
     moisture_noise.set_noise_type(NoiseType::Value);
@@ -138,11 +142,18 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     moisture_noise.set_frequency(0.03);
 
     let mut cave_noise = FastNoise::seeded(seed);
-    cave_noise.set_noise_type(NoiseType::Perlin);
+    cave_noise.set_noise_type(NoiseType::Simplex);
     cave_noise.set_fractal_octaves(16);
-    cave_noise.set_fractal_gain(0.45);
-    cave_noise.set_fractal_lacunarity(3.75);
-    cave_noise.set_frequency(0.07);
+    cave_noise.set_fractal_gain(1.9);
+    cave_noise.set_fractal_lacunarity(0.4);
+    cave_noise.set_frequency(0.08);
+
+    let mut erosion_noise = FastNoise::seeded(seed + 3);
+    erosion_noise.set_noise_type(NoiseType::Perlin);
+    erosion_noise.set_fractal_octaves(8);
+    erosion_noise.set_fractal_gain(1.3);
+    erosion_noise.set_fractal_lacunarity(1.75);
+    erosion_noise.set_frequency(0.03);
 
     // placeholder for propper chunk generation
     let mut blocks: [BlockType; ChunkShape::SIZE as usize] =
@@ -153,14 +164,25 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
 
     let offset = 10.0;
     // let factor = 7.37;
-    let factor = 19.0;
+    let factor = 9.0;
     let flat: f64 = 10.0;
     let _rng = rand::thread_rng();
 
-    let start = Key::new(0., 0., Interpolation::Linear);
-    let mid = Key::new(3., 10., Interpolation::Linear);
-    let end = Key::new(7., 40., Interpolation::default());
-    let hill_spline = Spline::from_vec(vec![start, mid, end]);
+    let erosion_spline = Spline::from_vec(vec![
+        Key::new(-10., 0., Interpolation::Linear),
+        Key::new(0., 0., Interpolation::Linear),
+        Key::new(7., 10., Interpolation::Linear),
+        Key::new(8., 40., Interpolation::Linear),
+    ]);
+
+    let hill_spline = Spline::from_vec(vec![
+        Key::new(-10., 0., Interpolation::Linear),
+        Key::new(-6., 15., Interpolation::Linear),
+        Key::new(0., 0., Interpolation::Linear),
+        Key::new(3., 10., Interpolation::Linear),
+        Key::new(6., 28., Interpolation::Linear),
+        Key::new(7., 40., Interpolation::Linear),
+    ]);
 
     // 16^3 chunk with one block boundary
     for x in 1..CHUNK_DIM + 1 {
@@ -174,26 +196,25 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
                 let n = cave_noise.get_noise3d(gx, gy, gz) * factor + offset;
                 let moisture = (moisture_noise.get_noise(gx, gz) + 1.0) * 2.5;
 
-                debug!("{:?}", n);
                 let i = ChunkShape::linearize([x, y, z]);
-                // let density = if gy > 34. { 13. } else { 3. };
-                // let density = if gy > 20. { 8. + gy / 10. } else { 3. };
-                // let density = moisture + 5. + gy / 5.;
-                // // let density = gy * 3.8;
-                // if n > density {
-                //     blocks[i as usize] = BlockType::Stone;
-                // } else {
-                //     blocks[i as usize] = BlockType::Air;
-                // }
-
                 let terrain = level_noise.get_noise(gx, gz) * factor + offset;
                 let temp = (temperature_noise.get_noise(gx, gz) + 1.0) * 2.5;
                 let hill = hill_noise.get_noise(gx, gz) * 10.;
+                let erosion = erosion_noise.get_noise(gx, gz) * 10.;
 
                 if let Some(s) = hill_spline.clamped_sample(hill) {
-                    let surface = flat + terrain as f64 + s;
+                    let mut surface = flat + terrain as f64 + s;
                     if gy < surface as f32 {
                         blocks[i as usize] = BlockType::Stone;
+                    }
+                    if let Some(s) = erosion_spline.clamped_sample(erosion) {
+                        if n < 13.2
+                            && gy > flat as f32
+                            && gy < surface as f32 + s
+                        {
+                            blocks[i as usize] = BlockType::Stone;
+                            surface += s as f64;
+                        }
                     }
                     if gy == surface.floor() as f32 {
                         blocks[i as usize] = BlockType::Grass;
