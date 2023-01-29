@@ -67,13 +67,15 @@ impl ArrayTextureMaterial {
         MeshVertexAttribute::new("index", 2137, VertexFormat::Sint32);
     pub const ATTRIBUTE_LIGHT: MeshVertexAttribute =
         MeshVertexAttribute::new("light", 2138, VertexFormat::Float32);
+    pub const ATTRIBUTE_AO: MeshVertexAttribute =
+        MeshVertexAttribute::new("ao", 2139, VertexFormat::Float32);
 }
 impl Material for ArrayTextureMaterial {
     fn vertex_shader() -> ShaderRef {
-        "shaders/array_texture.wgsl".into()
+        "shaders/vertex.wgsl".into()
     }
     fn fragment_shader() -> ShaderRef {
-        "shaders/array_texture.wgsl".into()
+        "shaders/fragment.wgsl".into()
     }
     fn alpha_mode(&self) -> AlphaMode {
         AlphaMode::Opaque
@@ -90,6 +92,7 @@ impl Material for ArrayTextureMaterial {
             Mesh::ATTRIBUTE_UV_0.at_shader_location(2),
             ArrayTextureMaterial::ATTRIBUTE_TEXTURE_INDEX.at_shader_location(3),
             ArrayTextureMaterial::ATTRIBUTE_LIGHT.at_shader_location(4),
+            ArrayTextureMaterial::ATTRIBUTE_AO.at_shader_location(5),
         ])?;
         descriptor.vertex.buffers = vec![vertex_layout];
         debug!("{:?}", descriptor.vertex.buffers);

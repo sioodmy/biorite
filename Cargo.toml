@@ -1,6 +1,6 @@
 [package]
 name = "biorite"
-version = "0.0.10"
+version = "0.0.11"
 edition = "2021"
 authors = ["sioodmy hello@sioodmy.dev"]
 repository = "https://git.sioodmy.dev/sioodmy/biorite"
@@ -59,7 +59,7 @@ fast-compile = ["bevy/dynamic"]
 
 [dependencies]
 jemallocator = "0.3.2"
-block-mesh = { git="https://github.com/bonsairobo/block-mesh-rs", rev="793c53e82c12b3f7e9502006664c6e81f8b1c78a"}
+block-mesh = { git="https://github.com/Shirakawa42/block-mesh-rs", rev="6219f1b4f58cf6cafad7c1f999519847f80f0c1c"}
 bevy_flycam = { git = "https://github.com/sburris0/bevy_flycam" }
 bevy_atmosphere = "0.5.0"
 bevy_easings = "0.9.1"

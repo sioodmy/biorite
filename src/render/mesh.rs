@@ -262,6 +262,7 @@ pub fn greedy_mesh(
     let mut normals = Vec::with_capacity(num_vertices);
 
     let mut tex_coords = Vec::with_capacity(num_vertices);
+    let mut ambient_occlusion = Vec::with_capacity(num_vertices);
 
     let mut indexes = Vec::with_capacity(num_vertices);
     let mut lights = Vec::with_capacity(num_vertices);
@@ -282,6 +283,10 @@ pub fn greedy_mesh(
                 })
                 .collect();
 
+            let ao = *&face.quad_mesh_ao(&quad);
+                for ambient in ao {
+                 ambient_occlusion.push(ambient as f32);
+            }
             indices.extend_from_slice(&face_indices);
 
             positions.extend_from_slice(&face.quad_mesh_positions(&quad, 1.0));
@@ -339,6 +344,10 @@ pub fn greedy_mesh(
     render_mesh.insert_attribute(
         ArrayTextureMaterial::ATTRIBUTE_LIGHT,
         VertexAttributeValues::Float32(lights),
+    );
+    render_mesh.insert_attribute(
+        ArrayTextureMaterial::ATTRIBUTE_AO,
+        VertexAttributeValues::Float32(ambient_occlusion),
     );
 
     render_mesh.set_indices(Some(Indices::U32(indices.clone())));
