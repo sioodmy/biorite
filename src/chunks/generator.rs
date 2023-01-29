@@ -2,6 +2,8 @@ use crate::prelude::*;
 use splines::{Interpolation, Key, Spline};
 
 use bevy::tasks::AsyncComputeTaskPool;
+use rand::Rng;
+
 use scc::HashSet;
 
 pub use block_mesh::ndshape::{ConstShape, ConstShape3i32};
@@ -166,7 +168,7 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     // let factor = 7.37;
     let factor = 9.0;
     let flat: f64 = 10.0;
-    let _rng = rand::thread_rng();
+    let mut rng = rand::thread_rng();
 
     let erosion_spline = Spline::from_vec(vec![
         Key::new(-10., 0., Interpolation::Linear),
@@ -182,9 +184,10 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
         Key::new(3., 10., Interpolation::Linear),
         Key::new(6., 28., Interpolation::Linear),
         Key::new(7., 40., Interpolation::Linear),
+        Key::new(8., 10., Interpolation::Linear),
+        Key::new(9., 40., Interpolation::Linear),
     ]);
 
-    // 16^3 chunk with one block boundary
     for x in 1..CHUNK_DIM + 1 {
         for z in 1..CHUNK_DIM + 1 {
             for y in 1..CHUNK_DIM + 1 {
@@ -217,12 +220,21 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
                         }
                     }
                     if gy == surface.floor() as f32 {
-                        blocks[i as usize] = BlockType::Grass;
+                        if temp > 2. {
+                            blocks[i as usize] = BlockType::Sand;
+                        } else {
+                            blocks[i as usize] = BlockType::Grass;
+                        }
+                    }
+
+                    if gy < 26. && blocks[i as usize] == BlockType::Air {
+                        blocks[i as usize] = BlockType::Water;
                     }
                 }
             }
         }
     }
+
     let new_chunk = Chunk {
         position: *position,
         blocks,

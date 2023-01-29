@@ -71,7 +71,9 @@ pub enum BlockType {
     Stone,
     Sand,
     Wood,
+    Leaves,
     Bricks,
+    Water,
 }
 
 impl BlockType {
@@ -84,7 +86,9 @@ impl BlockType {
             Stone => BlockTexture::full(3),
             Sand => BlockTexture::full(4),
             Wood => BlockTexture::new(6, 5, 6),
+            Leaves => BlockTexture::full(7),
             Bricks => BlockTexture::full(8),
+            Water => BlockTexture::full(9),
         }
     }
 }
@@ -92,6 +96,9 @@ impl Voxel for BlockType {
     fn get_visibility(&self) -> VoxelVisibility {
         if self == &BlockType::Air {
             return VoxelVisibility::Empty;
+        }
+        if self == &BlockType::Water {
+            return VoxelVisibility::Translucent;
         }
 
         VoxelVisibility::Opaque
