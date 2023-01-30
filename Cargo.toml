@@ -54,7 +54,7 @@ features = [
 ]
 
 [features]
-default = ["fast-compile"]
+# default = ["fast-compile"]
 fast-compile = ["bevy/dynamic"]
 
 [dependencies]
