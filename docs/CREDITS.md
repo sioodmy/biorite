@@ -16,6 +16,7 @@ List of amazing people:
   - Longor
   - MrSmith33
   - YushiOMOTE 
+  - mit
   - Entire VoxelGameDev.com community
   - and many others that I forgot to mention
  
