@@ -6,7 +6,7 @@ use rand::Rng;
 
 use scc::HashSet;
 
-pub use block_mesh::ndshape::{ConstShape, ConstShape3i32};
+pub use block_mesh::ndshape::{ConstShape, ConstShape2u32, ConstShape3i32};
 use bracket_noise::prelude::*;
 
 use std::{fs, path::Path};
@@ -17,6 +17,10 @@ use std::{fs, path::Path};
 /// by default: 2^5 = 32
 pub const REGION_DIM: u32 = 5;
 
+type HeightMapShape = ConstShape2u32<{ CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }>;
+type HeightMap = [u32; HeightMapShape::USIZE];
+
+pub type Blocks = [BlockType; ChunkShape::USIZE];
 pub type Region = ConstShape3i32<
     { 2_i32.pow(REGION_DIM) },
     { 2_i32.pow(REGION_DIM) },
@@ -105,29 +109,26 @@ pub fn chunk_saver(
     });
 }
 
-// I know this is poorly written
-// its just a prototype
-// im just playing around with it (we good?)
-pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
-    // TODO: world regions
-    // TODO: async
+fn get_global_coords(
+    position: &IVec3,
+    x: u32,
+    y: u32,
+    z: u32,
+) -> (f32, f32, f32) {
+    (
+        position.x as f32 * CHUNK_DIM as f32 + x as f32,
+        position.y as f32 * CHUNK_DIM as f32 + y as f32,
+        position.z as f32 * CHUNK_DIM as f32 + z as f32,
+    )
+}
 
-    trace!("Generating new chunk");
-    // TODO: rng seed
-
+fn heightmap(position: &IVec3, seed: u64) -> HeightMap {
     let mut level_noise = FastNoise::seeded(seed);
     level_noise.set_noise_type(NoiseType::Perlin);
     level_noise.set_fractal_octaves(2);
     level_noise.set_fractal_gain(1.39);
     level_noise.set_fractal_lacunarity(0.15);
     level_noise.set_frequency(0.039);
-
-    let mut temperature_noise = FastNoise::seeded(seed);
-    temperature_noise.set_noise_type(NoiseType::Value);
-    temperature_noise.set_fractal_octaves(16);
-    temperature_noise.set_fractal_gain(1.9);
-    temperature_noise.set_fractal_lacunarity(1.25);
-    temperature_noise.set_frequency(0.03);
 
     let mut hill_noise = FastNoise::seeded(seed);
     hill_noise.set_noise_type(NoiseType::Value);
@@ -136,20 +137,6 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     hill_noise.set_fractal_lacunarity(0.45);
     hill_noise.set_frequency(0.0115);
 
-    let mut moisture_noise = FastNoise::seeded(12);
-    moisture_noise.set_noise_type(NoiseType::Value);
-    moisture_noise.set_fractal_octaves(4);
-    moisture_noise.set_fractal_gain(5.5);
-    moisture_noise.set_fractal_lacunarity(0.75);
-    moisture_noise.set_frequency(0.03);
-
-    let mut cave_noise = FastNoise::seeded(seed);
-    cave_noise.set_noise_type(NoiseType::Simplex);
-    cave_noise.set_fractal_octaves(16);
-    cave_noise.set_fractal_gain(1.9);
-    cave_noise.set_fractal_lacunarity(0.4);
-    cave_noise.set_frequency(0.08);
-
     let mut erosion_noise = FastNoise::seeded(seed + 3);
     erosion_noise.set_noise_type(NoiseType::Perlin);
     erosion_noise.set_fractal_octaves(8);
@@ -157,25 +144,11 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     erosion_noise.set_fractal_lacunarity(1.75);
     erosion_noise.set_frequency(0.03);
 
-    // placeholder for propper chunk generation
-    let mut blocks: [BlockType; ChunkShape::SIZE as usize] =
-        [BlockType::Air; ChunkShape::SIZE as usize];
-
-    // TODO: propper seed handling
-    // TODO: async chunk generation
-
     let offset = 10.0;
     // let factor = 7.37;
     let factor = 9.0;
     let flat: f64 = 10.0;
     let mut rng = rand::thread_rng();
-
-    let erosion_spline = Spline::from_vec(vec![
-        Key::new(-10., 0., Interpolation::Linear),
-        Key::new(0., 0., Interpolation::Linear),
-        Key::new(7., 10., Interpolation::Linear),
-        Key::new(8., 40., Interpolation::Linear),
-    ]);
 
     let hill_spline = Spline::from_vec(vec![
         Key::new(-10., 0., Interpolation::Linear),
@@ -188,53 +161,61 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
         Key::new(9., 40., Interpolation::Linear),
     ]);
 
-    for x in 1..CHUNK_DIM + 1 {
-        for z in 1..CHUNK_DIM + 1 {
-            for y in 1..CHUNK_DIM + 1 {
-                // Global cords
-                let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
+    let mut heightmap: HeightMap = [1; HeightMapShape::USIZE];
+
+    for x in 1..=CHUNK_DIM {
+        for z in 1..=CHUNK_DIM {
+            let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
+            let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
+
+            let terrain = level_noise.get_noise(gx, gz) * factor + offset;
+            let hill = hill_noise.get_noise(gx, gz) * 10.;
+
+            // See: https://www.youtube.com/watch?v=CSa5O6knuwI&t=1194s
+            if let Some(s) = hill_spline.clamped_sample(hill) {
+                heightmap[HeightMapShape::linearize([x, z]) as usize] =
+                    (flat + terrain as f64 + s).floor() as u32;
+            }
+        }
+    }
+
+    heightmap
+}
+
+// FIXME apply 2d heightmap to 3d chunks
+fn base_terrain(heightmap: HeightMap, position: &IVec3) -> Blocks {
+    let mut blocks: Blocks = [BlockType::Air; ChunkShape::SIZE as usize];
+    for x in 1..=CHUNK_DIM {
+        for z in 1..=CHUNK_DIM {
+            for y in 1..=CHUNK_DIM {
                 let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
-                let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
 
-                let n = cave_noise.get_noise3d(gx, gy, gz) * factor + offset;
-                let moisture = (moisture_noise.get_noise(gx, gz) + 1.0) * 2.5;
-
-                let i = ChunkShape::linearize([x, y, z]);
-                let terrain = level_noise.get_noise(gx, gz) * factor + offset;
-                let temp = (temperature_noise.get_noise(gx, gz) + 1.0) * 2.5;
-                let hill = hill_noise.get_noise(gx, gz) * 10.;
-                let erosion = erosion_noise.get_noise(gx, gz) * 10.;
-
-                if let Some(s) = hill_spline.clamped_sample(hill) {
-                    let mut surface = flat + terrain as f64 + s;
-                    if gy < surface as f32 {
-                        blocks[i as usize] = BlockType::Stone;
-                    }
-                    if let Some(s) = erosion_spline.clamped_sample(erosion) {
-                        if n < 13.2
-                            && gy > flat as f32
-                            && gy < surface as f32 + s
-                        {
-                            blocks[i as usize] = BlockType::Stone;
-                            surface += s as f64;
-                        }
-                    }
-                    if gy == surface.floor() as f32 {
-                        if temp > 2. {
-                            blocks[i as usize] = BlockType::Sand;
-                        } else {
-                            blocks[i as usize] = BlockType::Grass;
-                        }
-                    }
-
-                    if gy < 26. && blocks[i as usize] == BlockType::Air {
-                        blocks[i as usize] = BlockType::Water;
-                    }
+                if heightmap[HeightMapShape::linearize([x, z]) as usize]
+                    >= gy as u32
+                {
+                    let i = ChunkShape::linearize([x, y, z]);
+                    blocks[i as usize] = BlockType::Grass;
                 }
             }
         }
     }
 
+    blocks
+}
+
+// I know this is poorly written
+// its just a prototype
+// im just playing around with it (we good?)
+// the idea is to split chunk generation into stages
+pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
+    // TODO: world regions
+    // TODO: async
+
+    trace!("Generating new chunk");
+    // TODO: rng seed
+
+    let heightmap = heightmap(position, seed);
+    let blocks = base_terrain(heightmap, position);
     let new_chunk = Chunk {
         position: *position,
         blocks,

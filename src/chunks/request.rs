@@ -18,7 +18,8 @@ pub fn receive_chunk(
                     .clone()
                     .send(QueuedChunk {
                         chunk,
-                        is_new: true,
+                        // TODO: chagnne
+                        is_new: false,
                     })
                     .unwrap();
             });

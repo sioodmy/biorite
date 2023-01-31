@@ -124,11 +124,11 @@ pub fn chunk_renderer(
                             .ease_to(
                                 Transform::from_xyz(
                                     meshed_chunk.pos.x as f32
-                                        * CHUNK_DIM as f32,
+                                        * CHUNK_DIM as f32 ,
                                     meshed_chunk.pos.y as f32
-                                        * CHUNK_DIM as f32,
+                                        * CHUNK_DIM as f32 ,
                                     meshed_chunk.pos.z as f32
-                                        * CHUNK_DIM as f32,
+                                        * CHUNK_DIM as f32 ,
                                 ),
                                 EaseFunction::QuadraticIn,
                                 EasingType::Once {
@@ -241,7 +241,7 @@ pub fn greedy_mesh(
         &voxels,
         &ChunkShape {},
         [0; 3],
-        [CHUNK_DIM + 1; 3],
+        [CHUNK_DIM +1 ; 3],
         &RIGHT_HANDED_Y_UP_CONFIG.faces,
         &mut buffer,
     );

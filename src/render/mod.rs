@@ -33,8 +33,7 @@ impl Plugin for RenderClientPlugin {
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame)
                     .with_system(spawn_camera)
-                    .with_system(crosshair)
-                    .with_system(spawn_light),
+                    .with_system(crosshair),
             )
             .add_system_set(
                 SystemSet::on_update(AppState::InGame)

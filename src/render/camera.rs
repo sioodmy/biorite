@@ -42,13 +42,6 @@ pub fn cursor_grab_system(
 #[derive(Component)]
 pub struct MainCamera;
 
-pub fn spawn_light(
-    _commands: Commands,
-    mut ambient_light: ResMut<AmbientLight>,
-) {
-    ambient_light.color = Color::WHITE;
-    ambient_light.brightness = 1.0;
-}
 pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera3dBundle {
