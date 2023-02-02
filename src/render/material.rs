@@ -50,8 +50,8 @@ pub fn create_array_texture(
     let image = images.get_mut(&loading_texture.handle).unwrap();
 
     // Create a new array texture asset from the loaded texture.
-    let array_layers = 10;
-    image.reinterpret_stacked_2d_as_array(array_layers);
+    const ARRAY_LAYERS: u32 = 12;
+    image.reinterpret_stacked_2d_as_array(ARRAY_LAYERS);
 }
 
 #[derive(AsBindGroup, Debug, Clone, TypeUuid)]
@@ -77,9 +77,9 @@ impl Material for ArrayTextureMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/fragment.wgsl".into()
     }
-    fn alpha_mode(&self) -> AlphaMode {
-        AlphaMode::Opaque
-    }
+    // fn alpha_mode(&self) -> AlphaMode {
+    //     AlphaMode::Opaque
+    // }
     fn specialize(
         _pipeline: &MaterialPipeline<Self>,
         descriptor: &mut RenderPipelineDescriptor,

@@ -11,7 +11,7 @@ use bracket_noise::prelude::*;
 
 use std::{fs, path::Path};
 
-// TODO: Divide chunks into regions
+// See: https://www.youtube.com/watch?v=CSa5O6knuwI&t=1194s
 
 /// Size of chunk region defined as power of 2
 /// by default: 2^5 = 32
@@ -122,7 +122,7 @@ fn get_global_coords(
     )
 }
 
-fn heightmap(position: &IVec3, seed: u64) -> HeightMap {
+fn get_height(x: f32, z: f32, seed: u64) -> Option<u32> {
     let mut level_noise = FastNoise::seeded(seed);
     level_noise.set_noise_type(NoiseType::Perlin);
     level_noise.set_fractal_octaves(2);
@@ -138,7 +138,7 @@ fn heightmap(position: &IVec3, seed: u64) -> HeightMap {
     hill_noise.set_frequency(0.0115);
 
     let mut erosion_noise = FastNoise::seeded(seed + 3);
-    erosion_noise.set_noise_type(NoiseType::Perlin);
+    erosion_noise.set_noise_type(NoiseType::Simplex);
     erosion_noise.set_fractal_octaves(8);
     erosion_noise.set_fractal_gain(1.3);
     erosion_noise.set_fractal_lacunarity(1.75);
@@ -160,29 +160,33 @@ fn heightmap(position: &IVec3, seed: u64) -> HeightMap {
         Key::new(8., 10., Interpolation::Linear),
         Key::new(9., 40., Interpolation::Linear),
     ]);
+    let terrain = level_noise.get_noise(x, z) * factor + offset;
+    let hill = hill_noise.get_noise(x, z) * 10.;
 
+    let s = hill_spline.clamped_sample(hill)?;
+    Some((flat + terrain as f64 + s).floor() as u32)
+}
+
+fn heightmap(position: &IVec3, seed: u64) -> HeightMap {
     let mut heightmap: HeightMap = [1; HeightMapShape::USIZE];
 
     for x in 1..=CHUNK_DIM {
         for z in 1..=CHUNK_DIM {
             let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
             let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
-
-            let terrain = level_noise.get_noise(gx, gz) * factor + offset;
-            let hill = hill_noise.get_noise(gx, gz) * 10.;
-
-            // See: https://www.youtube.com/watch?v=CSa5O6knuwI&t=1194s
-            if let Some(s) = hill_spline.clamped_sample(hill) {
-                heightmap[HeightMapShape::linearize([x, z]) as usize] =
-                    (flat + terrain as f64 + s).floor() as u32;
-            }
+            heightmap[HeightMapShape::linearize([x, z]) as usize] =
+                if let Some(height) = get_height(gx, gz, seed) {
+                    height
+                } else {
+                    warn!("Couldn't generate heightmap for {}/{}. Inserting 0 instead", gx, gz);
+                    0
+                };
         }
     }
 
     heightmap
 }
 
-// FIXME apply 2d heightmap to 3d chunks
 fn base_terrain(heightmap: HeightMap, position: &IVec3) -> Blocks {
     let mut blocks: Blocks = [BlockType::Air; ChunkShape::SIZE as usize];
     for x in 1..=CHUNK_DIM {
@@ -190,11 +194,138 @@ fn base_terrain(heightmap: HeightMap, position: &IVec3) -> Blocks {
             for y in 1..=CHUNK_DIM {
                 let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
 
-                if heightmap[HeightMapShape::linearize([x, z]) as usize]
-                    >= gy as u32
-                {
-                    let i = ChunkShape::linearize([x, y, z]);
+                let h = heightmap[HeightMapShape::linearize([x, z]) as usize];
+                let i = ChunkShape::linearize([x, y, z]);
+                if h < gy as u32 {
+                    continue;
+                }
+
+                if h == gy as u32 {
                     blocks[i as usize] = BlockType::Grass;
+                } else if h - 3 <= gy as u32 {
+                    blocks[i as usize] = BlockType::Dirt;
+                } else {
+                    blocks[i as usize] = BlockType::Stone;
+                }
+            }
+        }
+    }
+
+    blocks
+}
+
+fn carve_caves(mut blocks: Blocks, position: &IVec3, seed: u64) -> Blocks {
+    let mut cave_noise = FastNoise::seeded(seed);
+    cave_noise.set_noise_type(NoiseType::Simplex);
+    cave_noise.set_fractal_octaves(16);
+    cave_noise.set_fractal_gain(1.9);
+    cave_noise.set_fractal_lacunarity(0.4);
+    cave_noise.set_frequency(0.01);
+
+    let mut spaghetti_noise = FastNoise::seeded(seed);
+    spaghetti_noise.set_noise_type(NoiseType::Simplex);
+    spaghetti_noise.set_fractal_octaves(5);
+    spaghetti_noise.set_fractal_gain(1.3);
+    spaghetti_noise.set_fractal_lacunarity(50.7);
+    spaghetti_noise.set_frequency(0.021);
+
+    let mut second_noise = FastNoise::seeded(seed + 69);
+    second_noise.set_noise_type(NoiseType::Simplex);
+    second_noise.set_fractal_octaves(5);
+    second_noise.set_fractal_gain(1.3);
+    second_noise.set_fractal_lacunarity(50.7);
+    second_noise.set_frequency(0.021);
+    for x in 1..CHUNK_DIM + 1 {
+        for z in 1..CHUNK_DIM + 1 {
+            for y in 1..CHUNK_DIM + 1 {
+                let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
+                let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
+                let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
+
+                let cave = cave_noise.get_noise3d(gx, gy, gz);
+                let spaghetti = spaghetti_noise.get_noise3d(gx, gy, gz) * 10.;
+                let second = second_noise.get_noise3d(gx, gy, gz) * 10.;
+
+                // debug!("{:?}", (spaghetti + cave).abs());
+
+                let i = ChunkShape::linearize([x, y, z]);
+                if cave > 0.6 {
+                    if (spaghetti.powf(2.) + second.powf(2.)) < 5.5 {
+                        blocks[i as usize] = BlockType::Air;
+                    }
+                }
+                // if spaghetti.abs() + second.abs() < 1. {
+                //     blocks[i as usize] = BlockType::Air;
+                // }
+            }
+        }
+    }
+    blocks
+}
+
+fn terrain_features(
+    mut blocks: Blocks,
+    position: &IVec3,
+    heightmap: HeightMap,
+    seed: u64,
+) -> Blocks {
+    let mut forest_noise = FastNoise::seeded(seed);
+    forest_noise.set_noise_type(NoiseType::Simplex);
+    forest_noise.set_fractal_octaves(2);
+    forest_noise.set_fractal_gain(1.9);
+    forest_noise.set_fractal_lacunarity(1.25);
+    forest_noise.set_frequency(0.03);
+
+    let mut intersection_noise = FastNoise::seeded(seed + 50);
+    intersection_noise.set_noise_type(NoiseType::WhiteNoise);
+    intersection_noise.set_fractal_octaves(2);
+    intersection_noise.set_fractal_gain(1.9);
+    intersection_noise.set_fractal_lacunarity(1.25);
+    intersection_noise.set_frequency(0.09);
+
+    for x in 1..CHUNK_DIM + 1 {
+        for z in 1..CHUNK_DIM + 1 {
+            let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
+            let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
+
+            let forest = forest_noise.get_noise(gx, gz);
+            let intersection = intersection_noise.get_noise(gx, gz);
+
+            if forest.powf(2.) + intersection.powf(2.) < 0.01 {
+                // info!("forest noise {:?} {:?}", forest, intersection);
+                let surface =
+                    heightmap[HeightMapShape::linearize([x, z]) as usize];
+                // let gy = position.y as f32 * CHUNK_DIM as f32 +  as f32;
+
+                let surface_chunk: bool =
+                    (surface / CHUNK_DIM) as i32 == position.y;
+
+                if surface < CHUNK_DIM - 7
+                    && x <= CHUNK_DIM - 5
+                    && z <= CHUNK_DIM - 5
+                    && x >= 3
+                    && z >= 3
+                    && surface != 1
+                    && surface_chunk
+                {
+                    for i in 1..4 {
+                        let i = ChunkShape::linearize([x, surface + i, z]);
+                        blocks[i as usize] = BlockType::Wood;
+                    }
+
+                    // TODO: make some actual trees
+                    for l in 0..4 {
+                        for j in -2..=2i32 {
+                            for k in -2..=2i32 {
+                                let i = ChunkShape::linearize([
+                                    (x as i32 + j).try_into().unwrap(),
+                                    surface + 4 + l,
+                                    (z as i32 + k).try_into().unwrap(),
+                                ]);
+                                blocks[i as usize] = BlockType::Leaves;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -215,7 +346,9 @@ pub fn chunk_generator(position: &IVec3, seed: u64) -> Chunk {
     // TODO: rng seed
 
     let heightmap = heightmap(position, seed);
-    let blocks = base_terrain(heightmap, position);
+    let mut blocks = base_terrain(heightmap, position);
+    blocks = carve_caves(blocks, position, seed);
+    blocks = terrain_features(blocks, position, heightmap, seed);
     let new_chunk = Chunk {
         position: *position,
         blocks,

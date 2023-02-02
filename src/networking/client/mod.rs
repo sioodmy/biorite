@@ -19,14 +19,14 @@ pub fn create_renet_client() -> RenetClient {
     let client_id = current_time.as_millis() as u64;
 
     let connection_config = RenetConnectionConfig {
-        max_packet_size: 32 * 1024,
+        max_packet_size: 48 * 1024,
         received_packets_buffer_size: 9000,
         sent_packets_buffer_size: 1000,
         send_channels_config: vec![
             ChannelConfig::Reliable(ReliableChannelConfig {
-                packet_budget: 30000,
-                max_message_size: 9 * 1024,
-                message_receive_queue_size: 1024 * 5,
+                packet_budget: 40000,
+                max_message_size: 32 * 1024,
+                message_receive_queue_size: 1024 * 15,
                 ..Default::default()
             }),
             ChannelConfig::Unreliable(UnreliableChannelConfig {

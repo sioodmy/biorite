@@ -295,20 +295,10 @@ pub fn greedy_mesh(
             let light: Vec<_> = face_positions
                 .iter()
                 .map(|_| {
-                    if normal
-                        == [
-                            [0.0, 1.0, 0.0],
-                            [0.0, 1.0, 0.0],
-                            [0.0, 1.0, 0.0],
-                            [0.0, 1.0, 0.0],
-                        ]
-                    {
-                        0.9
-                    } else {
-                        0.6
-                    }
+                    0.7
                 })
                 .collect();
+
             normals.extend_from_slice(&normal);
             lights.extend_from_slice(&light);
             tex_coords.extend_from_slice(&face.tex_coords(

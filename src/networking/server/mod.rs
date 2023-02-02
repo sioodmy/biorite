@@ -15,9 +15,9 @@ pub fn create_renet_server() -> RenetServer {
 
     let socket = UdpSocket::bind(server_addr).unwrap();
     let connection_config = RenetConnectionConfig {
-        max_packet_size: 12 * 1024,
+        max_packet_size: 33 * 1024,
         received_packets_buffer_size: 9000,
-        sent_packets_buffer_size: 9000,
+        sent_packets_buffer_size: 10000,
         receive_channels_config: vec![
             ChannelConfig::Unreliable(UnreliableChannelConfig {
                 sequenced: true, // We don't care about old positions
@@ -31,7 +31,8 @@ pub fn create_renet_server() -> RenetServer {
             }),
             ChannelConfig::Chunk(ChunkChannelConfig {
                 resend_time: Duration::from_millis(800),
-                message_send_queue_size: 999,
+                max_message_size: 1024 * 1024,
+                message_send_queue_size: RENDER_DISTANCE.pow(3) as usize / 5,
                 ..Default::default()
             }),
         ],
@@ -48,6 +49,12 @@ pub fn create_renet_server() -> RenetServer {
         .unwrap();
     RenetServer::new(current_time, server_config, connection_config, socket)
         .unwrap()
+}
+
+fn panic_on_error_system(mut renet_error: EventReader<RenetError>) {
+    for e in renet_error.iter() {
+        panic!("{}", e);
+    }
 }
 
 fn server_events(
@@ -217,6 +224,7 @@ impl Plugin for NetworkServerPlugin {
             .add_system(chunk_unloader)
             .add_system(handle_block_updates)
             .add_system(server_receive_input)
+            .add_system(panic_on_error_system)
             .add_system(move_players_system)
             .add_system(server_events)
             .add_system_set(

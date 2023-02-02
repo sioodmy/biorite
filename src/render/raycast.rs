@@ -105,7 +105,7 @@ pub fn intersection(
     query: Query<&Intersection<MyRaycastSet>>,
     input: Res<Input<MouseButton>>,
 ) {
-    if let Ok(intersection) = &query.get_single() {
+    for intersection in query.iter() {
         if let (Some(dis), Some(pos), Some(normal)) = (
             intersection.distance(),
             intersection.position(),

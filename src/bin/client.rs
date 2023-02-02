@@ -18,6 +18,7 @@ fn main() {
             backends: Some(Backends::VULKAN),
             ..Default::default()
         })
+        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(
             DefaultPlugins
                 .build()

@@ -88,8 +88,8 @@ pub fn client_chunk_despawner(
         for x in (chunk_x - RENDER_DISTANCE as i32)
             ..=(chunk_x + RENDER_DISTANCE as i32)
         {
-            for y in (chunk_y - RENDER_DISTANCE as i32)
-                ..=(chunk_y + RENDER_DISTANCE as i32)
+            for y in (chunk_y - VERTICAL_RENDER_DISTANCE as i32)
+                ..=(chunk_y + VERTICAL_RENDER_DISTANCE as i32)
             {
                 for z in (chunk_z - RENDER_DISTANCE as i32)
                     ..=(chunk_z + RENDER_DISTANCE as i32)

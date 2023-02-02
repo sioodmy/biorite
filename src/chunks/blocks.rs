@@ -74,6 +74,8 @@ pub enum BlockType {
     Leaves,
     Bricks,
     Water,
+    Diamond,
+    Iron,
 }
 
 impl BlockType {
@@ -89,6 +91,8 @@ impl BlockType {
             Leaves => BlockTexture::full(7),
             Bricks => BlockTexture::full(8),
             Water => BlockTexture::full(9),
+            Diamond => BlockTexture::full(10),
+            Iron => BlockTexture::full(11),
         }
     }
 }

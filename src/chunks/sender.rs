@@ -41,54 +41,49 @@ pub fn chunk_send(
                     // https://en.wikipedia.org/wiki/Euclidean_distance
                     let distance = (dx * dx + dy * dy + dz * dz).sqrt();
 
-                    if distance < 2. * (RENDER_DISTANCE + 1) as f32 {
-                        debug!("Generating chunk at {:?}", pos);
-                        let chunk: Chunk = match save.regions.get(&pos) {
-                            Some(c) => match c.get(&pos) {
-                                Some(mc) => *mc,
-                                None => {
-                                    let chunk = chunk_generator(pos, save.seed);
-                                    save.insert_chunk(chunk);
-                                    save.save_region(*pos >> 5);
-                                    debug!("generating");
-                                    chunk
-                                }
-                            },
+                    debug!("Generating chunk at {:?}", pos);
+                    let chunk: Chunk = match save.regions.get(&pos) {
+                        Some(c) => match c.get(&pos) {
+                            Some(mc) => *mc,
                             None => {
-                                match save.load_region(*pos >> 5).get(pos) {
-                                    Some(lc) => *lc,
-                                    None => {
-                                        let chunk =
-                                            chunk_generator(pos, save.seed);
-                                        save.insert_chunk(chunk);
-                                        save.save_region(*pos >> 5);
-                                        debug!("generating");
-                                        chunk
-                                    }
-                                }
+                                let chunk = chunk_generator(pos, save.seed);
+                                save.insert_chunk(chunk);
+                                save.save_region(*pos >> 5);
+                                debug!("generating");
+                                chunk
                             }
-                        };
-                        debug!("sending");
-                        chunk_sender.send(chunk.compress()).unwrap();
-                        mesh_sender
-                            .send(QueuedChunk {
-                                chunk,
-                                is_new: true,
-                            })
-                            .unwrap();
-                    } else {
-                        warn!(
-                            "Client {} tried requesting chunk too far away",
-                            id
-                        );
-                    }
+                        },
+                        None => match save.load_region(*pos >> 5).get(pos) {
+                            Some(lc) => *lc,
+                            None => {
+                                let chunk = chunk_generator(pos, save.seed);
+                                save.insert_chunk(chunk);
+                                save.save_region(*pos >> 5);
+                                debug!("generating");
+                                chunk
+                            }
+                        },
+                    };
+                    debug!("sending");
+                    chunk_sender.send(chunk.compress()).unwrap();
+                    mesh_sender
+                        .send(QueuedChunk {
+                            chunk,
+                            is_new: true,
+                        })
+                        .unwrap();
                 });
             }
 
-            let vector: Vec<CompressedChunk> = rx.try_iter().collect();
-
-            debug!("Sending chunk batch with len {}", vector.len());
-            ServerChunkMessage::ChunkBatch(vector).send(&mut server, *id);
+            // let vector: Vec<CompressedChunk> = rx.try_iter().collect();
+            for batch in
+                rx.try_iter().collect::<Vec<CompressedChunk>>().chunks(5)
+            {
+                // debug!("Sending chunk batch with len {}", bat.len());
+                ServerChunkMessage::ChunkBatch(batch.to_vec())
+                    .send(&mut server, *id);
+            }
+            // let vectors: Vec<Vec<CompressedChunk>> = .drain().collect();
         }
     }
 }

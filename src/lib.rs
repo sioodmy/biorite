@@ -22,6 +22,7 @@ pub enum AppState {
 
 /// For now its hardcoded, might change in future
 pub const RENDER_DISTANCE: i16 = 1;
+pub const VERTICAL_RENDER_DISTANCE: i16 = 1;
 
 pub const TICK_SPEED: f64 = 1. / 20.;
 
