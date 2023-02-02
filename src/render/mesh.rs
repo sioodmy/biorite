@@ -98,6 +98,7 @@ pub fn chunk_renderer(
                         &ComputedColliderShape::TriMesh,
                     )
                     .unwrap(),
+                    RaycastMesh::<MyRaycastSet>::default(),
                     MaterialMeshBundle {
                         mesh: meshes.add(meshed_chunk.mesh),
                         material: loading_texture.material.clone(),
@@ -137,8 +138,7 @@ pub fn chunk_renderer(
                                     ),
                                 },
                             ),
-                        )
-                        .insert(RaycastMesh::<MyRaycastSet>::default());
+                        );
                 }
                 loaded_chunks.0.insert(
                     meshed_chunk.pos,
