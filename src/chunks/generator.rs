@@ -17,6 +17,8 @@ use std::{fs, path::Path};
 /// by default: 2^5 = 32
 pub const REGION_DIM: u32 = 5;
 
+const WATER_LEVEL: f32 = 25.;
+
 type HeightMapShape = ConstShape2u32<{ CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }>;
 type HeightMap = [u32; HeightMapShape::USIZE];
 
@@ -95,6 +97,57 @@ impl SaveFile {
         self.regions
             .get_mut(&(chunk_pos >> REGION_DIM))?
             .get_mut(&chunk_pos)
+    }
+
+    pub fn get_compressed_chunk(
+        &mut self,
+        vec: Vec<IVec3>,
+        mtx: Sender<QueuedChunk>,
+    ) -> Vec<CompressedChunk> {
+        let mut par_queue = Vec::new();
+
+        let (tx, rx) = bounded::<CompressedChunk>(1000);
+        let chunk_sender = tx.clone();
+        let mesh_sender = mtx.clone();
+
+        for pos in vec.iter() {
+            match self.regions.get(&pos) {
+                Some(c) => match c.get(&pos) {
+                    Some(chunk) => {
+                        mesh_sender
+                            .send(QueuedChunk {
+                                chunk: *chunk,
+                                is_new: true,
+                            })
+                            .unwrap();
+                        chunk_sender.send(chunk.compress()).unwrap()
+                    }
+                    None => par_queue.push(pos),
+                },
+                None => match self.load_region(*pos >> 5).get(pos) {
+                    Some(chunk) => {
+                        mesh_sender
+                            .send(QueuedChunk {
+                                chunk: *chunk,
+                                is_new: true,
+                            })
+                            .unwrap();
+                        chunk_sender.send(chunk.compress()).unwrap()
+                    }
+                    None => par_queue.push(pos),
+                },
+            }
+        }
+
+        par_queue.par_iter().for_each(|pos| {
+            chunk_sender
+                .send(chunk_generator(pos, self.seed).compress())
+                .unwrap();
+        });
+
+        let vector: Vec<CompressedChunk> = rx.try_iter().collect();
+        vector
+        // self.save_region(*pos >> 5);
     }
 }
 
@@ -204,6 +257,8 @@ fn base_terrain(heightmap: HeightMap, position: &IVec3) -> Blocks {
                     blocks[i as usize] = BlockType::Grass;
                 } else if h - 3 <= gy as u32 {
                     blocks[i as usize] = BlockType::Dirt;
+                } else if h - 3 <= gy as u32 && gy < WATER_LEVEL {
+                    blocks[i as usize] = BlockType::Sand;
                 } else {
                     blocks[i as usize] = BlockType::Stone;
                 }
@@ -214,6 +269,21 @@ fn base_terrain(heightmap: HeightMap, position: &IVec3) -> Blocks {
     blocks
 }
 
+#[allow(dead_code)]
+fn flood_terrain(mut blocks: Blocks, position: &IVec3) -> Blocks {
+    for x in 1..=CHUNK_DIM {
+        for z in 1..=CHUNK_DIM {
+            for y in 1..=CHUNK_DIM {
+                let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
+                let i = ChunkShape::linearize([x, y, z]);
+                if gy < WATER_LEVEL {
+                    blocks[i as usize] = BlockType::Sand;
+                }
+            }
+        }
+    }
+    blocks
+}
 fn carve_caves(mut blocks: Blocks, position: &IVec3, seed: u64) -> Blocks {
     let mut cave_noise = FastNoise::seeded(seed);
     cave_noise.set_noise_type(NoiseType::Simplex);

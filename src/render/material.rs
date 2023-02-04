@@ -77,9 +77,9 @@ impl Material for ArrayTextureMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/fragment.wgsl".into()
     }
-    // fn alpha_mode(&self) -> AlphaMode {
-    //     AlphaMode::Opaque
-    // }
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Opaque
+    }
     fn specialize(
         _pipeline: &MaterialPipeline<Self>,
         descriptor: &mut RenderPipelineDescriptor,
@@ -95,7 +95,6 @@ impl Material for ArrayTextureMaterial {
             ArrayTextureMaterial::ATTRIBUTE_AO.at_shader_location(5),
         ])?;
         descriptor.vertex.buffers = vec![vertex_layout];
-        debug!("{:?}", descriptor.vertex.buffers);
         Ok(())
     }
 }

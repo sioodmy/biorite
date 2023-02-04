@@ -23,7 +23,7 @@ impl Plugin for RenderClientPlugin {
         let (tx, rx) = bounded::<QueuedChunk>(1000);
         app.add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
             .add_startup_system(load_chunk_texture)
-            .add_plugin(DefaultRaycastingPlugin::<MyRaycastSet>::default())
+            .add_plugin(DefaultRaycastingPlugin::<ChunkRaycast>::default())
             .add_system(create_array_texture)
             .insert_resource(MeshQueueReceiver(rx))
             .insert_resource(MeshQueueSender(tx))

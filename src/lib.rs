@@ -31,7 +31,7 @@ pub const REACH: f32 = 40.0;
 pub const CHUNK_ANIMATION_OFFSET: f32 = 15.0;
 pub const CHUNK_ANIMATION_DURATION: u64 = 350;
 
-pub const REQUEST_LIMIT: usize = 128;
+pub const REQUEST_LIMIT: usize = 64;
 
 pub const PLAYER_SPEED: f32 = 14.4;
 

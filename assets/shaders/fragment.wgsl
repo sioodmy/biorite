@@ -16,5 +16,8 @@ fn fragment(
     if (color.a < 0.5) {
         discard;
     }
-    return color * light_level * ((ambient_occlusion + 0.5) / 3.5);
+    color *= light_level * ((ambient_occlusion + 0.5) / 2.0);
+
+    color.a = 1.0;
+    return color;
 }

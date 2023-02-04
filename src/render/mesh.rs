@@ -62,7 +62,7 @@ pub fn server_chunk_spawn(
                         )
                         .unwrap(),
                     )
-                    .insert(RaycastMesh::<MyRaycastSet>::default())
+                    .insert(RaycastMesh::<ChunkRaycast>::default())
                     .id();
                 loaded_chunks.0.insert(
                     meshed_chunk.pos,
@@ -98,7 +98,7 @@ pub fn chunk_renderer(
                         &ComputedColliderShape::TriMesh,
                     )
                     .unwrap(),
-                    RaycastMesh::<MyRaycastSet>::default(),
+                    RaycastMesh::<ChunkRaycast>::default(),
                     MaterialMeshBundle {
                         mesh: meshes.add(meshed_chunk.mesh),
                         material: loading_texture.material.clone(),
@@ -295,7 +295,7 @@ pub fn greedy_mesh(
             let light: Vec<_> = face_positions
                 .iter()
                 .map(|_| {
-                    0.7
+                    1.0
                 })
                 .collect();
 

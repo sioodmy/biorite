@@ -97,12 +97,12 @@ pub fn holding_item(hotbar: ResMut<Hotbar>, mut holding: ResMut<HoldingItem>) {
     holding.0 = hotbar.slots[hotbar.selected as usize].0;
 }
 
-pub struct MyRaycastSet;
+pub struct ChunkRaycast;
 /// Report intersections
 pub fn intersection(
     mut client: ResMut<RenetClient>,
     holding: Res<HoldingItem>,
-    query: Query<&Intersection<MyRaycastSet>>,
+    query: Query<&Intersection<ChunkRaycast>>,
     input: Res<Input<MouseButton>>,
 ) {
     for intersection in query.iter() {

@@ -104,6 +104,9 @@ impl Voxel for BlockType {
         if self == &BlockType::Water {
             return VoxelVisibility::Translucent;
         }
+        if self == &BlockType::Leaves {
+            return VoxelVisibility::Translucent;
+        }
 
         VoxelVisibility::Opaque
     }

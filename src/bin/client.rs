@@ -27,6 +27,7 @@ fn main() {
                     window: WindowDescriptor {
                         width: 1280.,
                         height: 720.,
+                        transparent: false,
                         title: format!("Biorite {}", env!("CARGO_PKG_VERSION")),
                         resizable: true,
                         present_mode: PresentMode::AutoVsync,
