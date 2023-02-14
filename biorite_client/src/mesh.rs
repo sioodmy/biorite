@@ -116,8 +116,6 @@ pub fn mesher(
     loaded_chunks: ResMut<LoadedChunks>,
 ) {
     let thread_pool = AsyncComputeTaskPool::get();
-    // Limit how many chunks can be meshed per frame to avoid lag spikes
-    let _limit = usize::min(mesh_queue.0.len(), 10);
     for queued in mesh_queue.0.try_iter() {
         let exists = loaded_chunks.0.get(&queued.chunk.position);
         let task = thread_pool.spawn(async move {

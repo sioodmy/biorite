@@ -3,17 +3,12 @@ name = "biorite_shared"
 version = "0.1.0"
 edition = "2021"
 
-[features]
-default = [ "fast" ]
-fast = ["bevy/dynamic"]
-
 [dependencies]
-bevy = "*"
+bevy = { version = "0.9.1", default-features = false}
 biorite_generator = { path = "../biorite_generator" }
 bevy_flycam = { git = "https://github.com/sburris0/bevy_flycam" }
 bevy_atmosphere = "0.5.0"
 bevy_easings = "0.9.1"
-bevy-inspector-egui = "0.15.0"
 bevy_embedded_assets = "0.6.2"
 bevy_asset_loader = "0.14.1"
 bevy_egui = "0.18.0"
@@ -28,6 +23,7 @@ serde = { version = "1.0", features = [ "derive" ] }
 serde-big-array = "0.4.1"
 bevy_renet = "0.0.6"
 lz4_flex = { version = "0.9.3" }
+seed15 = "0.1.5"
 
 public-ip = "0.2.2"
 tokio = { version = "1", features = ["full"] }

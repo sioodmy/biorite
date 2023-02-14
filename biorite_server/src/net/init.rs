@@ -1,6 +1,6 @@
 use super::*;
 use crate::{block_update::handle_block_updates, chunks::ChunkServerPlugin};
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use bevy_renet::renet::*;
 use biorite_shared::{
     consts::*,
@@ -34,9 +34,9 @@ pub fn create_renet_server() -> RenetServer {
                 ..Default::default()
             }),
             ChannelConfig::Chunk(ChunkChannelConfig {
-                resend_time: Duration::from_millis(800),
+                resend_time: Duration::from_millis(100),
                 max_message_size: 1024 * 1024,
-                message_send_queue_size: RENDER_DISTANCE.pow(3) as usize / 5,
+                message_send_queue_size: 10000,
                 ..Default::default()
             }),
         ],

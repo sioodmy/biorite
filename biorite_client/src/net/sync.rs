@@ -35,15 +35,7 @@ pub fn entity_sync(
 
                             // Do not bother if our prediction is correct
                             // Rollback
-                            if delta > 3000. {
-                                let transform = Transform {
-                                    translation: (*translation).into(),
-                                    ..Default::default()
-                                };
-                                commands
-                                    .entity(*player_entity)
-                                    .insert(transform);
-                            }
+                            // if delta > 3.
                         }
                     } else {
                         if let Ok(old_pos) = query.get(*player_entity) {

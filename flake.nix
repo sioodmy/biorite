@@ -74,6 +74,7 @@
           libxkbcommon
           wayland
           glfw-wayland
+          openssl
         ];
       in rec {
         # For `nix build` & `nix run`:
@@ -125,13 +126,13 @@
           mkShell.override {stdenv = gcc12Stdenv;} {
             RUST_SRC_PATH = rustPlatform.rustLibSrc;
             NIX_CFLAGS_LINK = "-fuse-ld=mold";
-            RUST_LOG = "info,wgpu_core=warn,wgpu_hal=off,rechannel=warn,biorite=debug";
+            RUST_LOG = "info,wgpu_core=warn,wgpu_hal=off,rechannel=warn,renetcode=warn";
             shellHook = ''
               mkdir -p world/regions
               export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.lib.makeLibraryPath runtime-deps}"
             '';
             buildInputs =
-              [toolchain pciutils]
+              [toolchain pciutils cargo-watch]
               ++ runtime-deps
               ++ build-deps;
           };

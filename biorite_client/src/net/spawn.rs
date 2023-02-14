@@ -32,7 +32,7 @@ pub fn entity_spawn(
                 commands.entity(player_entity).insert(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                     material: materials.add(Color::rgb(0.8, 0.20, 0.6).into()),
-                    transform: Transform::from_xyz(0.0, 50.0, 0.0),
+                    transform: Transform::from_xyz(0.0, 70.0, 0.0),
                     ..Default::default()
                 });
             }

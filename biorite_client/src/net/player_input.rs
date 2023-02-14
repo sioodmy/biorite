@@ -95,6 +95,7 @@ pub fn player_input(
                 }
             }
         }
+
         player_input.forward = vec.x;
         player_input.sideways = vec.z;
         player_input.jumping = input.pressed(KeyCode::Space);

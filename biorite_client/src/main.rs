@@ -16,6 +16,7 @@ use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_rapier3d::prelude::{RapierPhysicsPlugin, *};
 use bevy_renet::RenetClientPlugin;
 
+mod auth;
 mod camera;
 mod material;
 mod mesh;
@@ -25,7 +26,10 @@ mod render;
 
 use render::RenderClientPlugin;
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), reqwest::Error> {
+    auth::send_public_key().await?;
+
     App::new()
         .insert_resource(WgpuSettings {
             backends: Some(Backends::VULKAN),
@@ -65,4 +69,6 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         // .add_plugin(RapierDebugRenderPlugin::default())
         .run();
+
+    Ok(())
 }

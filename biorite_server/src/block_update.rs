@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use biorite_generator::{
-    blocks::{BlockType},
-    chunk::*,
-    ConstShape, SaveFile, REGION_DIM,
+    blocks::BlockType, chunk::*, ConstShape, SaveFile, REGION_DIM,
 };
 use biorite_shared::net::protocol::*;
 
