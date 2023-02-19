@@ -1,3 +1,4 @@
+#![feature(async_closure)]
 #[cfg(not(target_os = "windows"))]
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -15,26 +16,38 @@ use bevy::{
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_rapier3d::prelude::{RapierPhysicsPlugin, *};
 use bevy_renet::RenetClientPlugin;
+use clap::Parser;
 
 mod auth;
 mod camera;
+mod config;
 mod material;
+mod menu;
 mod mesh;
 mod net;
 mod raycast;
 mod render;
+mod state;
 
+use config::Args;
+use lazy_static::lazy_static;
+use menu::MenuPlugin;
 use render::RenderClientPlugin;
+use state::GameState;
 
-#[tokio::main]
-async fn main() -> Result<(), reqwest::Error> {
-    auth::send_public_key().await?;
+lazy_static! {
+    pub static ref ARGS: Args = Args::parse();
+}
+
+fn main() {
+    let args = config::Args::parse();
 
     App::new()
         .insert_resource(WgpuSettings {
             backends: Some(Backends::VULKAN),
             ..Default::default()
         })
+        .insert_resource(args)
         .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(
             DefaultPlugins
@@ -65,10 +78,10 @@ async fn main() -> Result<(), reqwest::Error> {
         )
         .add_plugin(RenetClientPlugin::default())
         .add_plugin(RenderClientPlugin)
+        .add_plugin(MenuPlugin)
         .add_plugin(NetworkClientPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_state(GameState::Menu)
         // .add_plugin(RapierDebugRenderPlugin::default())
         .run();
-
-    Ok(())
 }

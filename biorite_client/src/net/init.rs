@@ -1,5 +1,7 @@
+use crate::state::GameState;
+
 use super::*;
-use bevy::time::FixedTimestep;
+
 use bevy_easings::EasingsPlugin;
 use biorite_shared::net::{data_types::*, protocol::*};
 use local_ip_address::local_ip;
@@ -7,6 +9,22 @@ use std::{
     net::{SocketAddr, UdpSocket},
     time::SystemTime,
 };
+
+pub fn create_renet_client_from_token(
+    connect_token: ConnectToken,
+) -> RenetClient {
+    let client_addr = SocketAddr::from(([127, 0, 0, 1], 0));
+    let socket = UdpSocket::bind(client_addr).unwrap();
+    let connection_config = RenetConnectionConfig::default();
+
+    let current_time = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
+    let authentication = ClientAuthentication::Secure { connect_token };
+
+    RenetClient::new(current_time, socket, connection_config, authentication)
+        .unwrap()
+}
 
 pub fn create_renet_client() -> RenetClient {
     let current_time = SystemTime::now()
@@ -60,12 +78,7 @@ impl Plugin for NetworkClientPlugin {
             .insert_resource(AlreadyRequested::default())
             .insert_resource(Lobby::default())
             .add_system_set(
-                SystemSet::new()
-                    .with_run_criteria(FixedTimestep::step(1.))
-                    .with_system(request_chunk),
-            )
-            .add_system_set(
-                SystemSet::new()
+                SystemSet::on_update(GameState::InGame)
                     .with_system(update_camera_system)
                     .with_system(client_recieve_messages)
                     .with_system(entity_spawn)
@@ -73,8 +86,7 @@ impl Plugin for NetworkClientPlugin {
                     .with_system(receive_chunk)
                     .with_system(request_chunk)
                     .with_system(entity_sync)
-                    .with_system(client_send_input)
-                    .with_run_criteria(run_if_client_connected),
+                    .with_system(client_send_input),
             );
     }
 }

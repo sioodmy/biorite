@@ -75,6 +75,7 @@
           wayland
           glfw-wayland
           openssl
+          sqlite
         ];
       in rec {
         # For `nix build` & `nix run`:
@@ -129,6 +130,7 @@
             RUST_LOG = "info,wgpu_core=warn,wgpu_hal=off,rechannel=warn,renetcode=warn";
             shellHook = ''
               mkdir -p world/regions
+              mkdir -p world/userdata
               export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.lib.makeLibraryPath runtime-deps}"
             '';
             buildInputs =

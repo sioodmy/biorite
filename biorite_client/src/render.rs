@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{camera::*, material::*, mesh::*, net::*, raycast::*};
+use crate::{
+    camera::*, material::*, mesh::*, net::*, raycast::*, state::GameState,
+};
 use bevy::utils::HashMap;
 use bevy_atmosphere::prelude::AtmospherePlugin;
 use bevy_mod_raycast::DefaultRaycastingPlugin;
@@ -54,24 +56,30 @@ impl Plugin for RenderClientPlugin {
     fn build(&self, app: &mut App) {
         let (tx, rx) = bounded::<QueuedChunk>(1000);
         app.add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
-            .add_startup_system(load_chunk_texture)
             .add_plugin(DefaultRaycastingPlugin::<ChunkRaycast>::default())
-            .add_system(create_array_texture)
             .insert_resource(MeshQueueReceiver(rx))
             .insert_resource(MeshQueueSender(tx))
             .insert_resource(Hotbar::debug())
             .insert_resource(HoldingItem(None))
             .insert_resource(LoadedChunks(HashMap::new()))
-            .add_startup_system(spawn_camera)
-            .add_startup_system(crosshair)
-            .add_system(mouse_movement)
-            .add_system(mesher)
-            .add_system(client_block_updates)
-            .add_system(hotbar_prototype)
-            .add_system(holding_item)
-            .add_system(cursor_grab_system)
-            .add_system(chunk_renderer)
-            .add_system(intersection) // .add_system(client_chunk_despawner),
+            .add_system_set(
+                SystemSet::on_enter(GameState::InGame)
+                    .with_system(spawn_camera)
+                    .with_system(load_chunk_texture)
+                    .with_system(crosshair),
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::InGame)
+                    .with_system(mouse_movement)
+                    .with_system(mesher)
+                    .with_system(client_block_updates)
+                    .with_system(hotbar_prototype)
+                    .with_system(holding_item)
+                    .with_system(cursor_grab_system)
+                    .with_system(chunk_renderer)
+                    .with_system(create_array_texture)
+                    .with_system(intersection),
+            )
             .add_plugin(AtmospherePlugin)
             .insert_resource(Msaa { samples: 4 });
     }

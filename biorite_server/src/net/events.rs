@@ -18,8 +18,9 @@ pub fn server_events(
 ) {
     for event in events.iter() {
         match event {
-            ServerEvent::ClientConnected(id, _user_data) => {
-                info!("Connected {}!", id);
+            ServerEvent::ClientConnected(id, user_data) => {
+                let data = UserData::from_user_data(user_data);
+                info!("Connected {}! {:?}", id, data.0);
                 let player_entity = commands
                     .spawn(PbrBundle {
                         mesh: meshes.add(Mesh::from(shape::Capsule::default())),

@@ -1,16 +1,25 @@
+use std::time::SystemTime;
+
 use actix_web::{
     error, post,
-    web::{self, Data},
-    App, Error, HttpResponse,
+    web::{self, Data}, Error, HttpResponse,
 };
-use ed25519_dalek::{ PublicKey, Signature, Verifier};
+use bevy_renet::renet::ConnectToken;
+use biorite_shared::net::protocol::{parse_ip, UserData, PROTOCOL_ID};
+use ed25519_dalek::{PublicKey, Signature, Verifier, PUBLIC_KEY_LENGTH};
+use base64::{engine::general_purpose, Engine as _};
+use fallible_iterator::FallibleIterator;
 use futures::StreamExt;
-use rand::Rng;
-use serde::{Deserialize, Serialize};
 
-use crate::{Challenges, ChallengeData};
+use rand::Rng;
+use rusqlite::{Connection, Result};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::{ChallengeData, Challenges, ARGS, PRIVATE_KEY};
 
 const MAX_SIZE: usize = 262_144; // max payload size is 256k
+const WHITELIST: bool = false;
 
 #[derive(Serialize, Deserialize)]
 struct Welcome {
@@ -35,12 +44,25 @@ fn generate_challenge() -> [u8; 30] {
     arr
 }
 
+fn get_uuid(conn: &Connection, key: PublicKey) -> Result<Option<String>> {
+    let mut stmt = conn.prepare("SELECT uuid FROM keys WHERE key = ?")?;
+    stmt.query_row([key.to_bytes()], |row| row.get(0))
+}
+
+#[derive(Debug)]
+struct User {
+    id: i32,
+    uuid: String,
+    key: [u8; PUBLIC_KEY_LENGTH],
+}
+
 #[post("/auth/challenge")]
 pub async fn challenge(
     mut payload: web::Payload,
     data: Data<Challenges>,
 ) -> Result<HttpResponse, Error> {
     let mut challenges = data.0.lock().unwrap();
+
     let mut body = web::BytesMut::new();
     while let Some(chunk) = payload.next().await {
         let chunk = chunk?;
@@ -51,13 +73,57 @@ pub async fn challenge(
     }
     let obj = serde_json::from_slice::<SignedChallenge>(&body)?;
     if let Some(entry) = challenges.remove(&obj.uuid) {
+        let _secret = 2137;
+        if entry.key.verify(&entry.bytes, &obj.sign).is_ok() {
+            let conn = Connection::open("keys.db").unwrap();
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS keys(
+                    id   INTEGER PRIMARY KEY,
+                    uuid TEXT NOT NULL,
+                    key BLOB
+                )",
+                (), // empty list of parameters.
+            )
+            .unwrap();
+            let o = get_uuid(&conn, entry.key);
+            println!("uuid: {o:?}");
+            let uuid = if let Ok(Some(uuid)) = get_uuid(&conn, entry.key) {
+                println!("we good {uuid}");
+                uuid
+            } else {
+                let uuid = Uuid::new_v4();
+                conn.execute(
+                    "INSERT INTO keys (uuid, key) VALUES (?1, ?2)",
+                    (&uuid.to_string(), &entry.key.to_bytes()),
+                )
+                .unwrap();
+                uuid.to_string()
+            };
 
-    let secret = 2137;
-    if entry.key.verify(&entry.bytes, &obj.sign).is_ok(){
-        Ok(HttpResponse::Ok().json(secret)) 
-    } else {
-        Ok(HttpResponse::Forbidden().body("Authentication failed"))
-    }
+            let user_data = UserData(uuid).to_netcode_user_data();
+            let current_time = SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap();
+            let client_id = current_time.as_millis() as u64;
+
+            let connect_token = ConnectToken::generate(
+                current_time,
+                PROTOCOL_ID,
+                300,
+                client_id,
+                15,
+                vec![parse_ip(&ARGS.ip)],
+                Some(&user_data),
+                &PRIVATE_KEY,
+            )
+            .unwrap();
+            let mut bytes = Vec::new();
+            connect_token.write(&mut bytes).unwrap();
+
+            Ok(HttpResponse::Ok().body(bytes))
+        } else {
+            Ok(HttpResponse::Forbidden().body("Authentication failed"))
+        }
     } else {
         Ok(HttpResponse::Forbidden().body("Authentication failed"))
     }
@@ -79,10 +145,14 @@ pub async fn public_key(
     }
 
     let obj = serde_json::from_slice::<Welcome>(&body)?;
-    println!("amogus {:?}", obj.key);
+    println!("amogus {:?}", ARGS.ip);
 
     let bytes = generate_challenge();
-    challenges.entry(obj.uuid).or_insert(ChallengeData { bytes, key: obj.key });
+    challenges.entry(obj.uuid).or_insert(ChallengeData {
+        bytes,
+        key: obj.key,
+    });
 
-    Ok(HttpResponse::Ok().json(bytes))
+
+    Ok(HttpResponse::Ok().body(general_purpose::STANDARD.encode(&bytes)))
 }

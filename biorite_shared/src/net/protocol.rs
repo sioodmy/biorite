@@ -1,8 +1,20 @@
+use std::net::SocketAddr;
+
 use super::data_types::*;
 pub use bevy::{prelude::*, utils::HashMap};
 pub use bevy_renet::{renet::*, *};
 use biorite_generator::{blocks::BlockType, chunk::CompressedChunk};
+use local_ip_address::local_ip;
 use serde::{Deserialize, Serialize};
+
+pub fn parse_ip(ip: &Option<String>) -> SocketAddr {
+    if let Some(address) = ip {
+        return SocketAddr::parse_ascii(address.as_bytes())
+            .expect("Failed to parse address");
+    }
+
+    SocketAddr::new(local_ip().unwrap(), 42069)
+}
 
 pub const PROTOCOL_ID: u64 = 1;
 pub enum Channel {
@@ -52,6 +64,34 @@ pub enum ServerChunkMessage {
     Init {
         player_ids: Vec<u64>,
     },
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct UserData(pub String);
+
+type NETCODE_USER_DATA = [u8; NETCODE_USER_DATA_BYTES];
+
+impl UserData {
+    pub fn to_netcode_user_data(&self) -> NETCODE_USER_DATA {
+        let mut user_data = [0u8; NETCODE_USER_DATA_BYTES];
+        if self.0.len() > NETCODE_USER_DATA_BYTES - 8 {
+            panic!("Username is too big");
+        }
+        user_data[0..8].copy_from_slice(&(self.0.len() as u64).to_le_bytes());
+        user_data[8..self.0.len() + 8].copy_from_slice(self.0.as_bytes());
+
+        user_data
+    }
+
+    pub fn from_user_data(user_data: &NETCODE_USER_DATA) -> Self {
+        let mut buffer = [0u8; 8];
+        buffer.copy_from_slice(&user_data[0..8]);
+        let mut len = u64::from_le_bytes(buffer) as usize;
+        len = len.min(NETCODE_USER_DATA_BYTES - 8);
+        let data = user_data[8..len + 8].to_vec();
+        let username = String::from_utf8(data).unwrap();
+        Self(username)
+    }
 }
 
 impl ClientMessage {

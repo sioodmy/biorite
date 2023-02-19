@@ -28,7 +28,7 @@ pub fn entity_sync(
                     // Self prediciton
                     if *player_id == client.client_id() {
                         if let Ok(predicted) = query.get(*player_entity) {
-                            let delta = calculate_delta(
+                            let _delta = calculate_delta(
                                 predicted.translation.into(),
                                 *translation,
                             );

@@ -1,20 +1,22 @@
 use super::*;
-use crate::{block_update::handle_block_updates, chunks::ChunkServerPlugin};
+use crate::{
+    block_update::handle_block_updates, chunks::ChunkServerPlugin, ARGS,
+    PRIVATE_KEY,
+};
 use bevy::prelude::*;
 use bevy_renet::renet::*;
 use biorite_shared::{
-    consts::*,
     net::{data_types::*, protocol::*},
 };
-use local_ip_address::local_ip;
+
 use std::{
-    net::{SocketAddr, UdpSocket},
+    net::{UdpSocket},
     time::{Duration, SystemTime},
 };
 
 pub fn create_renet_server() -> RenetServer {
     info!("Starting Biorite {} server", env!("CARGO_PKG_VERSION"));
-    let server_addr = SocketAddr::new(local_ip().unwrap(), 42069);
+    let server_addr = parse_ip(&ARGS.ip);
     info!("Creating Server! {:?}", server_addr);
 
     let socket = UdpSocket::bind(server_addr).unwrap();
@@ -46,7 +48,9 @@ pub fn create_renet_server() -> RenetServer {
         64,
         PROTOCOL_ID,
         server_addr,
-        ServerAuthentication::Unsecure,
+        ServerAuthentication::Secure {
+            private_key: *PRIVATE_KEY,
+        },
     );
     let current_time = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)

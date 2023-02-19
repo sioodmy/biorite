@@ -23,6 +23,10 @@ biorite_shared = { path = "../biorite_shared"}
 block-mesh = { git = "https://github.com/hankjordan/block-mesh-rs", rev = "975a11b55405faa80ec2aa339b8d61e180e6338c"}
 actix-rt = "2.8.0"
 futures = "0.3.26"
+lazy_static = "1.4.0"
+base64 = "0.21.0"
+clap = { version = "4.1.6", features = [ "derive" ] }
+fallible-iterator = "0.2.0"
 rand = "0.8.5"
 env_logger = "0.10.0"
 actix-web = "4.3.0"
