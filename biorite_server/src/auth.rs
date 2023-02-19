@@ -2,12 +2,13 @@ use std::time::SystemTime;
 
 use actix_web::{
     error, post,
-    web::{self, Data}, Error, HttpResponse,
+    web::{self, Data},
+    Error, HttpResponse,
 };
+use base64::{engine::general_purpose, Engine as _};
 use bevy_renet::renet::ConnectToken;
 use biorite_shared::net::protocol::{parse_ip, UserData, PROTOCOL_ID};
 use ed25519_dalek::{PublicKey, Signature, Verifier, PUBLIC_KEY_LENGTH};
-use base64::{engine::general_purpose, Engine as _};
 use fallible_iterator::FallibleIterator;
 use futures::StreamExt;
 
@@ -153,6 +154,5 @@ pub async fn public_key(
         key: obj.key,
     });
 
-
-    Ok(HttpResponse::Ok().body(general_purpose::STANDARD.encode(&bytes)))
+    Ok(HttpResponse::Ok().body(general_purpose::STANDARD.encode(bytes)))
 }

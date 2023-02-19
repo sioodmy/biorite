@@ -51,7 +51,7 @@ pub fn send_public_key(args: &Args) -> Result<ConnectToken> {
         }))
         .send()?;
 
-    let bytes = general_purpose::STANDARD.decode(&response.text()?)?;
+    let bytes = general_purpose::STANDARD.decode(response.text()?)?;
 
     let challenge = client
         .post("http://127.0.0.1:8080/auth/challenge")

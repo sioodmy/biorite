@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
 use bevy_inspector_egui::egui::Color32;
 use egui::{FontFamily, FontId, TextStyle};
-use seed15::{phrase::seed_to_seed_phrase, random_seed};
+
 
 use crate::{
     auth::send_public_key, net::create_renet_client_from_token,

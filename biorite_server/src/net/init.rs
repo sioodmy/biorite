@@ -5,12 +5,10 @@ use crate::{
 };
 use bevy::prelude::*;
 use bevy_renet::renet::*;
-use biorite_shared::{
-    net::{data_types::*, protocol::*},
-};
+use biorite_shared::net::{data_types::*, protocol::*};
 
 use std::{
-    net::{UdpSocket},
+    net::UdpSocket,
     time::{Duration, SystemTime},
 };
 

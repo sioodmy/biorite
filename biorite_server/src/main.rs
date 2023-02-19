@@ -18,12 +18,7 @@ use biorite_generator::SaveFile;
 use clap::Parser;
 use ed25519_dalek::PublicKey;
 
-
-use std::{
-    sync::{
-        Arc, Mutex,
-    },
-};
+use std::sync::{Arc, Mutex};
 
 mod auth;
 pub mod block_update;
