@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    block_update::handle_block_updates, chunks::ChunkServerPlugin, ARGS,
+    block_update::handle_block_updates, chunks::ChunkServerPlugin, ADDR,
     PRIVATE_KEY,
 };
 use bevy::prelude::*;
@@ -14,10 +14,9 @@ use std::{
 
 pub fn create_renet_server() -> RenetServer {
     info!("Starting Biorite {} server", env!("CARGO_PKG_VERSION"));
-    let server_addr = parse_ip(&ARGS.ip);
-    info!("Creating Server! {:?}", server_addr);
+    info!("Creating Server! {:?}", *ADDR);
 
-    let socket = UdpSocket::bind(server_addr).unwrap();
+    let socket = UdpSocket::bind(*ADDR).unwrap();
     let connection_config = RenetConnectionConfig {
         max_packet_size: 33 * 1024,
         received_packets_buffer_size: 9000,
@@ -45,7 +44,7 @@ pub fn create_renet_server() -> RenetServer {
     let server_config = ServerConfig::new(
         64,
         PROTOCOL_ID,
-        server_addr,
+        *ADDR,
         ServerAuthentication::Secure {
             private_key: *PRIVATE_KEY,
         },

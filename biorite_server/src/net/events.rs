@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_renet::renet::*;
+use biorite_generator::SaveFile;
 use biorite_shared::{
     net::{
         data_types::{Lobby, Player, PlayerInput},
@@ -14,13 +15,15 @@ pub fn server_events(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut lobby: ResMut<Lobby>,
+    mut save: ResMut<SaveFile>,
     mut server: ResMut<RenetServer>,
 ) {
     for event in events.iter() {
         match event {
             ServerEvent::ClientConnected(id, user_data) => {
-                let data = UserData::from_user_data(user_data);
-                info!("Connected {}! {:?}", id, data.0);
+                let uuid = UserData::from_user_data(user_data);
+                let data = save.get_player_data(uuid.0.clone()).unwrap();
+                info!("Connected {}! {:?}", id, uuid.0);
                 let player_entity = commands
                     .spawn(PbrBundle {
                         mesh: meshes.add(Mesh::from(shape::Capsule::default())),

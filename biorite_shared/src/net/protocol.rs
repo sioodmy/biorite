@@ -1,20 +1,9 @@
-use std::net::SocketAddr;
-
 use super::data_types::*;
 pub use bevy::{prelude::*, utils::HashMap};
 pub use bevy_renet::{renet::*, *};
 use biorite_generator::{blocks::BlockType, chunk::CompressedChunk};
-use local_ip_address::local_ip;
+
 use serde::{Deserialize, Serialize};
-
-pub fn parse_ip(ip: &Option<String>) -> SocketAddr {
-    if let Some(address) = ip {
-        return SocketAddr::parse_ascii(address.as_bytes())
-            .expect("Failed to parse address");
-    }
-
-    SocketAddr::new(local_ip().unwrap(), 42069)
-}
 
 pub const PROTOCOL_ID: u64 = 1;
 pub enum Channel {
@@ -69,6 +58,7 @@ pub enum ServerChunkMessage {
 #[derive(Deserialize, Serialize)]
 pub struct UserData(pub String);
 
+#[allow(non_camel_case_types)]
 type NETCODE_USER_DATA = [u8; NETCODE_USER_DATA_BYTES];
 
 impl UserData {

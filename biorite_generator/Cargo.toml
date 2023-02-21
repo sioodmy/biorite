@@ -11,6 +11,7 @@ fast = ["bevy/dynamic"]
 [dependencies]
 bevy = { version = "0.9.1", default-features = false }
 rand = "0.8.5"
+anyhow = "1.0.69"
 splines = "4.1.1"
 bracket-noise = "0.8.7"
 lazy_static = "1.4.0"

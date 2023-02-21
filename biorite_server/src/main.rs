@@ -3,9 +3,13 @@
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
+use actix_extensible_rate_limit::{
+    backend::{memory::InMemoryBackend, SimpleInputFunctionBuilder},
+    RateLimiter,
+};
 use config::Args;
 use lazy_static::lazy_static;
-use std::collections::HashMap;
+use std::{collections::HashMap, net::SocketAddr};
 
 use crate::net::NetworkServerPlugin;
 use actix_web::{
@@ -17,6 +21,7 @@ use bevy_renet::renet::generate_random_bytes;
 use biorite_generator::SaveFile;
 use clap::Parser;
 use ed25519_dalek::PublicKey;
+use std::time::Duration;
 
 use std::sync::{Arc, Mutex};
 
@@ -44,20 +49,31 @@ pub struct Challenges(Arc<Mutex<HashMap<String, ChallengeData>>>);
 lazy_static! {
     pub static ref PRIVATE_KEY: [u8; 32] = generate_random_bytes();
     pub static ref ARGS: Args = Args::parse();
+    // Parse ip's and fail early if required
+    pub static ref ADDR_AUTH: SocketAddr = SocketAddr::parse_ascii(ARGS.auth_ip.as_bytes()).expect("Failed to parse auth server IP");
+    pub static ref ADDR: SocketAddr = SocketAddr::parse_ascii(ARGS.ip.as_bytes()).expect("Failed to parse server IP");
 }
 
 #[actix_web::main]
 async fn actix_main() -> std::io::Result<()> {
     let hashmap = Challenges(Arc::new(Mutex::new(HashMap::new())));
 
+    let backend = InMemoryBackend::builder().build();
     HttpServer::new(move || {
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(15), 4)
+            .real_ip_key()
+            .build();
+        let middleware = RateLimiter::builder(backend.clone(), input)
+            .add_headers()
+            .build();
         ActixApp::new()
             .service(index)
             .service(auth::public_key)
             .service(auth::challenge)
             .app_data(web::Data::new(hashmap.clone()))
+            .wrap(middleware)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(*ADDR_AUTH)?
     .disable_signals()
     .run()
     .await

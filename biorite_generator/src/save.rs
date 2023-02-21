@@ -1,10 +1,29 @@
 use super::{chunk_generator, QueuedChunk};
 use crate::{chunk::*, REGION_DIM};
+use anyhow::Result;
 use bevy::{prelude::*, utils::HashMap};
 use crossbeam_channel::{bounded, Sender};
 use rayon::prelude::*;
 use scc::HashSet;
+use serde::{Deserialize, Serialize};
 use std::fs;
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct PlayerData {
+    pub inventory: [u8; 9],
+    pub health: u8,
+    pub spawn_pos: IVec3,
+}
+
+impl PlayerData {
+    pub fn with_pos(pos: IVec3) -> Self {
+        Self {
+            spawn_pos: pos,
+            ..Default::default()
+        }
+    }
+}
+
 /// Optimized world save storage format
 /// Chunks are now stored in 32x32x32 regions.
 /// Its more efficient to store them that way
@@ -13,6 +32,7 @@ use std::fs;
 pub struct SaveFile {
     pub name: String,
     pub regions: HashMap<IVec3, HashMap<IVec3, Chunk>>,
+    pub player_data: HashMap<String, PlayerData>,
     pub seed: u64,
     pub dirty: HashSet<IVec3>,
 }
@@ -21,6 +41,7 @@ impl Default for SaveFile {
         SaveFile {
             name: "New world".into(),
             regions: HashMap::new(),
+            player_data: HashMap::new(),
             seed: 2137,
             dirty: HashSet::new(),
         }
@@ -121,5 +142,15 @@ impl SaveFile {
         let vector: Vec<CompressedChunk> = rx.try_iter().collect();
         vector
         // self.save_region(*pos >> 5);
+    }
+
+    pub fn get_player_data(&mut self, uuid: String) -> Result<PlayerData> {
+        if let Ok(bytes) = fs::read(format!("world/userdata/{}.data", uuid)) {
+            return Ok(bincode::deserialize::<PlayerData>(&bytes)?);
+        }
+        let data = PlayerData::default();
+        let bytes = bincode::serialize(&data)?;
+        fs::write(format!("world/userdata/{}.data", uuid), bytes)?;
+        Ok(data)
     }
 }

@@ -1,8 +1,9 @@
+use std::time::Duration;
+
 use anyhow::{anyhow, Result};
 use base64::{engine::general_purpose, Engine as _};
 use bevy_renet::renet::ConnectToken;
-use bincode::serialize;
-use ed25519_dalek::{Keypair, Signer};
+use ed25519_dalek::Signer;
 use reqwest::StatusCode;
 use seed15::{
     keypair::keypair_from_seed,
@@ -12,23 +13,17 @@ use seed15::{
 use uuid::Uuid;
 
 use crate::config::Args;
-// use seed15::keypair::*;
 
-pub fn key_gen() -> Keypair {
-    // seed.
-    let new_seed = random_seed();
-    let phrase = seed_to_seed_phrase(new_seed);
-    let seed = seed_phrase_to_seed(&phrase).unwrap();
-
-    // Use the seed to create an ed25519 keypair.
-    let keypair = keypair_from_seed(seed);
-
-    println!("{:?} {:?}", phrase, serialize(&keypair.public));
-    keypair
-}
-
-pub fn send_public_key(args: &Args) -> Result<ConnectToken> {
-    let client = reqwest::blocking::Client::new();
+/// Tries to receive connection token from the server
+/// The whole process looks like this
+/// - client sends a request with its public ed25519 key and random UUID
+/// - server sends a challenge message with random bytes, and saves received
+///   UUID in a hashmap to prevent third parties from basic attacks
+/// - client sends a signed challenge message and previously sent UUID
+pub fn handshake(args: &Args) -> Result<ConnectToken> {
+    let client = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(5))
+        .build()?;
 
     let seed = if let Some(phrase) = &args.seed {
         println!("found seed");

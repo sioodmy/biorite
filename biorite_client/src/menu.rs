@@ -3,10 +3,9 @@ use bevy_egui::{egui, EguiContext, EguiPlugin};
 use bevy_inspector_egui::egui::Color32;
 use egui::{FontFamily, FontId, TextStyle};
 
-
 use crate::{
-    auth::send_public_key, net::create_renet_client_from_token,
-    state::GameState, ARGS,
+    auth::handshake, net::create_renet_client_from_token, state::GameState,
+    ARGS,
 };
 
 #[derive(Default)]
@@ -52,7 +51,7 @@ fn menu(
 
             let _phrase = ui_state.seed_input.clone();
             // println!("seed {}", phrase);
-            let token = send_public_key(&ARGS).unwrap();
+            let token = handshake(&ARGS).unwrap();
             commands.insert_resource(create_renet_client_from_token(token));
 
             state.overwrite_set(GameState::InGame).unwrap();

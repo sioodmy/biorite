@@ -36,6 +36,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-extensible-rate-limit"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ea990351e38b399d3d1a96eef5e8feba721974a4319f6c66186b05782f6a05b"
+dependencies = [
+ "actix-web",
+ "async-trait",
+ "dashmap",
+ "futures",
+ "log",
+ "once_cell",
+ "thiserror",
+]
+
+[[package]]
 name = "actix-http"
 version = "3.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1351,6 +1366,7 @@ dependencies = [
 name = "biorite_generator"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bevy",
  "bevy_rapier3d",
  "bincode",
@@ -1371,6 +1387,7 @@ dependencies = [
 name = "biorite_server"
 version = "0.1.0"
 dependencies = [
+ "actix-extensible-rate-limit",
  "actix-rt",
  "actix-web",
  "base64 0.21.0",
@@ -2129,6 +2146,19 @@ dependencies = [
  "darling_core 0.13.4",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "dashmap"
+version = "5.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "907076dfda823b0b36d2a1bb5f90c96660a5bbcd7729e10727f07858f22c4edc"
+dependencies = [
+ "cfg-if",
+ "hashbrown",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
 ]
 
 [[package]]
