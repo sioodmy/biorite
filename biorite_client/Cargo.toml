@@ -39,6 +39,8 @@ biorite_generator = { path = "../biorite_generator"}
 bevy_flycam = { git = "https://github.com/sburris0/bevy_flycam" }
 bevy_atmosphere = "0.5.0"
 bevy_easings = "0.9.1"
+belly = { git = "https://github.com/jkb0o/belly", rev = "d6e4de9ed3cb73548f5345eb9730ea1250e7de9f"}
+aes-gcm = "0.10.1"
 bevy-inspector-egui = "0.15.0"
 bevy_embedded_assets = "0.6.2"
 bevy_asset_loader = "0.14.1"

@@ -1,9 +1,11 @@
+#![warn(clippy::disallowed_types)]
 #![feature(async_closure)]
 #[cfg(not(target_os = "windows"))]
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use crate::net::NetworkClientPlugin;
+use belly::prelude::ColorFromHexExtension;
 use bevy::{
     prelude::*,
     render::{
@@ -48,7 +50,7 @@ fn main() {
             ..Default::default()
         })
         .insert_resource(args)
-        .insert_resource(ClearColor(Color::BLACK))
+        .insert_resource(ClearColor(Color::from_hex("#24273a")))
         .add_plugins(
             DefaultPlugins
                 .build()

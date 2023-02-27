@@ -1,3 +1,4 @@
+use belly::{prelude::*, core::Widgets};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
 use bevy_inspector_egui::egui::Color32;
@@ -16,47 +17,143 @@ struct UiState {
     seed_input: String,
 }
 
-fn menu(
-    mut egui_context: ResMut<EguiContext>,
-    mut state: ResMut<State<GameState>>,
-    mut ui_state: Local<UiState>,
-    mut commands: Commands,
-) {
-    egui::Window::new("Hello").show(egui_context.ctx_mut(), |ui| {
-        ui.label("world");
-        ui.horizontal(|ui| {
-            let name_label = ui.label("Your name: ");
-            ui.text_edit_singleline(&mut ui_state.input)
-                .labelled_by(name_label.id);
-        });
-        if ui_state.got_seed {
-            ui.label("Your seedphrase");
-            // for (i, word) in ui_state.seed_input.iter_mut().enumerate() {
-            //     ui.horizontal(|ui| {
-            //         let name_label = ui.label(format!("{}:", i + 1));
-            //         ui.text_edit_singleline(&mut *word)
-            //             .labelled_by(name_label.id);
-            //     });
-            // }
-            let label = ui.label("seed phrase");
-            ui.text_edit_singleline(&mut ui_state.seed_input)
-                .labelled_by(label.id);
-        }
-        // TODO: Implement some actual ui instead of this shit
-        if ui.add(egui::Button::new("login")).clicked() {
-            ui_state.got_seed = !ui_state.got_seed;
-        }
-        if ui.add(egui::Button::new("Connect")).clicked() {
-            // let phrase = ui_state.seed_input.join(" ");
+pub struct ConnectionEvent {
+    pub ip: String,
+}
 
-            let _phrase = ui_state.seed_input.clone();
-            // println!("seed {}", phrase);
-            let token = handshake(&ARGS).unwrap();
-            commands.insert_resource(create_renet_client_from_token(token));
+#[derive(Component)]
+pub struct UICamera;
 
-            state.overwrite_set(GameState::InGame).unwrap();
-        }
+#[derive(Component, Default)]
+pub struct SeedPhrase(pub [String; 15]);
+
+fn setup_menu(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default()).insert(UICamera);
+    let that = commands.spawn_empty().id();
+    let input = commands.spawn_empty().id();
+    let button = commands.spawn_empty().id();
+    commands.add(eml! {
+         <body s:padding="20px">
+        <div c:top>
+        <span id="title">"Biorite"</span>
+        </div>
+        <br/>
+        <buttongroup on:value_change=connect!(|ctx| {
+            let ev = ctx.event();
+            ctx.select(ev.old_value()).add_class("hidden");
+            ctx.select(ev.new_value()).remove_class("hidden");
+        })>
+          <button value=".tab1" pressed>"Multiplayer"</button>
+          <button value=".tab2">"Tab 2"</button>
+          <button value=".tab3">"Tab 3"</button>
+        </buttongroup>
+        <br/>
+        <div c:content>
+          <div c:tab1>
+        <span>"Server address: "</span>
+        <br />
+            <textinput {input} s:width="150px"/>
+        <br/>
+         <button {button} on:press=connect!(|ctx| {
+                    ctx.send_event(ConnectionEvent { ip: "127.0.0.1:42069".to_string() })
+                })>
+                    "Connect"
+                </button>
+            <brl/>
+
+        </div>
+          <div c:tab2 c:hidden>
+        <span>"Seedphrase"</span>
+        <br/>
+        <for i in=1..=15>
+            <span>{i.to_string()}":"</span>
+            <textinput s:width="150px"/>
+            <br/>
+            </for>
+        
+          </div>
+          <div c:tab3 c:hidden>"Tab 3 content"</div>
+        </div>
+      </body>
     });
+    commands.add(StyleSheet::parse(
+        r#"
+        * {
+            font: "fonts/Monocraft.otf";
+        }
+        body {
+            background-color: #a6d189;
+        }
+        #title {
+            font-size: 64px;
+            color: #232634;
+        }
+        .top {
+            justify-content: center;
+            padding: 50px;
+        }
+        .sidebar {
+            max-width: 38%;
+            background-color: #303446;
+            padding: 20px;
+            padding-bottom: 100%;
+        }
+        div: {
+            justify-content: center;
+        }
+        .counter {
+            max-width: 200px;
+            justify-content: space-between;
+        }
+        .hidden {
+            display: none;
+        }
+        .button-foreground {
+            background-color: #5b6078;
+            color: #cad3f5;
+            padding: 10px;
+        }
+        button:hover .button-foreground {
+            background-color: #494d64;
+        }
+        button:pressed .button-foreground {
+            background-color: #363a4f;
+        }
+        .text-input {
+            justify-content: flex-start;
+            padding: 5px;
+            margin: 10px;
+        }
+        .text-input-border{
+            background-color: #5b6078;
+            color: #cad3f5;           
+            padding: 1px;
+        }
+       .text-input-cursor {
+            top: 1px;
+            bottom: 1px;
+            background-color: #2f2f2f;
+        }
+        .text-input-background {
+            background-color: #5b6078;
+            color: #cad3f5;           
+        }
+       
+    "#,
+    ));
+}
+
+fn connection_event(mut events: EventReader<ConnectionEvent>, mut commands: Commands, mut state: ResMut<State<GameState>>, query: Query<Entity, Or<(With<Node>, With<UICamera>)>>){
+    for event in events.iter() {
+        info!("connection event {:?}", event.ip);
+        let token = handshake(&ARGS).unwrap();
+        commands.insert_resource(create_renet_client_from_token(token));
+    for entity in query.iter(){
+        commands.entity(entity).despawn();
+    }
+
+        state.overwrite_set(GameState::InGame).unwrap();
+    }
 }
 
 fn setup_custom_fonts(mut egui_context: ResMut<EguiContext>) {
@@ -107,12 +204,16 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(EguiPlugin)
+            .add_event::<ConnectionEvent>()
+            .add_plugin(BellyPlugin)
             .add_system_set(
                 SystemSet::on_enter(GameState::Menu)
-                    .with_system(setup_custom_fonts),
+                    .with_system(setup_custom_fonts)
+                    .with_system(setup_menu),
             )
             .add_system_set(
-                SystemSet::on_update(GameState::Menu).with_system(menu),
+                SystemSet::on_update(GameState::Menu)
+                    .with_system(connection_event),
             );
     }
 }

@@ -1,12 +1,12 @@
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
-rustflags = ["-Clink-arg=-fuse-ld=mold", "-Zshare-generics=y"]
+rustflags = ["-Clink-arg=-fuse-ld=mold", "-Zshare-generics=y", "-C", "target-cpu=native"]
 
 [target.x86_64-apple-darwin]
-rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y", "-C", "target-cpu=native"]
 
 [target.aarch64-apple-darwin]
-rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y", "-C", "target-cpu=native"]
 
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"

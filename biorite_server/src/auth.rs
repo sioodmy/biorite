@@ -143,6 +143,5 @@ pub async fn public_key(
         key: obj.key,
     });
 
-
     Ok(HttpResponse::Ok().body(general_purpose::STANDARD.encode(bytes)))
 }

@@ -1,3 +1,4 @@
+#![warn(clippy::disallowed_types)]
 #![feature(addr_parse_ascii)]
 #[cfg(not(target_os = "windows"))]
 #[global_allocator]
@@ -9,7 +10,8 @@ use actix_extensible_rate_limit::{
 };
 use config::Args;
 use lazy_static::lazy_static;
-use std::{collections::HashMap, net::SocketAddr};
+use rustc_hash::FxHashMap;
+use std::net::SocketAddr;
 
 use crate::net::NetworkServerPlugin;
 use actix_web::{
@@ -44,7 +46,7 @@ pub struct ChallengeData {
 }
 
 #[derive(Default, Clone)]
-pub struct Challenges(Arc<Mutex<HashMap<String, ChallengeData>>>);
+pub struct Challenges(Arc<Mutex<FxHashMap<String, ChallengeData>>>);
 
 lazy_static! {
     pub static ref PRIVATE_KEY: [u8; 32] = generate_random_bytes();
@@ -56,7 +58,7 @@ lazy_static! {
 
 #[actix_web::main]
 async fn actix_main() -> std::io::Result<()> {
-    let hashmap = Challenges(Arc::new(Mutex::new(HashMap::new())));
+    let hashmap = Challenges(Arc::new(Mutex::new(FxHashMap::default())));
 
     let backend = InMemoryBackend::builder().build();
     HttpServer::new(move || {
