@@ -7,24 +7,16 @@ edition = "2021"
 
 [features]
 default = [ "fast" ]
-fast = ["bevy/dynamic"]
+fast = ["bevy/dynamic_linking"]
 
 [target.'cfg(not(target_os = "windows"))'.dependencies]
 jemallocator = "0.3.2"
 
 [dependencies.bevy]
-version = "0.9.1"
-default-features = false
+version = "0.10.0"
+default-features = true
 features = [
-  "bevy_winit", 
-  "render", 
-  "png", 
-  "x11",
   "wayland",
-  "bevy_pbr",
-  "bevy_ui",
-  "serialize",
-  "bevy_core_pipeline",
 ]
 
 [dependencies.bevy_kira_audio]
@@ -37,12 +29,11 @@ block-mesh = { git = "https://github.com/hankjordan/block-mesh-rs", rev = "975a1
 biorite_shared = { path = "../biorite_shared" }
 biorite_generator = { path = "../biorite_generator"}
 bevy_flycam = { git = "https://github.com/sburris0/bevy_flycam" }
-bevy_atmosphere = "0.5.0"
-bevy_easings = "0.9.1"
-belly = { git = "https://github.com/jkb0o/belly", rev = "d6e4de9ed3cb73548f5345eb9730ea1250e7de9f"}
+bevy_atmosphere = { git = "https://github.com/BrandonDyer64/bevy_atmosphere", rev = "904718410bdac78ad8089f7f12baa9d303affac2"}
+bevy_easings = "0.10.0"
 aes-gcm = "0.10.1"
 bevy-inspector-egui = "0.15.0"
-bevy_embedded_assets = "0.6.2"
+bevy_embedded_assets = "0.7.0"
 bevy_asset_loader = "0.14.1"
 base64 = "0.21.0"
 lazy_static = "1.4.0"
@@ -52,14 +43,15 @@ bevy_egui = "0.18.0"
 env_logger = "0.10.0"
 scc = "1.1.0"
 futures-lite = "1.12.0"
-bevy_mod_raycast = "0.7.0"
-bevy_rapier3d = { version = "0.19.0", features = [ "parallel", "simd-nightly"] }
+bevy_mod_raycast = { git = "https://github.com/soerenmeier/bevy_mod_raycast", rev = "ebec4facf385ff789080e32b7fd1f2ea99a6a986"}
+bevy_rapier3d = { version = "0.21.0", features = [ "parallel", "simd-nightly"] }
+
 rayon = "1.6.1"
 crossbeam-channel = "0.5.6"
 # Network stuff
 serde = { version = "1.0", features = [ "derive" ] } 
 serde-big-array = "0.4.1"
-bevy_renet = "0.0.6"
+bevy_renet = { path = "../renet-git/bevy_renet" }
 lz4_flex = { version = "0.9.3" }
 
 public-ip = "0.2.2"

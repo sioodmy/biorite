@@ -24,7 +24,7 @@ pub fn insert_player_physics(commands: &mut Commands, entity: Entity) {
             coefficient: 1.0,
             combine_rule: CoefficientCombineRule::Min,
         })
-        .insert(AdditionalMassProperties::Mass(50.0))
+        .insert(AdditionalMassProperties::Mass(1.0))
         .insert(Collider::cuboid(0.2, 1.0, 0.2))
         .insert(GravityScale(3.0))
         .insert(Ccd::enabled())

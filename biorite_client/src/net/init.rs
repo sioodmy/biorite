@@ -77,16 +77,18 @@ impl Plugin for NetworkClientPlugin {
             .insert_resource(PlayerInput::default())
             .insert_resource(AlreadyRequested::default())
             .insert_resource(Lobby::default())
-            .add_system_set(
-                SystemSet::on_update(GameState::InGame)
-                    .with_system(update_camera_system)
-                    .with_system(client_recieve_messages)
-                    .with_system(entity_spawn)
-                    .with_system(player_input)
-                    .with_system(receive_chunk)
-                    .with_system(request_chunk)
-                    .with_system(entity_sync)
-                    .with_system(client_send_input),
+            .add_systems(
+                (
+                    update_camera_system,
+                    client_recieve_messages,
+                    entity_spawn,
+                    player_input,
+                    receive_chunk,
+                    request_chunk,
+                    entity_sync,
+                    client_send_input,
+                )
+                    .in_set(OnUpdate(GameState::InGame)),
             );
     }
 }

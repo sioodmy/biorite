@@ -1,5 +1,8 @@
 use crate::raycast::ChunkRaycast;
-use bevy::{input::mouse::MouseMotion, window::CursorGrabMode};
+use bevy::{
+    input::mouse::MouseMotion,
+    window::{CursorGrabMode, PrimaryWindow},
+};
 use bevy_atmosphere::prelude::AtmosphereCamera;
 use bevy_mod_raycast::RaycastSource;
 use biorite_shared::consts::RENDER_DISTANCE;
@@ -25,22 +28,15 @@ impl Default for Camera {
     }
 }
 
-pub fn cursor_grab_system(
-    mut windows: ResMut<Windows>,
-    btn: Res<Input<MouseButton>>,
-    key: Res<Input<KeyCode>>,
-) {
-    let window = windows.get_primary_mut().unwrap();
-
-    if btn.just_pressed(MouseButton::Left) {
-        window.set_cursor_grab_mode(CursorGrabMode::Locked);
-        window.set_cursor_visibility(false);
-    }
-
-    if key.just_pressed(KeyCode::Escape) {
-        window.set_cursor_grab_mode(CursorGrabMode::None);
-        window.set_cursor_visibility(true);
-    }
+pub fn spawn_window(mut commands: Commands) {
+    commands.spawn(Window {
+        resolution: (1920., 1080.).into(),
+        transparent: false,
+        title: format!("Biorite {}", env!("CARGO_PKG_VERSION")),
+        resizable: true,
+        present_mode: PresentMode::AutoVsync,
+        ..Default::default()
+    });
 }
 
 #[derive(Component)]

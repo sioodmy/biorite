@@ -62,25 +62,23 @@ impl Plugin for RenderClientPlugin {
             .insert_resource(Hotbar::debug())
             .insert_resource(HoldingItem(None))
             .insert_resource(LoadedChunks(HashMap::new()))
-            .add_system_set(
-                SystemSet::on_enter(GameState::InGame)
-                    .with_system(spawn_camera)
-                    .with_system(load_chunk_texture)
-                    .with_system(crosshair),
+            .add_systems(
+                (load_chunk_texture, spawn_camera, crosshair)
+                    .in_schedule(OnEnter(GameState::InGame)),
             )
-            .add_system_set(
-                SystemSet::on_update(GameState::InGame)
-                    .with_system(mouse_movement)
-                    .with_system(mesher)
-                    .with_system(client_block_updates)
-                    .with_system(hotbar_prototype)
-                    .with_system(holding_item)
-                    .with_system(cursor_grab_system)
-                    .with_system(chunk_renderer)
-                    .with_system(create_array_texture)
-                    .with_system(intersection),
+            .add_systems(
+                (
+                    mouse_movement,
+                    mesher,
+                    client_block_updates,
+                    hotbar_prototype,
+                    holding_item,
+                    chunk_renderer,
+                    create_array_texture,
+                    intersection,
+                )
+                    .in_set(OnUpdate(GameState::InGame)),
             )
-            .add_plugin(AtmospherePlugin)
-            .insert_resource(Msaa { samples: 4 });
+            .add_plugin(AtmospherePlugin);
     }
 }

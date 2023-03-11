@@ -1,5 +1,15 @@
+use bevy::app::AppExit;
 use bevy::prelude::*;
 use biorite_shared::net::protocol::*;
+
+pub fn disconnect_on_exit(
+    exit: EventReader<AppExit>,
+    mut client: ResMut<RenetClient>,
+) {
+    if !exit.is_empty() && client.is_connected() {
+        client.disconnect();
+    }
+}
 
 #[derive(Debug, Default, Deref, DerefMut, Resource)]
 pub struct CurrentClientMessages(pub Vec<ServerMessage>);

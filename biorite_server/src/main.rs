@@ -17,7 +17,7 @@ use crate::net::NetworkServerPlugin;
 use actix_web::{
     get, web, App as ActixApp, HttpResponse, HttpServer, Responder,
 };
-use bevy::{log::LogPlugin, prelude::*, render::settings::WgpuSettings};
+use bevy::{log::LogPlugin, prelude::* };
 use bevy_rapier3d::prelude::*;
 use bevy_renet::renet::generate_random_bytes;
 use biorite_generator::SaveFile;
@@ -87,10 +87,6 @@ async fn main() {
     let args = config::Args::parse();
     std::thread::spawn(actix_main);
     App::new()
-        .insert_resource(WgpuSettings {
-            backends: None,
-            ..Default::default()
-        })
         .add_plugins(DefaultPlugins.set(LogPlugin {
             level: bevy::log::Level::ERROR,
             filter:

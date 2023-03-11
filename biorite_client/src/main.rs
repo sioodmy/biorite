@@ -5,7 +5,6 @@
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use crate::net::NetworkClientPlugin;
-use belly::prelude::ColorFromHexExtension;
 use bevy::{
     prelude::*,
     render::{
@@ -13,7 +12,7 @@ use bevy::{
         settings::{Backends, WgpuSettings},
         texture::ImagePlugin,
     },
-    window::{PresentMode, WindowDescriptor},
+    window::PresentMode,
 };
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_rapier3d::prelude::{RapierPhysicsPlugin, *};
@@ -45,28 +44,12 @@ fn main() {
     let args = config::Args::parse();
 
     App::new()
-        .insert_resource(WgpuSettings {
-            backends: Some(Backends::VULKAN),
-            ..Default::default()
-        })
+        .add_state::<GameState>()
         .insert_resource(args)
-        .insert_resource(ClearColor(Color::from_hex("#24273a")))
         .add_plugins(
             DefaultPlugins
                 .build()
                 .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin)
-                .set(WindowPlugin {
-                    window: WindowDescriptor {
-                        width: 1280.,
-                        height: 720.,
-                        transparent: false,
-                        title: format!("Biorite {}", env!("CARGO_PKG_VERSION")),
-                        resizable: true,
-                        present_mode: PresentMode::AutoVsync,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
                 .set(ImagePlugin {
                     default_sampler: SamplerDescriptor {
                         address_mode_u: AddressMode::Repeat,
@@ -83,7 +66,6 @@ fn main() {
         .add_plugin(MenuPlugin)
         .add_plugin(NetworkClientPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_state(GameState::Menu)
         // .add_plugin(RapierDebugRenderPlugin::default())
         .run();
 }
