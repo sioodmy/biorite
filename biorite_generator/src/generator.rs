@@ -110,8 +110,8 @@ fn get_height(x: f32, z: f32, seed: u64) -> Option<u32> {
 fn heightmap(position: &IVec3, seed: u64) -> HeightMap {
     let mut heightmap: HeightMap = [1; HeightMapShape::USIZE];
 
-    for x in 1..=CHUNK_DIM {
-        for z in 1..=CHUNK_DIM {
+    for x in 0..CHUNK_DIM {
+        for z in 0..CHUNK_DIM {
             let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
             let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
             heightmap[HeightMapShape::linearize([x, z]) as usize] =
@@ -129,9 +129,9 @@ fn heightmap(position: &IVec3, seed: u64) -> HeightMap {
 
 fn base_terrain(heightmap: HeightMap, position: &IVec3) -> Blocks {
     let mut blocks: Blocks = [BlockType::Air; ChunkShape::SIZE as usize];
-    for x in 1..=CHUNK_DIM {
-        for z in 1..=CHUNK_DIM {
-            for y in 1..=CHUNK_DIM {
+    for x in 0..CHUNK_DIM {
+        for z in 0..CHUNK_DIM {
+            for y in 0..CHUNK_DIM {
                 let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
 
                 let h = heightmap[HeightMapShape::linearize([x, z]) as usize];
@@ -192,9 +192,9 @@ fn carve_caves(mut blocks: Blocks, position: &IVec3, seed: u64) -> Blocks {
     second_noise.set_fractal_gain(1.3);
     second_noise.set_fractal_lacunarity(50.7);
     second_noise.set_frequency(0.021);
-    for x in 1..CHUNK_DIM + 1 {
-        for z in 1..CHUNK_DIM + 1 {
-            for y in 1..CHUNK_DIM + 1 {
+    for x in 0..CHUNK_DIM {
+        for z in 0..CHUNK_DIM {
+            for y in 0..CHUNK_DIM {
                 let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
                 let gy = position.y as f32 * CHUNK_DIM as f32 + y as f32;
                 let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
@@ -238,8 +238,8 @@ fn terrain_features(
     intersection_noise.set_fractal_lacunarity(1.25);
     intersection_noise.set_frequency(0.09);
 
-    for x in 1..CHUNK_DIM + 1 {
-        for z in 1..CHUNK_DIM + 1 {
+    for x in 0..CHUNK_DIM {
+        for z in 0..CHUNK_DIM {
             let gx = position.x as f32 * CHUNK_DIM as f32 + x as f32;
             let gz = position.z as f32 * CHUNK_DIM as f32 + z as f32;
 

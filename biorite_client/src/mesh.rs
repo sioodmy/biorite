@@ -147,9 +147,22 @@ pub fn greedy_mesh(
     let mut buffer = GreedyQuadsBuffer::new(voxels.len());
     let faces = RIGHT_HANDED_Y_UP_CONFIG.faces;
 
+    let mut boundary = [BlockType::Air; ChunkBoundary::USIZE];
+    for x in 0..CHUNK_DIM {
+    for y in 0..CHUNK_DIM {
+    for z in 0..CHUNK_DIM {
+                // println!("{}/{}/{}", x, y, z);
+                boundary[ChunkBoundary::linearize([x + 1, y + 1, z + 1]) as usize] = voxels[ChunkShape::linearize([x,y,z]) as usize];
+
+        }
+        }
+        
+    }
+
+    
     greedy_quads(
-        &voxels,
-        &ChunkShape {},
+        &boundary,
+        &ChunkBoundary {},
         [0; 3],
         [CHUNK_DIM + 1; 3],
         &RIGHT_HANDED_Y_UP_CONFIG.faces,
@@ -186,8 +199,8 @@ pub fn greedy_mesh(
             let face_index: Vec<_> = face_positions
                 .iter()
                 .map(|_| {
-                    let i = ChunkShape::linearize(quad.minimum.map(|v| v));
-                    let voxel = voxels[i as usize];
+                    let i = ChunkBoundary::linearize(quad.minimum.map(|v| v));
+                    let voxel = boundary[i as usize];
                     let dir = BlockFace::from_normal(normal);
                     voxel.get_texture().from_direction(dir)
                 })

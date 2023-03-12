@@ -8,7 +8,8 @@ use serde_big_array::BigArray;
 
 pub type CompressedChunk = Vec<u8>;
 pub const CHUNK_DIM: u32 = 32;
-pub type ChunkShape =
+pub type ChunkShape = ConstShape3u32<CHUNK_DIM, CHUNK_DIM, CHUNK_DIM>;
+pub type ChunkBoundary =
     ConstShape3u32<{ CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }, { CHUNK_DIM + 2 }>;
 
 pub struct ChunkEntry {

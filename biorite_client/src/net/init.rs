@@ -82,6 +82,7 @@ impl Plugin for NetworkClientPlugin {
                     update_camera_system,
                     client_recieve_messages,
                     entity_spawn,
+                    disconnect_on_exit,
                     player_input,
                     receive_chunk,
                     request_chunk,
