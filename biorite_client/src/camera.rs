@@ -1,8 +1,5 @@
 use crate::raycast::ChunkRaycast;
-use bevy::{
-    input::mouse::MouseMotion,
-    window::{CursorGrabMode, PrimaryWindow},
-};
+use bevy::input::mouse::MouseMotion;
 use bevy_atmosphere::prelude::AtmosphereCamera;
 use bevy_mod_raycast::RaycastSource;
 use biorite_shared::consts::RENDER_DISTANCE;
@@ -59,6 +56,14 @@ pub fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         AtmosphereCamera::default(),
+        FogSettings {
+            color: Color::rgba(0.1, 0.2, 0.4, 1.0),
+            falloff: FogFalloff::Linear {
+                start: 0.8,
+                end: 2.2,
+            },
+            ..Default::default()
+        },
         RaycastSource::<ChunkRaycast>::new_transform_empty(),
         MainCamera,
         Camera::default(),

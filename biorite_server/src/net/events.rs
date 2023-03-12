@@ -22,7 +22,7 @@ pub fn server_events(
         match event {
             ServerEvent::ClientConnected(id, user_data) => {
                 let uuid = UserData::from_user_data(user_data);
-                let data = save.get_player_data(uuid.0.clone()).unwrap();
+                let _data = save.get_player_data(uuid.0.clone()).unwrap();
                 info!("Connected {}! {:?}", id, uuid.0);
                 let player_entity = commands
                     .spawn(PbrBundle {

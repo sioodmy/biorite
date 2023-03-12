@@ -17,7 +17,11 @@ use crate::net::NetworkServerPlugin;
 use actix_web::{
     get, web, App as ActixApp, HttpResponse, HttpServer, Responder,
 };
-use bevy::{log::LogPlugin, prelude::* };
+use bevy::{
+    log::LogPlugin,
+    prelude::*,
+    render::{settings::WgpuSettings, RenderPlugin},
+};
 use bevy_rapier3d::prelude::*;
 use bevy_renet::renet::generate_random_bytes;
 use biorite_generator::SaveFile;
@@ -83,15 +87,24 @@ async fn actix_main() -> std::io::Result<()> {
 
 #[tokio::main]
 async fn main() {
-    println!("{:?}", *PRIVATE_KEY);
     let args = config::Args::parse();
     std::thread::spawn(actix_main);
     App::new()
-        .add_plugins(DefaultPlugins.set(LogPlugin {
-            level: bevy::log::Level::ERROR,
-            filter:
-                "error,wgpu_core=warn,wgpu_hal=warn,biorite_server=info".into(),
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(LogPlugin {
+                    level: bevy::log::Level::ERROR,
+                    filter:
+                        "error,wgpu_core=warn,wgpu_hal=warn,biorite_server=info"
+                            .into(),
+                })
+                .set(RenderPlugin {
+                    wgpu_settings: WgpuSettings {
+                        backends: None,
+                        ..Default::default()
+                    },
+                }),
+        )
         .insert_resource(args)
         .insert_resource(SaveFile::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())

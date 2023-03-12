@@ -7,11 +7,7 @@ static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 use crate::net::NetworkClientPlugin;
 use bevy::{
     prelude::*,
-    render::{
-        render_resource::*,
-        settings::{Backends, WgpuSettings},
-        texture::ImagePlugin,
-    },
+    render::{render_resource::*, texture::ImagePlugin},
     window::PresentMode,
 };
 use bevy_embedded_assets::EmbeddedAssetPlugin;

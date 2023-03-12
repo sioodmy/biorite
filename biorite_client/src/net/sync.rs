@@ -27,11 +27,11 @@ pub fn entity_sync(
                 if let Some(player_entity) = lobby.players.get(player_id) {
                     // Self prediciton
                     if *player_id == client.client_id() {
-                        if let Ok(predicted) = query.get(*player_entity) {
-                            let _delta = calculate_delta(
-                                predicted.translation.into(),
-                                *translation,
-                            );
+                        if let Ok(_predicted) = query.get(*player_entity) {
+                            // let _delta = calculate_delta(
+                            //     predicted.translation.into(),
+                            //     *translation,
+                            // );
 
                             // Do not bother if our prediction is correct
                             // Rollback

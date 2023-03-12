@@ -24,12 +24,13 @@ pub struct UICamera;
 pub struct SeedPhrase(pub [String; 15]);
 
 fn connection_event(
-    mut events: EventReader<ConnectionEvent>,
+    _events: EventReader<ConnectionEvent>,
     mut commands: Commands,
     mut state: ResMut<NextState<GameState>>,
-    query: Query<Entity, Or<(With<Node>, With<UICamera>)>>,
+    _query: Query<Entity, Or<(With<Node>, With<UICamera>)>>,
 ) {
-    let token = handshake(&ARGS).unwrap();
+    // TODO: error handling
+    let token = handshake(&ARGS).expect("Failed to authenticate");
     commands.insert_resource(create_renet_client_from_token(token));
     state.set(GameState::InGame);
 }

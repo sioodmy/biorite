@@ -1,5 +1,4 @@
-use bevy::app::AppExit;
-use bevy::prelude::*;
+use bevy::{app::AppExit, prelude::*};
 use biorite_shared::net::protocol::*;
 
 pub fn disconnect_on_exit(
